@@ -84,8 +84,9 @@
 
         <div>
             <x-input-label for="password" :value="isset($usuario) ? __('Nueva contraseña (opcional)') : __('Contraseña')" />
-            <x-text-input id="password" class="mt-1 block w-full" type="password" name="password"
-                {{ isset($usuario) ? '' : 'required' }} autocomplete="new-password" />
+            <input id="password" type="password" name="password"
+                {{ isset($usuario) ? '' : 'required' }} autocomplete="new-password"
+                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
             @if (isset($usuario))
                 <p class="mt-1 text-xs text-slate-400">Dejar en blanco para no cambiar.</p>
             @endif
@@ -94,8 +95,9 @@
 
         <div>
             <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
-            <x-text-input id="password_confirmation" class="mt-1 block w-full" type="password"
-                name="password_confirmation" {{ isset($usuario) ? '' : 'required' }} autocomplete="new-password" />
+            <input id="password_confirmation" type="password" name="password_confirmation"
+                {{ isset($usuario) ? '' : 'required' }} autocomplete="new-password"
+                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
     </div>
