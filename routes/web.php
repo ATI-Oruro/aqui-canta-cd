@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Categorias\Controllers\ConfiguracionController;
 use App\Modules\Usuarios\Controllers\DashboardController;
 use App\Modules\Usuarios\Controllers\InicioController;
 use App\Support\Enums\RolEnum;
@@ -15,6 +16,7 @@ Route::get('/dashboard', DashboardController::class)
 // Panel de administración
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf('rol:%s', RolEnum::ADMIN->value)])->group(function () {
     Route::get('/inicio', [InicioController::class, 'admin'])->name('inicio');
+    Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');
 });
 
 // Panel de jurado

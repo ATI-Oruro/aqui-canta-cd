@@ -14,15 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Usuario::create([
-            'username' => 'admin',
-            'nombre' => 'Administrador',
-            'paterno' => 'General',
-            'email' => 'admin@acb.local',
-            'password' => Hash::make('admin123'),
-            'rol' => RolEnum::ADMIN,
-            'puede_controlar_tiempo' => true,
-            'email_verified_at' => now(),
+        $this->call([
+            DepartamentoSeeder::class,
+            FaseSeeder::class,
+            CategoriaParametrosSeeder::class,
         ]);
+
+        Usuario::updateOrCreate(
+            ['email' => 'admin@acb.local'],
+            [
+                'username' => 'admin',
+                'nombre' => 'Administrador',
+                'paterno' => 'General',
+                'password' => Hash::make('admin123'),
+                'rol' => RolEnum::ADMIN,
+                'puede_controlar_tiempo' => true,
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }
