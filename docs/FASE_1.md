@@ -187,7 +187,54 @@ Test nuevo `tests/Feature/CategoriaParametrosConfigTest.php`:
 
 ---
 
-## 11. Próxima fase
+## 11. Extensión: CRUD de usuarios (administración)
+
+Tras FASE 1 se agregó la gestión de usuarios del festival para el rol ADMIN.
+
+### Rutas
+
+| Método | URI | Nombre | Middleware |
+|---|---|---|---|
+| GET | `/admin/usuarios` | `admin.usuarios.index` | admin |
+| GET | `/admin/usuarios/create` | `admin.usuarios.create` | admin |
+| POST | `/admin/usuarios` | `admin.usuarios.store` | admin |
+| GET | `/admin/usuarios/{usuario}/edit` | `admin.usuarios.edit` | admin |
+| PATCH | `/admin/usuarios/{usuario}` | `admin.usuarios.update` | admin |
+| DELETE | `/admin/usuarios/{usuario}` | `admin.usuarios.destroy` | admin |
+
+### Implementación
+
+- `app/Modules/Usuarios/Controllers/UsuariosController.php` (sin `show`): lista paginada
+  (15) con búsqueda por nombre/apellidos/username/email/C.I.
+- `app/Modules/Usuarios/Models/Usuario.php`: se agregó `email_verified_at` a `$fillable`.
+- Vistas: `resources/views/admin/usuarios/{index,create,edit}.blade.php` + parcial `_form`
+  (campos: nombre, paterno, materno, ci, username, email, rol, `puede_controlar_tiempo`,
+  password con confirmación; en edición la password es opcional "dejar en blanco").
+- Menú lateral admin unificado en `resources/views/components/menus/admin.blade.php`
+  (usa `request()->routeIs()` para el estado activo); `inicio`, `configuracion` y las
+  vistas de usuarios lo comparten con `<x-menus.admin />`.
+
+### Reglas de negocio
+
+1. Solo ADMIN accede (middleware `rol:ADMIN`).
+2. **No se puede eliminar la propia cuenta.**
+3. **No se puede cambiar el rol de uno mismo** (campo deshabilitado en edición propia).
+4. **Debe existir al menos un administrador** (no se degrada el último admin).
+5. Los usuarios creados/actualizados por el admin se crean **verificados**
+   (`email_verified_at = now()`) para evitar bloqueos de la verificación por email (el
+   sistema es offline en el festival).
+6. Eliminación física (el DER no define soft deletes en usuarios).
+
+### Pruebas
+
+`tests/Feature/AdminUsuariosCrudTest.php` (9 tests): jurado bloqueado (403), listado,
+creación verificada, email/username duplicados, password obligatoria al crear, edición con
+password opcional, auto-eliminación bloqueada (403), auto-cambio de rol bloqueado y
+eliminación de otro admin permitida.
+
+---
+
+## 12. Próxima fase
 
 FASE 2 — Importaciones y datos operativos: tablas de `Participante`, `Inscripcion`,
 `InscripcionParticipante` y `Presentacion`, importación XLSX/CSV/JSON y carga de

@@ -4,17 +4,7 @@
     </x-slot:header>
 
     <x-slot:sidebar>
-        <a href="{{ route('admin.inicio') }}" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Inicio</a>
-        <span class="block px-4 pt-4 pb-1 text-xs uppercase tracking-wider text-slate-500">Festival</span>
-        <a href="{{ route('admin.configuracion') }}" class="block px-4 py-2 rounded-lg bg-slate-800 text-white font-semibold">Configuración</a>
-        <span class="block px-4 pt-4 pb-1 text-xs uppercase tracking-wider text-slate-500">Operación</span>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Importaciones</a>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Presentaciones</a>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Jurados</a>
-        <span class="block px-4 pt-4 pb-1 text-xs uppercase tracking-wider text-slate-500">Resultados</span>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Ranking</a>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Reportes</a>
-        <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Auditoría</a>
+        <x-menus.admin />
     </x-slot:sidebar>
 
     <div class="grid gap-6 md:grid-cols-2">
