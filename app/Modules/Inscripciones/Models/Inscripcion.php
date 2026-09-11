@@ -8,6 +8,7 @@ use App\Modules\Fases\Models\Fase;
 use App\Modules\Participantes\Models\Participante;
 use App\Modules\Presentaciones\Models\Presentacion;
 use App\Support\Enums\InscripcionEstadoEnum;
+use App\Support\Enums\PresentacionEstadoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -76,5 +77,16 @@ class Inscripcion extends Model
     public function esPreseleccion(): bool
     {
         return $this->fase?->esPreseleccion() ?? false;
+    }
+
+    /**
+     * Una inscripción solo puede editarse/eliminarse desde el panel si su
+     * presentación aún no ha comenzado (estado POR_PARTICIPAR).
+     */
+    public function puedeAdministrarse(): bool
+    {
+        $presentacion = $this->presentacion;
+
+        return $presentacion === null || $presentacion->estado === PresentacionEstadoEnum::POR_PARTICIPAR;
     }
 }

@@ -14,6 +14,12 @@
 <a href="{{ route('admin.importaciones.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.importaciones.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.importaciones.*')])>
     Importaciones
 </a>
+<a href="{{ route('admin.participantes.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.participantes.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.participantes.*')])>
+    Participantes
+</a>
+<a href="{{ route('admin.inscripciones.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.inscripciones.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.inscripciones.*')])>
+    Inscripciones
+</a>
 <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Presentaciones</a>
 <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Jurados</a>
 

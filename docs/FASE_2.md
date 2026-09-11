@@ -296,7 +296,92 @@ JSON inválido muestra la tabla de errores sin persistir.
 
 ---
 
-## 11. Próxima fase
+## 11. Extensión: CRUD manual de Participantes e Inscripciones
+
+Como alternativa (o complemento) a la importación por archivo, el panel de administración
+permite registrar participantes e inscripciones directamente. **Un participante suelto no
+participa del festival hasta formar parte de una inscripción/presentación**, por lo que la
+carga manual completa consta de dos CRUD.
+
+### Rutas
+
+| Método | URI | Nombre | Middleware |
+|---|---|---|---|
+| GET | `/admin/participantes` | `admin.participantes.index` | admin |
+| GET | `/admin/participantes/create` | `admin.participantes.create` | admin |
+| POST | `/admin/participantes` | `admin.participantes.store` | admin |
+| GET | `/admin/participantes/{participante}/edit` | `admin.participantes.edit` | admin |
+| PATCH | `/admin/participantes/{participante}` | `admin.participantes.update` | admin |
+| DELETE | `/admin/participantes/{participante}` | `admin.participantes.destroy` | admin |
+| GET | `/admin/inscripciones` | `admin.inscripciones.index` | admin |
+| GET | `/admin/inscripciones/create` | `admin.inscripciones.create` | admin |
+| POST | `/admin/inscripciones` | `admin.inscripciones.store` | admin |
+| GET | `/admin/inscripciones/{inscripcion}/edit` | `admin.inscripciones.edit` | admin |
+| PATCH | `/admin/inscripciones/{inscripcion}` | `admin.inscripciones.update` | admin |
+| DELETE | `/admin/inscripciones/{inscripcion}` | `admin.inscripciones.destroy` | admin |
+
+> Nota: `Route::resource('inscripciones')` con `->parameters(['inscripciones' => 'inscripcion'])`
+> porque el singular de Laravel sería `inscripcione` y rompería el route-model binding.
+
+### Implementación
+
+- `app/Modules/Participantes/Controllers/ParticipanteController.php`: listado paginado con
+  búsqueda (nombre/apellidos/pseudónimo) y `withCount('inscripciones')`; CRUD de
+  nombre/paterno/materno/pseudónimo.
+- `app/Modules/Inscripciones/Controllers/InscripcionController.php`: listado con filtros
+  (categoría, fase, departamento, texto) y CRUD completo.
+- **`app/Modules/Inscripciones/Services/RegistrarInscripcionService.php`**: servicio
+  compartido que concentra la lógica de una inscripción (validación + persistencia) y que
+  **también usa la importación de archivos**, eliminando la lógica duplicada:
+
+```text
+validar(array $datos): list<string>     // mismas reglas que la importación
+registrar(array $datos): Inscripcion    // alta en DB::transaction
+actualizar(Inscripcion, array $datos)   // actualiza + sincroniza integrantes
+```
+
+  `ImportarInscripcionesService` sigue conservando el conteo por fila, la detección de
+  duplicados entre filas y el `ResultadoImportacion`; ahora delega cada fila en el servicio.
+- Vistas: `resources/views/admin/{participantes,inscripciones}/{index,create,edit}.blade.php`
+  + `_form.blade.php`. El formulario de inscripción incluye selects de categoría/departamento,
+  fase `PRESELECCION/FINAL` (oculta departamento en FINAL con JS), fechas/hora, nombre de
+  presentación opcional e **integrantes dinámicos** (filas nombre/paterno/materno/pseudónimo
+  con añadir/quitar; el límite mostrado = `Categoria.max_participantes`).
+- Menú lateral admin (Operación): ahora enlaza "Importaciones", "Participantes" e
+  "Inscripciones".
+
+### Reglas de negocio
+
+1. **Participantes duplicados bloqueados**: no se crea un participante con el mismo
+   nombre+paterno+materno ya existente (misma clave de reutilización que la importación).
+2. **No se elimina un participante** que figure en inscripciones (403). El FK del pivote usa
+   `cascadeOnDelete`, por eso la protección es de aplicación.
+3. **Inscripciones solo editables/eliminables en `POR_PARTICIPAR`**: cuando la presentación ya
+   inició (`EN_ESCENARIO`/`PARTICIPANDO`) o terminó (`FINALIZADO`) el CRUD devuelve 403
+   (helper `Inscripcion::puedeAdministrarse()`).
+4. Al **editar y cambiar la categoría**, si la presentación sigue `POR_PARTICIPAR` se
+   recalcula `tiempo_maximo` con el nuevo `Categoria.tiempo_presentacion`.
+5. Si se deja `nombre_presentacion` en blanco al editar, se recomputa al nombre completo del
+   primer integrante (misma regla que el alta).
+
+### Pruebas
+
+- `tests/Feature/Participantes/AdminParticipantesCrudTest.php` (9 tests): jurado 403,
+  listado/búsqueda, alta, duplicado (alta y edición), edición sin cambios permitida,
+  eliminación sin vínculos OK y con vínculos bloqueada.
+- `tests/Feature/Inscripciones/AdminInscripcionesCrudTest.php` (13 tests): jurado 403, alta
+  completa (inscripción+presentación: `tiempo_maximo`, estado `POR_PARTICIPAR`, nombre por
+  defecto, pivotes), dúo con nombre propio, reutilización de participantes, FINAL sin
+  departamento, errores sin persistir (sin departamento, sin integrantes, exceso de
+  integrantes, categoría inexistente), edición con sincronización de integrantes, recálculo de
+  `tiempo_maximo` al cambiar categoría, bloqueo de editar/eliminar en `EN_ESCENARIO` y
+  eliminación correcta en `POR_PARTICIPAR`.
+- Suite completa tras la refactorización: **85 passed (340 assertions)**, incluidos los 26
+  tests de importación (sin regresión).
+
+---
+
+## 12. Próxima fase
 
 FASE 3 — Presentaciones y tiempo real: transición de estados controlada
 (`POR_PARTICIPAR → EN_ESCENARIO → PARTICIPANDO → FINALIZADO`), asignación de jurados

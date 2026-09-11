@@ -2,6 +2,8 @@
 
 use App\Modules\Categorias\Controllers\ConfiguracionController;
 use App\Modules\Importaciones\Controllers\ImportacionController;
+use App\Modules\Inscripciones\Controllers\InscripcionController;
+use App\Modules\Participantes\Controllers\ParticipanteController;
 use App\Modules\Usuarios\Controllers\DashboardController;
 use App\Modules\Usuarios\Controllers\InicioController;
 use App\Modules\Usuarios\Controllers\UsuariosController;
@@ -23,6 +25,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
     Route::resource('usuarios', UsuariosController::class)
         ->except(['show'])
         ->names('usuarios');
+
+    Route::resource('participantes', ParticipanteController::class)
+        ->except(['show'])
+        ->names('participantes');
+
+    Route::resource('inscripciones', InscripcionController::class)
+        ->parameters(['inscripciones' => 'inscripcion'])
+        ->except(['show'])
+        ->names('inscripciones');
 
     Route::prefix('importaciones')->name('importaciones.')->group(function () {
         Route::get('/', [ImportacionController::class, 'index'])->name('index');
