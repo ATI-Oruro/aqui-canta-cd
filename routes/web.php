@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Categorias\Controllers\ConfiguracionController;
+use App\Modules\Importaciones\Controllers\ImportacionController;
 use App\Modules\Usuarios\Controllers\DashboardController;
 use App\Modules\Usuarios\Controllers\InicioController;
 use App\Modules\Usuarios\Controllers\UsuariosController;
@@ -22,6 +23,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
     Route::resource('usuarios', UsuariosController::class)
         ->except(['show'])
         ->names('usuarios');
+
+    Route::prefix('importaciones')->name('importaciones.')->group(function () {
+        Route::get('/', [ImportacionController::class, 'index'])->name('index');
+        Route::post('/importar', [ImportacionController::class, 'importar'])->name('importar');
+        Route::get('/plantilla', [ImportacionController::class, 'plantilla'])->name('plantilla');
+    });
 });
 
 // Panel de jurado

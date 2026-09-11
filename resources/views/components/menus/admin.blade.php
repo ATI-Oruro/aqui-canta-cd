@@ -11,7 +11,9 @@
 </a>
 
 <span class="block px-4 pt-4 pb-1 text-xs uppercase tracking-wider text-slate-500">Operación</span>
-<a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Importaciones</a>
+<a href="{{ route('admin.importaciones.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.importaciones.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.importaciones.*')])>
+    Importaciones
+</a>
 <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Presentaciones</a>
 <a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Jurados</a>
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Categorias\Models;
 
+use App\Modules\Parametros\Models\Parametro;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,6 +29,6 @@ class CategoriaParametro extends Model
 
     public function parametro(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Parametros\Models\Parametro::class, 'id_parametro');
+        return $this->belongsTo(Parametro::class, 'id_parametro');
     }
 }

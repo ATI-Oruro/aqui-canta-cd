@@ -2,7 +2,9 @@
 
 namespace App\Modules\Categorias\Models;
 
+use App\Modules\Inscripciones\Models\Inscripcion;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categoria extends Model
@@ -19,7 +21,7 @@ class Categoria extends Model
         return $this->hasMany(CategoriaParametro::class, 'id_categoria');
     }
 
-    public function parametros(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function parametros(): BelongsToMany
     {
         return $this->belongsToMany(Parametro::class, 'categoria_parametro', 'id_categoria', 'id_parametro')
             ->withPivot(['valor_minimo', 'valor_maximo', 'orden'])
@@ -45,5 +47,15 @@ class Categoria extends Model
     public function sumaEsCien(): bool
     {
         return $this->sumaValorMaximo() === 100;
+    }
+
+    public function inscripciones(): HasMany
+    {
+        return $this->hasMany(Inscripcion::class, 'id_categoria');
+    }
+
+    public function requiereNombrePresentacion(): bool
+    {
+        return preg_match('/d[uú]o|tr[ií]o|estudiantina|especial/i', $this->categoria) === 1;
     }
 }

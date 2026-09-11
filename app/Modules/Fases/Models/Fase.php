@@ -3,9 +3,11 @@
 namespace App\Modules\Fases\Models;
 
 use App\Modules\Departamentos\Models\Departamento;
+use App\Modules\Inscripciones\Models\Inscripcion;
 use App\Support\Enums\FaseEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fase extends Model
 {
@@ -30,5 +32,10 @@ class Fase extends Model
     public function esFinal(): bool
     {
         return $this->fase === FaseEnum::FINAL;
+    }
+
+    public function inscripciones(): HasMany
+    {
+        return $this->hasMany(Inscripcion::class, 'id_fase');
     }
 }
