@@ -32,6 +32,15 @@ La convocatoria debe ser tomada como fuente de la configuración inicial de cate
 
 ---
 
+## Estado de avance
+
+- **FASE 0 (arquitectura base, auth, roles, vistas base, WebSockets)** — completada (`47f80ef`).
+- **FASE 1 (usuarios, categorías, parámetros, departamentos, fases, seeders oficiales)** — completada (`3ddb0e4`).
+- **FASE 2 (importaciones XLSX/CSV/JSON, participantes, inscripciones, presentaciones)** — completada (`99e2de3`); CRUD manual de participantes e inscripciones anexo (`c70b1bd`).
+- **FASE 3 en adelante** — pendiente.
+
+Para verificar el estado del código: `php artisan test` (suite completa, sqlite en memoria).
+
 # Reglas críticas de calificación
 
 ## Concepto de porcentaje
@@ -742,6 +751,7 @@ Separar la lógica compleja en servicios.
 Como mínimo:
 
 ```text
+RegistrarInscripcionService
 CalcularNotaService
 RegistrarCalificacionService
 CorregirCalificacionService
@@ -775,6 +785,32 @@ Los seeders se reservan para datos de configuración/fijos del festival, especia
 - configuración inicial necesaria.
 
 No duplicar en importaciones los datos que ya están definidos por seeders.
+
+---
+
+# CRUD manual de Participantes e Inscripciones
+
+El panel de administración también permite registrar participantes e inscripciones
+directamente, como alternativa o complemento a la importación por archivo. Un participante
+suelto no participa del festival hasta formar parte de una inscripción/presentación.
+
+Reglas implementadas (respetar en futuros cambios):
+
+- **Duplicados bloqueados**: no se crea un participante con el mismo `nombre + paterno +
+  materno` ya existente. Es la misma clave de reutilización que usa la importación.
+- **No eliminar un participante** vinculado a inscripciones (403). El FK del pivote
+  `InscripcionParticipante` usa `cascadeOnDelete`, por eso la protección debe aplicarse en el
+  controller; no confiar en la base de datos.
+- Las inscripciones solo pueden **editarse/eliminarse** mientras su presentación esté en
+  `POR_PARTICIPAR` (helper `Inscripcion::puedeAdministrarse()`). Cuando la presentación
+  inició o terminó (`EN_ESCENARIO`, `PARTICIPANDO`, `FINALIZADO`), devolver 403.
+- Al **cambiar la categoría en edición** y la presentación siga en `POR_PARTICIPAR`, se
+  **recalcula `Presentacion.tiempo_maximo`** con el nuevo `Categoria.tiempo_presentacion`.
+- Si `nombre_presentacion` queda en blanco se **recomputa** al nombre completo del primer
+  integrante (misma regla que el alta y la importación).
+- **`RegistrarInscripcionService`** (`validar`, `registrar`, `actualizar`) es la lógica
+  compartida entre la importación de archivos y el CRUD manual. No duplicar esta lógica en
+  otro servicio o controller.
 
 ---
 
@@ -868,6 +904,15 @@ RankingServiceTest
 JuradoSecretoServiceTest
 GestionarCronometroServiceTest
 ```
+
+El CRUD manual de participantes e inscripciones tiene cobertura en:
+
+- `tests/Feature/Participantes/AdminParticipantesCrudTest.php`;
+- `tests/Feature/Inscripciones/AdminInscripcionesCrudTest.php`.
+
+Al modificar la lógica de `RegistrarInscripcionService` no romper los 26 tests de
+importación (`tests/Unit/Importaciones/ImportacionLectoresTest.php`,
+`tests/Feature/Importaciones/*`).
 
 Casos importantes:
 
