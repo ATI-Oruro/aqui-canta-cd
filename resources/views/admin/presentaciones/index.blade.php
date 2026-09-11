@@ -159,6 +159,12 @@
                                         <button type="submit" class="text-emerald-600 hover:text-emerald-800 ml-2">Finalizar</button>
                                     </form>
                                 @endif
+
+                                <a href="{{ route('admin.calificaciones.presentacion', $presentacion) }}"
+                                   class="text-slate-600 hover:text-slate-900 ml-2 font-medium"
+                                   title="Ver evaluaciones de jurados">
+                                    Notas
+                                </a>
                             </td>
                         </tr>
                     @empty

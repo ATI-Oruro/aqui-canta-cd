@@ -3,6 +3,7 @@
 namespace App\Modules\Usuarios\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class InicioController extends Controller
@@ -12,7 +13,7 @@ class InicioController extends Controller
         return view('admin.inicio');
     }
 
-    public function jurado(): View
+    public function jurado(Request $request): View
     {
         return view('jurado.inicio');
     }

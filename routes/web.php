@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Calificaciones\Controllers\AdminCalificacionesController;
+use App\Modules\Calificaciones\Controllers\CalificacionJuradoController;
+use App\Modules\Calificaciones\Controllers\CorreccionCalificacionController;
 use App\Modules\Categorias\Controllers\ConfiguracionController;
 use App\Modules\Importaciones\Controllers\ImportacionController;
 use App\Modules\Inscripciones\Controllers\InscripcionController;
@@ -55,12 +58,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
         Route::post('/auto-asignar', [JuradoController::class, 'autoAsignar'])->name('auto-asignar');
         Route::post('/remover', [JuradoController::class, 'remover'])->name('remover');
     });
+
+    Route::prefix('calificaciones')->name('calificaciones.')->group(function () {
+        Route::get('/presentacion/{presentacion}', [AdminCalificacionesController::class, 'presentacion'])->name('presentacion');
+        Route::get('/historial/{calificacion}', [AdminCalificacionesController::class, 'historial'])->name('historial');
+    });
 });
 
 // Panel de jurado
 Route::prefix('jurado')->name('jurado.')->middleware(['auth', 'verified', sprintf('rol:%s', RolEnum::JURADO->value)])->group(function () {
     Route::get('/inicio', [InicioController::class, 'jurado'])->name('inicio');
     Route::get('/presentaciones/actual', [PresentacionController::class, 'escenario'])->name('presentaciones.actual');
+
+    Route::prefix('calificaciones')->name('calificaciones.')->group(function () {
+        Route::get('/presentaciones/{presentacion}/calificar', [CalificacionJuradoController::class, 'evaluar'])->name('evaluar');
+        Route::post('/presentaciones/{presentacion}/calificar', [CalificacionJuradoController::class, 'guardar'])->name('guardar');
+        Route::get('/presentaciones/{presentacion}/corregir', [CorreccionCalificacionController::class, 'formulario'])->name('corregir.form');
+        Route::post('/{calificacion}/corregir', [CorreccionCalificacionController::class, 'corregir'])->name('corregir');
+    });
 });
 
 // Cronómetro: accesible para admin autorizado y jurado controlador (la autorización se valida con el Gate)

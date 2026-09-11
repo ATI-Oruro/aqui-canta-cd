@@ -38,7 +38,8 @@ La convocatoria debe ser tomada como fuente de la configuración inicial de cate
 - **FASE 1 (usuarios, categorías, parámetros, departamentos, fases, seeders oficiales)** — completada (`3ddb0e4`).
 - **FASE 2 (importaciones XLSX/CSV/JSON, participantes, inscripciones, presentaciones)** — completada (`99e2de3`); CRUD manual de participantes e inscripciones anexo (`c70b1bd`).
 - **FASE 3 (presentaciones, estados, asignación de jurados, cronómetro backend y cliente, WebSockets en tiempo real)** — completada.
-- **FASE 4 en adelante** — pendiente.
+- **FASE 4 (motor de calificaciones, notas por parámetro, cálculo de nota final, correcciones auditadas, tiempo real)** — completada.
+- **FASE 5 en adelante** — pendiente.
 
 Para verificar el estado del código: `php artisan test` (suite completa, sqlite en memoria).
 
@@ -975,7 +976,7 @@ Respetar estrictamente estas fases y no adelantar funcionalidades sin necesidad.
 - controlador autorizado;
 - visualización del nombre de presentación y transiciones dinámicas en escenario.
 
-## Fase 4 — Motor de calificaciones
+## Fase 4 — Motor de calificaciones (Completada)
 
 - calificación por parámetro;
 - nota por jurado;

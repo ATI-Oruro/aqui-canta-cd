@@ -2,11 +2,13 @@
 
 namespace App\Modules\Jurados\Models;
 
+use App\Modules\Calificaciones\Models\Calificacion;
 use App\Modules\Presentaciones\Models\Presentacion;
 use App\Modules\Usuarios\Models\Usuario;
 use App\Support\Enums\JuradoPresentacionEstadoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class JuradoPresentacion extends Model
 {
@@ -37,5 +39,10 @@ class JuradoPresentacion extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
+
+    public function calificacion(): HasOne
+    {
+        return $this->hasOne(Calificacion::class, 'id_jurado_presentacion');
     }
 }

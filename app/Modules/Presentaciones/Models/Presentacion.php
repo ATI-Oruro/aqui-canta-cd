@@ -2,12 +2,14 @@
 
 namespace App\Modules\Presentaciones\Models;
 
+use App\Modules\Calificaciones\Models\Calificacion;
 use App\Modules\Inscripciones\Models\Inscripcion;
 use App\Modules\Jurados\Models\JuradoPresentacion;
 use App\Support\Enums\PresentacionEstadoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Presentacion extends Model
 {
@@ -50,7 +52,12 @@ class Presentacion extends Model
 
     public function juradosAsignados(): HasMany
     {
-        return $this->jurados()->with('usuario');
+        return $this->jurados()->with(['usuario', 'calificacion.detalles']);
+    }
+
+    public function calificaciones(): HasManyThrough
+    {
+        return $this->hasManyThrough(Calificacion::class, JuradoPresentacion::class, 'id_presentacion', 'id_jurado_presentacion');
     }
 
     public function nombreMostrado(): string

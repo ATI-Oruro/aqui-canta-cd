@@ -27,7 +27,13 @@
                 </div>
 
                 <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
-                    {{ $sidebar }}
+                    @isset($sidebar)
+                        {{ $sidebar }}
+                    @else
+                        <a href="{{ route('jurado.inicio') }}" class="block px-4 py-2 rounded-lg {{ request()->routeIs('jurado.inicio') ? 'bg-slate-700 text-white font-semibold' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">Inicio</a>
+                        <a href="{{ route('jurado.presentaciones.actual') }}" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">Escenario en vivo</a>
+                        <a href="{{ route('jurado.presentaciones.actual') }}" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">Cronómetro</a>
+                    @endisset
                 </nav>
 
                 <div class="px-6 py-4 border-t border-slate-700">
