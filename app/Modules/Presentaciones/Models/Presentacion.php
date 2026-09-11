@@ -3,9 +3,11 @@
 namespace App\Modules\Presentaciones\Models;
 
 use App\Modules\Inscripciones\Models\Inscripcion;
+use App\Modules\Jurados\Models\JuradoPresentacion;
 use App\Support\Enums\PresentacionEstadoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Presentacion extends Model
 {
@@ -41,10 +43,51 @@ class Presentacion extends Model
         return $this->belongsTo(Inscripcion::class, 'id_inscripcion');
     }
 
+    public function jurados(): HasMany
+    {
+        return $this->hasMany(JuradoPresentacion::class, 'id_presentacion');
+    }
+
+    public function juradosAsignados(): HasMany
+    {
+        return $this->jurados()->with('usuario');
+    }
+
     public function nombreMostrado(): string
     {
         return $this->nombre_presentacion
             ?? $this->inscripcion?->participantes()->first()?->nombreCompleto()
             ?? 'Sin nombre';
+    }
+
+    public function esPreseleccion(): bool
+    {
+        return $this->inscripcion?->esPreseleccion() ?? false;
+    }
+
+    public function esFinal(): bool
+    {
+        return $this->inscripcion?->fase?->esFinal() ?? false;
+    }
+
+    public function cronometroCorriendo(): bool
+    {
+        return $this->cronometro_iniciado_at !== null && $this->cronometro_finalizado_at === null;
+    }
+
+    public function segundosTranscurridos(): int
+    {
+        if ($this->cronometro_iniciado_at === null) {
+            return 0;
+        }
+
+        $fin = $this->cronometro_finalizado_at ?? now();
+
+        return max(0, (int) $this->cronometro_iniciado_at->diffInSeconds($fin));
+    }
+
+    public function segundosRestantes(): int
+    {
+        return max(0, $this->tiempo_maximo * 60 - $this->segundosTranscurridos());
     }
 }

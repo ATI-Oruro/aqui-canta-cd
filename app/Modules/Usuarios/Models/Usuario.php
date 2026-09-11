@@ -2,8 +2,10 @@
 
 namespace App\Modules\Usuarios\Models;
 
+use App\Modules\Presentaciones\Models\Presentacion;
 use App\Support\Enums\RolEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -60,5 +62,15 @@ class Usuario extends Authenticatable
     public function puedeControlarTiempo(): bool
     {
         return $this->puede_controlar_tiempo;
+    }
+
+    public function presentacionesJurado(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Presentacion::class,
+            'jurado_presentacion',
+            'id_usuario',
+            'id_presentacion'
+        )->withPivot(['es_secreto', 'es_controlador', 'estado']);
     }
 }

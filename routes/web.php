@@ -3,7 +3,9 @@
 use App\Modules\Categorias\Controllers\ConfiguracionController;
 use App\Modules\Importaciones\Controllers\ImportacionController;
 use App\Modules\Inscripciones\Controllers\InscripcionController;
+use App\Modules\Jurados\Controllers\JuradoController;
 use App\Modules\Participantes\Controllers\ParticipanteController;
+use App\Modules\Presentaciones\Controllers\PresentacionController;
 use App\Modules\Usuarios\Controllers\DashboardController;
 use App\Modules\Usuarios\Controllers\InicioController;
 use App\Modules\Usuarios\Controllers\UsuariosController;
@@ -40,11 +42,33 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
         Route::post('/importar', [ImportacionController::class, 'importar'])->name('importar');
         Route::get('/plantilla', [ImportacionController::class, 'plantilla'])->name('plantilla');
     });
+
+    Route::prefix('presentaciones')->name('presentaciones.')->group(function () {
+        Route::get('/', [PresentacionController::class, 'index'])->name('index');
+        Route::get('/escenario', [PresentacionController::class, 'escenario'])->name('escenario');
+        Route::post('/{presentacion}/transicion', [PresentacionController::class, 'transicion'])->name('transicion');
+    });
+
+    Route::prefix('jurados')->name('jurados.')->group(function () {
+        Route::get('/', [JuradoController::class, 'index'])->name('index');
+        Route::post('/asignar', [JuradoController::class, 'asignar'])->name('asignar');
+        Route::post('/auto-asignar', [JuradoController::class, 'autoAsignar'])->name('auto-asignar');
+        Route::post('/remover', [JuradoController::class, 'remover'])->name('remover');
+    });
 });
 
 // Panel de jurado
 Route::prefix('jurado')->name('jurado.')->middleware(['auth', 'verified', sprintf('rol:%s', RolEnum::JURADO->value)])->group(function () {
     Route::get('/inicio', [InicioController::class, 'jurado'])->name('inicio');
+    Route::get('/presentaciones/actual', [PresentacionController::class, 'escenario'])->name('presentaciones.actual');
+});
+
+// Cronómetro: accesible para admin autorizado y jurado controlador (la autorización se valida con el Gate)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/presentaciones/{presentacion}/cronometro/iniciar', [PresentacionController::class, 'cronometroIniciar'])
+        ->name('presentaciones.cronometro.iniciar');
+    Route::post('/presentaciones/{presentacion}/cronometro/detener', [PresentacionController::class, 'cronometroDetener'])
+        ->name('presentaciones.cronometro.detener');
 });
 
 Route::middleware('auth')->group(function () {

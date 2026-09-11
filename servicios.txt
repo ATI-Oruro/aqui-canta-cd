@@ -1,0 +1,18 @@
+# Iniciar Base de Datos (Podman)
+podman compose up -d
+# (o podman-compose up -d)
+podman start acb_mysql acb_phpmyadmin
+
+
+# Poblar datos (solo primera vez o reset)
+php artisan migrate --seed
+
+# Servidor Laravel
+php artisan serve
+
+# Servidor Websocket (Reverb)
+php artisan reverb:start
+
+# Frontend (Vite)
+npm run dev
+
