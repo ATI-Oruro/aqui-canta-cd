@@ -97,8 +97,18 @@ class RegistrarCalificacionService
             $presentacion->nota_final = $notaFinal;
             $presentacion->save();
 
-            // Emitir evento en tiempo real
-            event(new CalificacionRegistrada($calificacion->load(['juradoPresentacion.usuario', 'juradoPresentacion.presentacion', 'detalles'])));
+            // Emitir eventos en tiempo real
+            try {
+                event(new CalificacionRegistrada($calificacion->load(['juradoPresentacion.usuario', 'juradoPresentacion.presentacion', 'detalles'])));
+
+                if ($categoria) {
+                    $rankingService = app(\App\Modules\Rankings\Services\CalcularRankingService::class);
+                    $ranking = $rankingService->rankingPorCategoria($categoria);
+                    event(new \App\Modules\Rankings\Events\RankingActualizado($categoria, $ranking));
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Error transmitiendo evento de calificación registrada: '.$e->getMessage());
+            }
 
             return $calificacion;
         });

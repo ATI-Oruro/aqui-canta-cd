@@ -10,13 +10,18 @@ window.Pusher = Pusher;
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+const wsHost = window.location.hostname || import.meta.env.VITE_REVERB_HOST || '127.0.0.1';
+const wsPort = import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT, 10) : 6080;
+const wsScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
+const wsKey = import.meta.env.VITE_REVERB_APP_KEY || 'rlml9nwlxkswhus5t6ca';
+
 window.Echo = new Echo({
     broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT,
-    wssPort: import.meta.env.VITE_REVERB_PORT,
-    forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
+    key: wsKey,
+    wsHost: wsHost,
+    wsPort: wsPort,
+    wssPort: wsPort,
+    forceTLS: wsScheme === 'https',
     enabledTransports: ['ws', 'wss'],
     authEndpoint: '/broadcasting/auth',
     auth: {

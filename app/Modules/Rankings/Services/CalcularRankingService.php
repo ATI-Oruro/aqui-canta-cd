@@ -61,8 +61,7 @@ class CalcularRankingService
             // la nota en puntaje final no contempla la nota del jurado secreto
             if ($esPublico && ! $catRevelada && $presentacion->jurados->contains('es_secreto', true)) {
                 $juradosVisibles = $presentacion->jurados->filter(function (JuradoPresentacion $jp) {
-                    $esSecreto = (bool) $jp->es_secreto;
-                    if ($esSecreto) {
+                    if ((bool) $jp->es_secreto) {
                         return false;
                     }
                     $cal = $jp->calificacion;
@@ -73,10 +72,12 @@ class CalcularRankingService
                     return (bool) $jp->es_secreto && $jp->calificacion !== null && in_array($jp->calificacion->estado, [CalificacionEstadoEnum::EMITIDO, CalificacionEstadoEnum::CORREGIDO], true);
                 });
 
-                if ($tieneVotoSecreto && $juradosVisibles->isNotEmpty()) {
+                if ($juradosVisibles->isNotEmpty()) {
                     $notaFinal = round($juradosVisibles->sum(fn ($jp) => (float) $jp->calificacion->nota_total) / $juradosVisibles->count(), 2);
+                } elseif (! $tieneVotoSecreto && $presentacion->nota_final !== null) {
+                    $notaFinal = (float) $presentacion->nota_final;
                 } else {
-                    $notaFinal = $presentacion->nota_final !== null ? (float) $presentacion->nota_final : null;
+                    $notaFinal = null;
                 }
             } else {
                 $notaFinal = $presentacion->nota_final !== null ? (float) $presentacion->nota_final : null;

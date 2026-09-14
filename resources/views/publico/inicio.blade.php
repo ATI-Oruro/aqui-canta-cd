@@ -136,7 +136,7 @@
 
     </aside>
 
-    <div class="space-y-6">
+    <div id="rankingLiveWrapper" class="space-y-6">
 
         <!-- ============================================================== -->
         <!-- BARRA SUPERIOR DE ACCIONES Y MODO DE VISTA                      -->
@@ -631,29 +631,115 @@
             });
         });
 
+        // Actualización fluida del DOM sin recargar la página completa
+        let actualizandoContenido = false;
+        async function refrescarRankingEnVivo() {
+            if (actualizandoContenido) return;
+            actualizandoContenido = true;
+
+            try {
+                const fetchUrl = new URL(window.location.href);
+                fetchUrl.searchParams.set('_t', Date.now());
+
+                const response = await fetch(fetchUrl.toString(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    cache: 'no-store'
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const nuevoContenido = doc.getElementById('rankingLiveWrapper');
+                    const contenedorActual = document.getElementById('rankingLiveWrapper');
+
+                    if (nuevoContenido && contenedorActual) {
+                        // Preservar modales que estuvieran abiertos
+                        const modalesAbiertos = [];
+                        document.querySelectorAll('[id^="modalDesglose_"]:not(.hidden)').forEach(m => {
+                            modalesAbiertos.push(m.id);
+                        });
+
+                        contenedorActual.innerHTML = nuevoContenido.innerHTML;
+
+                        // Restaurar modales si seguían abiertos
+                        modalesAbiertos.forEach(id => {
+                            const modal = document.getElementById(id);
+                            if (modal) modal.classList.remove('hidden');
+                        });
+                    }
+
+                    // Actualizar sidebar de categorías si está presente
+                    const nuevoSidebar = doc.getElementById('sidebarCategorias');
+                    const sidebarActual = document.getElementById('sidebarCategorias');
+                    if (nuevoSidebar && sidebarActual) {
+                        const listaNueva = nuevoSidebar.querySelector('.flex-1');
+                        const listaActual = sidebarActual.querySelector('.flex-1');
+                        if (listaNueva && listaActual) {
+                            listaActual.innerHTML = listaNueva.innerHTML;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Error al actualizar contenido en vivo:', err);
+            } finally {
+                actualizandoContenido = false;
+            }
+        }
+
+        // Sincronización WebSockets en Tiempo Real
+        function iniciarEscuchaEcho() {
+            if (!window.Echo) return false;
+
+            try {
+                const canalRanking = window.Echo.channel('ranking');
+                if (canalRanking) {
+                    canalRanking.listenToAll((event, data) => {
+                        refrescarRankingEnVivo();
+                    });
+                    ['.ranking.actualizado', 'ranking.actualizado', '.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.jurado_secreto.revelado', 'jurado_secreto.revelado', '.categoria.finalizada', 'categoria.finalizada', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado'].forEach(ev => {
+                        canalRanking.listen(ev, refrescarRankingEnVivo);
+                    });
+                }
+
+                const canalPresentaciones = window.Echo.channel('presentaciones');
+                if (canalPresentaciones) {
+                    canalPresentaciones.listenToAll((event, data) => {
+                        refrescarRankingEnVivo();
+                    });
+                    ['.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado', '.cronometro.actualizado', 'cronometro.actualizado'].forEach(ev => {
+                        canalPresentaciones.listen(ev, refrescarRankingEnVivo);
+                    });
+                }
+
+                return true;
+            } catch (e) {
+                console.warn('Error suscribiendo a canales Echo:', e);
+                return false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!iniciarEscuchaEcho()) {
+                let attempts = 0;
+                const echoInterval = setInterval(function () {
+                    attempts++;
+                    if (iniciarEscuchaEcho() || attempts > 25) {
+                        clearInterval(echoInterval);
+                    }
+                }, 200);
+            }
+
+            // Sincronización periódica activa (cada 2.5s)
+            setInterval(refrescarRankingEnVivo, 2500);
+        });
+
         // Atajo de teclado Escape para cerrar sidebar y modales
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 cerrarSidebarCategorias();
                 document.querySelectorAll('[id^="modalDesglose_"]').forEach(m => m.classList.add('hidden'));
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.Echo) {
-                function recargarVista() {
-                    window.location.reload();
-                }
-
-                window.Echo.channel('ranking')
-                    .listen('.ranking.actualizado', recargarVista)
-                    .listen('.jurado_secreto.revelado', recargarVista)
-                    .listen('.categoria.finalizada', recargarVista);
-
-                window.Echo.channel('presentaciones')
-                    .listen('.presentacion.estado.cambiado', recargarVista)
-                    .listen('.calificacion.registrada', recargarVista)
-                    .listen('.calificacion.corregida', recargarVista);
             }
         });
     </script>

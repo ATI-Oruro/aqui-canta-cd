@@ -3,6 +3,7 @@
 namespace App\Modules\Calificaciones\Events;
 
 use App\Modules\Calificaciones\Models\Calificacion;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -20,6 +21,8 @@ class CalificacionRegistrada implements ShouldBroadcastNow
         $presentacionId = $this->calificacion->juradoPresentacion?->id_presentacion;
 
         return [
+            new Channel('ranking'),
+            new Channel('presentaciones'),
             new PrivateChannel('presentaciones'),
             new PrivateChannel('presentaciones.'.$presentacionId),
         ];
