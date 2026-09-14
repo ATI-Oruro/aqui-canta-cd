@@ -13,7 +13,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.inscripciones.update', $inscripcion) }}">
+    <form method="POST" action="{{ route('admin.inscripciones.update', $inscripcion) }}" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
         @include('admin.inscripciones._form')

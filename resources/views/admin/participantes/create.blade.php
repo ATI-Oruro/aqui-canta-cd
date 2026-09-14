@@ -7,7 +7,7 @@
         <x-menus.admin />
     </x-slot:sidebar>
 
-    <form method="POST" action="{{ route('admin.participantes.store') }}">
+    <form method="POST" action="{{ route('admin.participantes.store') }}" enctype="multipart/form-data">
         @csrf
         @include('admin.participantes._form')
     </form>

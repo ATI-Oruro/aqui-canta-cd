@@ -74,7 +74,15 @@
                     @forelse ($inscripciones as $inscripcion)
                         <tr class="border-b border-slate-100">
                             <td class="py-2 pr-4 font-medium text-slate-800">
-                                {{ $inscripcion->presentacion?->nombre_presentacion ?? '—' }}
+                                @php
+                                    $fotoThumb = $inscripcion->presentacion?->fotoUrl() ?? $inscripcion->participantes->first()?->fotoUrl();
+                                @endphp
+                                <div class="flex items-center gap-2.5">
+                                    @if ($fotoThumb)
+                                        <img src="{{ $fotoThumb }}" alt="" class="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0">
+                                    @endif
+                                    <span>{{ $inscripcion->presentacion?->nombre_presentacion ?? '—' }}</span>
+                                </div>
                             </td>
                             <td class="py-2 pr-4 text-slate-600">{{ $inscripcion->categoria?->categoria ?? '—' }}</td>
                             <td class="py-2 pr-4 text-slate-600">

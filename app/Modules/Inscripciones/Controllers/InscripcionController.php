@@ -65,7 +65,13 @@ class InscripcionController
 
         $this->comprobarValidos($datos);
 
-        $this->registro->registrar($datos);
+        $inscripcion = $this->registro->registrar($datos);
+
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('participantes', 'public');
+            $inscripcion->presentacion?->forceFill(['foto' => $fotoPath])->save();
+            $inscripcion->participantes->first()?->forceFill(['foto' => $fotoPath])->save();
+        }
 
         return redirect()
             ->route('admin.inscripciones.index')
@@ -91,6 +97,23 @@ class InscripcionController
         $this->comprobarValidos($datos);
 
         $this->registro->actualizar($inscripcion, $datos);
+
+        if ($request->boolean('eliminar_foto')) {
+            if ($inscripcion->presentacion?->foto && ! str_starts_with($inscripcion->presentacion->foto, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($inscripcion->presentacion->foto);
+            }
+            $inscripcion->presentacion?->forceFill(['foto' => null])->save();
+            foreach ($inscripcion->participantes as $p) {
+                if ($p->foto && ! str_starts_with($p->foto, 'http')) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($p->foto);
+                }
+                $p->forceFill(['foto' => null])->save();
+            }
+        } elseif ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('participantes', 'public');
+            $inscripcion->presentacion?->forceFill(['foto' => $fotoPath])->save();
+            $inscripcion->participantes->first()?->forceFill(['foto' => $fotoPath])->save();
+        }
 
         return redirect()
             ->route('admin.inscripciones.index')

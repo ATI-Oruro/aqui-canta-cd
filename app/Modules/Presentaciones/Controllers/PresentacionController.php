@@ -69,10 +69,47 @@ class PresentacionController
     {
         [$actual, $siguiente] = $this->presentacionEnCurso();
 
+        $usuario = $request->user();
+        $juradoPresentacion = null;
+        $calificacion = null;
+        $categoriaParametros = collect();
+        $puedeControlar = false;
+        $juradosAsignados = collect();
+
+        if ($actual !== null) {
+            $categoriaParametros = $actual->inscripcion?->categoria?->categoriaParametros()
+                ->with('parametro')
+                ->orderBy('orden')
+                ->get() ?? collect();
+
+            if ($usuario) {
+                $juradoPresentacion = $actual->jurados()
+                    ->where('id_usuario', $usuario->id)
+                    ->first();
+
+                if ($juradoPresentacion) {
+                    $calificacion = $juradoPresentacion->calificacion()
+                        ->with('detalles.parametro')
+                        ->first();
+                }
+
+                $puedeControlar = Gate::allows('controlarCronometro', $actual);
+            }
+
+            $juradosAsignados = $actual->jurados()
+                ->with(['usuario', 'calificacion.detalles'])
+                ->get();
+        }
+
         return view('jurado.escenario', [
             'presentacion' => $actual,
             'siguiente' => $siguiente,
             'cronometro' => $actual !== null ? $this->cronometro->obtenerEstado($actual) : null,
+            'categoriaParametros' => $categoriaParametros,
+            'juradoPresentacion' => $juradoPresentacion,
+            'calificacion' => $calificacion,
+            'puedeControlar' => $puedeControlar,
+            'juradosAsignados' => $juradosAsignados,
         ]);
     }
 
@@ -103,7 +140,11 @@ class PresentacionController
         Gate::authorize('controlarCronometro', $presentacion);
 
         try {
-            $this->cronometro->iniciar($presentacion);
+            if ($presentacion->estado === PresentacionEstadoEnum::EN_ESCENARIO) {
+                $this->presentaciones->iniciarPresentacion($presentacion);
+            } else {
+                $this->cronometro->iniciar($presentacion);
+            }
         } catch (\UnexpectedValueException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -116,7 +157,11 @@ class PresentacionController
         Gate::authorize('controlarCronometro', $presentacion);
 
         try {
-            $this->cronometro->detener($presentacion);
+            if ($presentacion->estado === PresentacionEstadoEnum::PARTICIPANDO) {
+                $this->presentaciones->finalizarPresentacion($presentacion);
+            } else {
+                $this->cronometro->detener($presentacion);
+            }
         } catch (\UnexpectedValueException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -138,19 +183,23 @@ class PresentacionController
             ->orderByDesc('updated_at')
             ->first();
 
-        $siguiente = null;
-
         if ($actual === null) {
-            $siguiente = Presentacion::query()
-                ->select('presentaciones.*')
-                ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
-                ->with(['inscripcion.categoria', 'inscripcion.participantes'])
-                ->where('presentaciones.estado', PresentacionEstadoEnum::POR_PARTICIPAR->value)
-                ->orderBy('inscripciones.fecha_presentacion')
-                ->orderBy('inscripciones.hora_presentacion')
-                ->orderBy('presentaciones.id')
+            $actual = Presentacion::query()
+                ->with(['inscripcion.categoria', 'inscripcion.participantes', 'jurados.usuario'])
+                ->where('estado', PresentacionEstadoEnum::FINALIZADO->value)
+                ->orderByDesc('updated_at')
                 ->first();
         }
+
+        $siguiente = Presentacion::query()
+            ->select('presentaciones.*')
+            ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
+            ->with(['inscripcion.categoria', 'inscripcion.participantes'])
+            ->where('presentaciones.estado', PresentacionEstadoEnum::POR_PARTICIPAR->value)
+            ->orderBy('inscripciones.fecha_presentacion')
+            ->orderBy('inscripciones.hora_presentacion')
+            ->orderBy('presentaciones.id')
+            ->first();
 
         return [$actual, $siguiente];
     }

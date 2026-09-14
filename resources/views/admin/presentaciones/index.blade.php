@@ -89,13 +89,20 @@
                     @forelse ($presentaciones as $presentacion)
                         <tr class="border-b border-slate-100">
                             <td class="py-2 pr-4">
-                                <p class="font-medium text-slate-800">{{ $presentacion->nombreMostrado() }}</p>
-                                <p class="text-xs text-slate-400">
-                                    {{ $presentacion->inscripcion?->participantes->pluck('nombre')->take(3)->implode(', ') }}
-                                    @if (($presentacion->inscripcion?->participantes->count() ?? 0) > 3)
-                                        +{{ $presentacion->inscripcion->participantes->count() - 3 }}
+                                <div class="flex items-center gap-3">
+                                    @if ($presentacion->fotoUrl())
+                                        <img src="{{ $presentacion->fotoUrl() }}" alt="" class="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0 shadow-sm">
                                     @endif
-                                </p>
+                                    <div>
+                                        <p class="font-medium text-slate-800">{{ $presentacion->nombreMostrado() }}</p>
+                                        <p class="text-xs text-slate-400">
+                                            {{ $presentacion->inscripcion?->participantes->pluck('nombre')->take(3)->implode(', ') }}
+                                            @if (($presentacion->inscripcion?->participantes->count() ?? 0) > 3)
+                                                +{{ $presentacion->inscripcion->participantes->count() - 3 }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
                             </td>
                             <td class="py-2 pr-4 text-slate-600">{{ $presentacion->inscripcion?->categoria?->categoria ?? '—' }}</td>
                             <td class="py-2 pr-4 text-slate-600">

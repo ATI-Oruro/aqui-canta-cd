@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('controlarCronometro', function (Usuario $usuario, Presentacion $presentacion) {
-            if ($usuario->esAdmin() && $usuario->puedeControlarTiempo()) {
+            if ($usuario->puedeControlarTiempo()) {
                 return true;
             }
 

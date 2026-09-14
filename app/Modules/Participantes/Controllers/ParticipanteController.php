@@ -44,6 +44,10 @@ class ParticipanteController
 
         $this->comprobarDuplicado($datos, null);
 
+        if ($request->hasFile('foto')) {
+            $datos['foto'] = $request->file('foto')->store('participantes', 'public');
+        }
+
         Participante::create($datos);
 
         return redirect()
@@ -64,6 +68,18 @@ class ParticipanteController
 
         $this->comprobarDuplicado($datos, $participante->id);
 
+        if ($request->boolean('eliminar_foto')) {
+            if ($participante->foto && ! str_starts_with($participante->foto, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto);
+            }
+            $datos['foto'] = null;
+        } elseif ($request->hasFile('foto')) {
+            if ($participante->foto && ! str_starts_with($participante->foto, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto);
+            }
+            $datos['foto'] = $request->file('foto')->store('participantes', 'public');
+        }
+
         $participante->fill($datos)->save();
 
         return redirect()
@@ -74,6 +90,10 @@ class ParticipanteController
     public function destroy(Participante $participante): RedirectResponse
     {
         abort_if($participante->inscripciones()->exists(), 403, 'No se puede eliminar un participante que ya figura en inscripciones.');
+
+        if ($participante->foto && ! str_starts_with($participante->foto, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto);
+        }
 
         $participante->delete();
 
@@ -92,6 +112,7 @@ class ParticipanteController
             'paterno' => ['nullable', 'string', 'max:255'],
             'materno' => ['nullable', 'string', 'max:255'],
             'pseudonimo' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'image', 'max:4096'],
         ]);
     }
 

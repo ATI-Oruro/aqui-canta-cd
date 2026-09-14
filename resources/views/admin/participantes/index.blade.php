@@ -45,7 +45,18 @@
                 <tbody>
                     @forelse ($participantes as $participante)
                         <tr class="border-b border-slate-100">
-                            <td class="py-2 pr-4 font-medium text-slate-800">{{ $participante->nombre }}</td>
+                            <td class="py-2 pr-4 font-medium text-slate-800">
+                                <div class="flex items-center gap-2.5">
+                                    @if ($participante->fotoUrl())
+                                        <img src="{{ $participante->fotoUrl() }}" alt="{{ $participante->nombre }}" class="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0">
+                                            {{ mb_substr($participante->nombre, 0, 1) }}
+                                        </div>
+                                    @endif
+                                    <span>{{ $participante->nombre }}</span>
+                                </div>
+                            </td>
                             <td class="py-2 pr-4 text-slate-600">{{ $participante->paterno ?? '—' }}</td>
                             <td class="py-2 pr-4 text-slate-600">{{ $participante->materno ?? '—' }}</td>
                             <td class="py-2 pr-4 text-slate-600">{{ $participante->pseudonimo ?? '—' }}</td>

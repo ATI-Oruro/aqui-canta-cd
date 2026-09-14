@@ -18,6 +18,7 @@ class Presentacion extends Model
     protected $fillable = [
         'id_inscripcion',
         'nombre_presentacion',
+        'foto',
         'estado',
         'tiempo_maximo',
         'hora_inicio',
@@ -65,6 +66,17 @@ class Presentacion extends Model
         return $this->nombre_presentacion
             ?? $this->inscripcion?->participantes()->first()?->nombreCompleto()
             ?? 'Sin nombre';
+    }
+
+    public function fotoUrl(): ?string
+    {
+        if ($this->foto) {
+            return str_starts_with($this->foto, 'http')
+                ? $this->foto
+                : asset('storage/'.$this->foto);
+        }
+
+        return $this->inscripcion?->participantes->first()?->fotoUrl();
     }
 
     public function esPreseleccion(): bool

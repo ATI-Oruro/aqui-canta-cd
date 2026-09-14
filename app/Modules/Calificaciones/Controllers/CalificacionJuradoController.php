@@ -82,6 +82,11 @@ class CalificacionJuradoController extends Controller
                 $usuario
             );
 
+            if ($request->filled('redirect_to')) {
+                return redirect($request->input('redirect_to'))
+                    ->with('success', '¡Su calificación fue registrada exitosamente!');
+            }
+
             return redirect()->route('jurado.inicio')
                 ->with('success', '¡Su calificación fue registrada exitosamente!');
         } catch (DomainException|InvalidArgumentException $e) {

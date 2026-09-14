@@ -100,6 +100,40 @@
                 Si se deja vacío, se usará el nombre completo del primer integrante.
             </p>
         </div>
+
+        <div class="md:col-span-2 border-t border-slate-100 pt-4">
+            <x-input-label for="foto" :value="__('Fotografía / Imagen de la presentación o participante (opcional)')" />
+            
+            <div class="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                @php
+                    $fotoActualUrl = $inscripcion?->presentacion?->fotoUrl() ?? $inscripcion?->participantes->first()?->fotoUrl();
+                    $tieneFoto = (bool) ($inscripcion?->presentacion?->foto ?? $inscripcion?->participantes->first()?->foto);
+                @endphp
+
+                @if ($fotoActualUrl)
+                    <div class="relative shrink-0">
+                        <img src="{{ $fotoActualUrl }}" alt="Foto actual"
+                             class="h-20 w-20 rounded-xl object-cover border border-slate-200 shadow-sm">
+                    </div>
+                @endif
+
+                <div class="flex-1">
+                    <input type="file" id="foto" name="foto" accept="image/*"
+                           class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer" />
+                    <x-input-error :messages="$errors->get('foto')" class="mt-1" />
+                    <p class="mt-1 text-xs text-slate-400">Formatos permitidos: JPG, PNG, WEBP (máx. 4MB). Si se deja vacío, se mantendrá la foto actual o no se cargará imagen.</p>
+                </div>
+
+                @if ($tieneFoto)
+                    <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                        <label class="inline-flex items-center text-xs text-rose-600 font-semibold cursor-pointer">
+                            <input type="checkbox" name="eliminar_foto" value="1" class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 mr-1.5">
+                            Eliminar foto actual
+                        </label>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 
     <div class="mt-6">
