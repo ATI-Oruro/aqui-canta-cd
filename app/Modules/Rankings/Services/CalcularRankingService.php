@@ -14,24 +14,33 @@ use Illuminate\Support\Collection;
 class CalcularRankingService
 {
     /**
-     * Calcula y retorna el ranking de una categoría, ordenado por nota final descendente.
+     * Calcula y retorna el ranking de una categoría o general, ordenado por nota final descendente.
      * Enmascara la identidad y calificaciones del jurado secreto para la vista pública
      * si la categoría no ha sido revelada.
      *
      * @return Collection<int, array<string, mixed>>
      */
-    public function rankingPorCategoria(Categoria $categoria, ?Fase $fase = null, bool $esPublico = true): Collection
+    public function rankingPorCategoria(?Categoria $categoria = null, ?Fase $fase = null, bool $esPublico = true, ?int $departamentoId = null): Collection
     {
         $faseEnum = $fase?->fase ?? FaseEnum::FINAL;
-        $estaRevelada = $categoria->estaRevelada();
+        $estaRevelada = $categoria ? $categoria->estaRevelada() : false;
 
-        $presentaciones = Presentacion::query()
+        $query = Presentacion::query()
             ->select('presentaciones.*')
             ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
             ->join('fases', 'inscripciones.id_fase', '=', 'fases.id')
-            ->where('inscripciones.id_categoria', $categoria->id)
-            ->where('fases.fase', $faseEnum->value)
-            ->with([
+            ->where('fases.fase', $faseEnum->value);
+
+        if ($categoria !== null) {
+            $query->where('inscripciones.id_categoria', $categoria->id);
+        }
+
+        if ($departamentoId !== null && $departamentoId > 0) {
+            $query->where('inscripciones.id_departamento', $departamentoId);
+        }
+
+        $presentaciones = $query->with([
+                'inscripcion.categoria',
                 'inscripcion.participantes',
                 'inscripcion.departamento',
                 'jurados.usuario',
@@ -41,28 +50,44 @@ class CalcularRankingService
             ->orderBy('presentaciones.id')
             ->get();
 
-        $ranking = collect();
-        $posicion = 1;
-        $notaAnterior = null;
-        $posicionReal = 1;
+        $items = collect();
 
-        foreach ($presentaciones as $index => $presentacion) {
-            $notaFinal = $presentacion->nota_final !== null ? (float) $presentacion->nota_final : null;
+        foreach ($presentaciones as $presentacion) {
+            $catPresentacion = $presentacion->inscripcion?->categoria;
+            $catRevelada = $catPresentacion ? $catPresentacion->estaRevelada() : $estaRevelada;
+            $catFinalizada = (bool) ($catPresentacion?->finalizada ?? false);
 
-            if ($notaFinal !== null) {
-                if ($notaAnterior !== null && $notaFinal < $notaAnterior) {
-                    $posicion = $posicionReal;
+            // Si es público y la categoría aún NO está revelada/finalizada,
+            // la nota en puntaje final no contempla la nota del jurado secreto
+            if ($esPublico && ! $catRevelada && $presentacion->jurados->contains('es_secreto', true)) {
+                $juradosVisibles = $presentacion->jurados->filter(function (JuradoPresentacion $jp) {
+                    $esSecreto = (bool) $jp->es_secreto;
+                    if ($esSecreto) {
+                        return false;
+                    }
+                    $cal = $jp->calificacion;
+                    return $cal !== null && in_array($cal->estado, [CalificacionEstadoEnum::EMITIDO, CalificacionEstadoEnum::CORREGIDO], true) && $cal->nota_total !== null;
+                });
+
+                $tieneVotoSecreto = $presentacion->jurados->contains(function (JuradoPresentacion $jp) {
+                    return (bool) $jp->es_secreto && $jp->calificacion !== null && in_array($jp->calificacion->estado, [CalificacionEstadoEnum::EMITIDO, CalificacionEstadoEnum::CORREGIDO], true);
+                });
+
+                if ($tieneVotoSecreto && $juradosVisibles->isNotEmpty()) {
+                    $notaFinal = round($juradosVisibles->sum(fn ($jp) => (float) $jp->calificacion->nota_total) / $juradosVisibles->count(), 2);
+                } else {
+                    $notaFinal = $presentacion->nota_final !== null ? (float) $presentacion->nota_final : null;
                 }
-                $notaAnterior = $notaFinal;
-                $posicionReal++;
+            } else {
+                $notaFinal = $presentacion->nota_final !== null ? (float) $presentacion->nota_final : null;
             }
 
             // Desglose de jurados
-            $juradosData = $presentacion->jurados->map(function (JuradoPresentacion $jp) use ($esPublico, $estaRevelada) {
+            $juradosData = $presentacion->jurados->map(function (JuradoPresentacion $jp) use ($esPublico, $catRevelada) {
                 $usuario = $jp->usuario;
                 $calificacion = $jp->calificacion;
                 $esSecreto = (bool) $jp->es_secreto;
-                $ocultar = $esPublico && $esSecreto && ! $estaRevelada;
+                $ocultar = $esPublico && $esSecreto && ! $catRevelada;
 
                 return [
                     'jurado_id' => $ocultar ? null : $usuario?->id,
@@ -79,21 +104,130 @@ class CalcularRankingService
                 ];
             });
 
-            $ranking->push([
+            $tieneJuradoSecreto = $presentacion->jurados->contains('es_secreto', true);
+            $juradosCalificados = $presentacion->jurados->filter(fn ($jp) => $jp->calificacion && in_array($jp->calificacion->estado, [CalificacionEstadoEnum::EMITIDO, CalificacionEstadoEnum::CORREGIDO], true))->count();
+
+            $items->push([
                 'id' => $presentacion->id,
-                'posicion' => $notaFinal !== null ? $posicion : '—',
                 'nombre' => $presentacion->nombreMostrado(),
+                'categoria' => $catPresentacion?->categoria ?? '—',
+                'categoria_id' => $catPresentacion?->id,
                 'departamento' => $presentacion->inscripcion?->departamento?->nombre,
+                'departamento_id' => $presentacion->inscripcion?->id_departamento,
                 'participantes' => $presentacion->inscripcion?->participantes->pluck('nombre_completo')->all() ?? [],
-                'foto_url' => $presentacion->foto_url ?? $presentacion->inscripcion?->participantes->first()?->foto_url,
+                'foto_url' => $presentacion->fotoUrl(),
                 'estado' => $presentacion->estado?->value,
                 'estado_label' => $presentacion->estado?->label(),
                 'nota_final' => $notaFinal,
+                'categoria_finalizada' => $catFinalizada,
+                'categoria_revelada' => $catRevelada,
+                'tiene_jurado_secreto' => $tieneJuradoSecreto,
+                'jurados_calificados_count' => $juradosCalificados,
+                'jurados_total_count' => $presentacion->jurados->count(),
                 'jurados' => $juradosData,
             ]);
         }
 
+        // Ordenar por nota_final descendente y asignar posición
+        $sorted = $items->sort(function ($a, $b) {
+            if ($a['nota_final'] === null && $b['nota_final'] === null) {
+                return $a['id'] <=> $b['id'];
+            }
+            if ($a['nota_final'] === null) {
+                return 1;
+            }
+            if ($b['nota_final'] === null) {
+                return -1;
+            }
+            if ($a['nota_final'] === $b['nota_final']) {
+                return $a['id'] <=> $b['id'];
+            }
+            return $b['nota_final'] <=> $a['nota_final'];
+        })->values();
+
+        $ranking = collect();
+        $posicion = 1;
+        $notaAnterior = null;
+        $posicionReal = 1;
+
+        foreach ($sorted as $item) {
+            $nota = $item['nota_final'];
+            if ($nota !== null) {
+                if ($notaAnterior !== null && $nota < $notaAnterior) {
+                    $posicion = $posicionReal;
+                }
+                $notaAnterior = $nota;
+                $posicionReal++;
+                $item['posicion'] = $posicion;
+            } else {
+                $item['posicion'] = '—';
+            }
+            $ranking->push($item);
+        }
+
         return $ranking;
+    }
+
+    /**
+     * Retorna conteo de presentaciones agrupado por departamento para los filtros del sidebar.
+     *
+     * @return Collection<int, array{id: int, nombre: string, total: int}>
+     */
+    public function conteoDepartamentos(?int $categoriaId = null, ?Fase $fase = null): Collection
+    {
+        $faseEnum = $fase?->fase ?? FaseEnum::FINAL;
+
+        $departamentos = \App\Modules\Departamentos\Models\Departamento::orderBy('nombre')->get();
+
+        return $departamentos->map(function ($depto) use ($categoriaId, $faseEnum) {
+            $query = Presentacion::query()
+                ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
+                ->join('fases', 'inscripciones.id_fase', '=', 'fases.id')
+                ->where('fases.fase', $faseEnum->value)
+                ->where('inscripciones.id_departamento', $depto->id);
+
+            if ($categoriaId !== null && $categoriaId > 0) {
+                $query->where('inscripciones.id_categoria', $categoriaId);
+            }
+
+            return [
+                'id' => $depto->id,
+                'nombre' => $depto->nombre,
+                'total' => $query->count(),
+            ];
+        });
+    }
+
+    /**
+     * Retorna conteo de presentaciones agrupado por categoría para los filtros del sidebar.
+     *
+     * @return Collection<int, array{id: int, nombre: string, total: int, finalizada: bool, revelada: bool}>
+     */
+    public function conteoCategorias(?int $departamentoId = null, ?Fase $fase = null): Collection
+    {
+        $faseEnum = $fase?->fase ?? FaseEnum::FINAL;
+
+        $categorias = Categoria::orderBy('id')->get();
+
+        return $categorias->map(function (Categoria $cat) use ($departamentoId, $faseEnum) {
+            $query = Presentacion::query()
+                ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
+                ->join('fases', 'inscripciones.id_fase', '=', 'fases.id')
+                ->where('fases.fase', $faseEnum->value)
+                ->where('inscripciones.id_categoria', $cat->id);
+
+            if ($departamentoId !== null && $departamentoId > 0) {
+                $query->where('inscripciones.id_departamento', $departamentoId);
+            }
+
+            return [
+                'id' => $cat->id,
+                'nombre' => $cat->categoria,
+                'total' => $query->count(),
+                'finalizada' => (bool) $cat->finalizada,
+                'revelada' => (bool) $cat->estaRevelada(),
+            ];
+        });
     }
 
     /**

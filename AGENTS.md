@@ -994,11 +994,15 @@ Respetar estrictamente estas fases y no adelantar funcionalidades sin necesidad.
 - revelación;
 - actualización del ranking.
 
-## Fase 6 — Ranking público
+## Fase 6 — Ranking público (Completada)
 
-- ranking;
-- actualización en tiempo real;
-- presentación de resultados.
+- diseño de gala oscuro con estética inspirada en La Velada (esquinas doradas, tipografía Cinzel/Outfit y badges elegantes);
+- botón de ingreso oculto para la vista pública;
+- filtrado lateral por departamentos y categorías con conteos dinámicos en badges;
+- visualización intercambiable entre cuadrícula de tarjetas de gala y tabla oficial;
+- terminología solemne ("Puntaje Preliminar" / "Puntaje Oficial Consolidado" / "Calificación Reservada");
+- desglose detallado de mesa de evaluación en modal interactivo;
+- sincronización en tiempo real vía WebSockets en el canal `ranking` y `presentaciones`.
 
 ## Fase 7 — Reportes y auditoría
 
