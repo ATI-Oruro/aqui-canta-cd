@@ -43,8 +43,33 @@ class AsignarJuradosService
     }
 
     /**
+     * Obtiene el jurado secreto asignado a una categoría en la etapa final (si existe).
+     */
+    public function juradoSecretoDeCategoria(?\App\Modules\Categorias\Models\Categoria $categoria): ?Usuario
+    {
+        if (! $categoria) {
+            return null;
+        }
+
+        if ($categoria->jurado_secreto_usuario_id) {
+            return $categoria->juradoSecreto ?? Usuario::find($categoria->jurado_secreto_usuario_id);
+        }
+
+        $asignacionSecreta = JuradoPresentacion::where('es_secreto', true)
+            ->whereHas('presentacion.inscripcion', function ($query) use ($categoria) {
+                $query->where('id_categoria', $categoria->id)
+                    ->whereHas('fase', fn ($f) => $f->where('fase', \App\Support\Enums\FaseEnum::FINAL->value));
+            })
+            ->with('usuario')
+            ->first();
+
+        return $asignacionSecreta?->usuario;
+    }
+
+    /**
      * Asigna automáticamente los puestos faltantes, rotando a los jurados
      * con menos asignaciones en el festival para distribuir la carga.
+     * En la Etapa Final, garantiza la inclusión y designación de 1 jurado secreto.
      *
      * @return list<JuradoPresentacion>
      */
@@ -67,13 +92,44 @@ class AsignarJuradosService
             ));
         }
 
-        $elegidos = $disponibles->take($faltantes);
+        $esFinal = ! $presentacion->esPreseleccion();
+        $categoria = $presentacion->inscripcion?->categoria;
+        $secretoCategoria = $esFinal ? $this->juradoSecretoDeCategoria($categoria) : null;
+        $yaTieneSecreto = $presentacion->jurados()->where('es_secreto', true)->exists();
 
-        return DB::transaction(function () use ($presentacion, $elegidos) {
+        // Si es final y la categoría ya tiene un jurado secreto pero esta presentación no lo tiene asignado
+        $elegidos = collect();
+        if ($esFinal && $secretoCategoria && ! $yaTieneSecreto) {
+            $juradoSecreto = $disponibles->firstWhere('id', $secretoCategoria->id);
+            if ($juradoSecreto) {
+                $elegidos->push($juradoSecreto);
+                $disponibles = $disponibles->reject(fn ($j) => $j->id === $secretoCategoria->id)->values();
+                $faltantes--;
+            }
+        }
+
+        if ($faltantes > 0) {
+            $elegidos = $elegidos->concat($disponibles->take($faltantes));
+        }
+
+        return DB::transaction(function () use ($presentacion, $elegidos, $esFinal, $secretoCategoria, $yaTieneSecreto) {
             $creadas = [];
+            $secretoDesignado = $yaTieneSecreto;
 
-            foreach ($elegidos as $jurado) {
-                $creadas[] = $this->crearAsignacion($presentacion, $jurado);
+            foreach ($elegidos as $index => $jurado) {
+                $esSecreto = false;
+
+                if ($esFinal && ! $secretoDesignado) {
+                    if ($secretoCategoria && $jurado->id === $secretoCategoria->id) {
+                        $esSecreto = true;
+                        $secretoDesignado = true;
+                    } elseif (! $secretoCategoria && ($index === count($elegidos) - 1 || count($elegidos) === 5)) {
+                        $esSecreto = true;
+                        $secretoDesignado = true;
+                    }
+                }
+
+                $creadas[] = $this->crearAsignacion($presentacion, $jurado, $esSecreto);
             }
 
             return $creadas;
@@ -84,9 +140,10 @@ class AsignarJuradosService
      * Reemplaza por completo la lista de jurados de una presentación.
      *
      * @param  list<int>  $usuarioIds
+     * @param  int|null  $secretoUsuarioId
      * @return list<JuradoPresentacion>
      */
-    public function asignar(Presentacion $presentacion, array $usuarioIds): array
+    public function asignar(Presentacion $presentacion, array $usuarioIds, ?int $secretoUsuarioId = null): array
     {
         $requerido = $this->cantidadRequerida($presentacion);
 
@@ -98,26 +155,70 @@ class AsignarJuradosService
             ));
         }
 
+        // Validación de jurado secreto
+        if ($presentacion->esPreseleccion() && $secretoUsuarioId !== null) {
+            throw new \UnexpectedValueException('La etapa de preselección no permite asignar un jurado secreto.');
+        }
+
+        if ($secretoUsuarioId !== null && ! in_array((int) $secretoUsuarioId, array_map('intval', $usuarioIds), true)) {
+            throw new \UnexpectedValueException('El jurado secreto designado debe pertenecer al grupo de jurados asignados.');
+        }
+
         $jurados = $this->juradosValidos($usuarioIds);
 
         if ($jurados->count() !== $requerido) {
             throw new \UnexpectedValueException('Algunos de los usuarios indicados no son jurados válidos.');
         }
 
-        return DB::transaction(function () use ($presentacion, $jurados) {
+        // Si es etapa final y no se especificó $secretoUsuarioId, verificar si la categoría ya tiene un jurado secreto
+        if (! $presentacion->esPreseleccion() && $secretoUsuarioId === null) {
+            $secretoCat = $this->juradoSecretoDeCategoria($presentacion->inscripcion?->categoria);
+            if ($secretoCat && in_array($secretoCat->id, array_map('intval', $usuarioIds), true)) {
+                $secretoUsuarioId = $secretoCat->id;
+            }
+        }
+
+        return DB::transaction(function () use ($presentacion, $jurados, $secretoUsuarioId) {
             JuradoPresentacion::where('id_presentacion', $presentacion->id)->delete();
 
             $creadas = [];
 
             foreach ($jurados as $jurado) {
-                $creadas[] = $this->crearAsignacion($presentacion, $jurado);
+                $esSecreto = ($secretoUsuarioId !== null && (int) $jurado->id === (int) $secretoUsuarioId);
+                $creadas[] = $this->crearAsignacion($presentacion, $jurado, $esSecreto);
             }
 
             return $creadas;
         });
     }
 
-    public function agregarJurado(Presentacion $presentacion, int $usuarioId): JuradoPresentacion
+    public function designarJuradoSecreto(Presentacion $presentacion, int $usuarioId): JuradoPresentacion
+    {
+        if ($presentacion->esPreseleccion()) {
+            throw new \UnexpectedValueException('La etapa de preselección no permite jurado secreto.');
+        }
+
+        $asignacion = JuradoPresentacion::where('id_presentacion', $presentacion->id)
+            ->where('id_usuario', $usuarioId)
+            ->first();
+
+        if (! $asignacion) {
+            throw new \UnexpectedValueException('El usuario indicado no está asignado como jurado en esta presentación.');
+        }
+
+        return DB::transaction(function () use ($presentacion, $asignacion) {
+            // Desmarcar cualquier otro jurado secreto en esta presentación
+            JuradoPresentacion::where('id_presentacion', $presentacion->id)
+                ->where('id', '!=', $asignacion->id)
+                ->update(['es_secreto' => false]);
+
+            $asignacion->update(['es_secreto' => true]);
+
+            return $asignacion;
+        });
+    }
+
+    public function agregarJurado(Presentacion $presentacion, int $usuarioId, bool $esSecreto = false): JuradoPresentacion
     {
         if ($this->estaCompleta($presentacion)) {
             throw new \UnexpectedValueException(sprintf(
@@ -126,9 +227,13 @@ class AsignarJuradosService
             ));
         }
 
+        if ($presentacion->esPreseleccion() && $esSecreto) {
+            throw new \UnexpectedValueException('La etapa de preselección no permite jurado secreto.');
+        }
+
         $jurado = $this->juradoValido($usuarioId);
 
-        return $this->crearAsignacion($presentacion, $jurado);
+        return $this->crearAsignacion($presentacion, $jurado, $esSecreto);
     }
 
     public function removerJurado(Presentacion $presentacion, int $usuarioId): void
@@ -147,13 +252,13 @@ class AsignarJuradosService
             ->delete();
     }
 
-    private function crearAsignacion(Presentacion $presentacion, Usuario $jurado): JuradoPresentacion
+    private function crearAsignacion(Presentacion $presentacion, Usuario $jurado, bool $esSecreto = false): JuradoPresentacion
     {
         return JuradoPresentacion::firstOrCreate([
             'id_presentacion' => $presentacion->id,
             'id_usuario' => $jurado->id,
         ], [
-            'es_secreto' => false,
+            'es_secreto' => $esSecreto,
             'es_controlador' => $jurado->puedeControlarTiempo(),
             'estado' => JuradoPresentacionEstadoEnum::ASIGNADO,
         ]);

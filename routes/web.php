@@ -57,6 +57,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
         Route::post('/asignar', [JuradoController::class, 'asignar'])->name('asignar');
         Route::post('/auto-asignar', [JuradoController::class, 'autoAsignar'])->name('auto-asignar');
         Route::post('/remover', [JuradoController::class, 'remover'])->name('remover');
+        Route::get('/secreto', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'index'])->name('secreto');
+        Route::post('/secreto/designar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'designar'])->name('secreto.designar');
+    });
+
+    Route::prefix('categorias')->name('categorias.')->group(function () {
+        Route::post('/{categoria}/revelar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'revelar'])->name('revelar');
+        Route::post('/{categoria}/ocultar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'ocultar'])->name('ocultar');
+        Route::post('/{categoria}/finalizar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'finalizar'])->name('finalizar');
+        Route::post('/{categoria}/reabrir', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'reabrir'])->name('reabrir');
     });
 
     Route::prefix('calificaciones')->name('calificaciones.')->group(function () {

@@ -12,9 +12,10 @@
           data-escenario-id="{{ $presentacion->id ?? '' }}"
           data-estado-actual="{{ $presentacion?->estado?->value ?? '' }}"
           data-cronometro-corriendo="{{ ($cronometro['corriendo'] ?? false) ? '1' : '0' }}"
+          data-cronometro-iniciado-at="{{ $cronometro['cronometro_iniciado_at'] ?? $presentacion?->cronometro_iniciado_at?->toIso8601String() ?? '' }}"
+          data-cronometro-finalizado-at="{{ $cronometro['cronometro_finalizado_at'] ?? $presentacion?->cronometro_finalizado_at?->toIso8601String() ?? '' }}"
           data-segundos-restantes="{{ $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60) }}"
-          data-tiempo-maximo="{{ $presentacion->tiempo_maximo ?? 10 }}"
-          data-cronometro-finalizado-at="{{ $presentacion?->cronometro_finalizado_at?->toIso8601String() ?? '' }}">
+          data-tiempo-maximo="{{ $presentacion->tiempo_maximo ?? 10 }}">
 
         <!-- Barra Superior Compacta -->
         <header class="px-4 py-2 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between shrink-0">
@@ -91,7 +92,7 @@
 
                         <!-- Controles de Cronómetro para Jurado Controlador / Admin -->
                         @if (($puedeControlar ?? false) && $presentacion !== null)
-                            <div class="mt-4 p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row items-center gap-2.5">
+                            <div data-control-tiempo-caja class="mt-4 p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row items-center gap-2.5">
                                 <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                     Control de Tiempo:
@@ -182,14 +183,12 @@
                                             @endforeach
                                         </div>
 
-                                        @if ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO)
-                                            <div class="pt-1">
-                                                <a href="{{ route('jurado.calificaciones.corregir.form', $presentacion) }}"
-                                                   class="block text-center py-2 px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
-                                                    ✏️ Corregir calificación
-                                                </a>
-                                            </div>
-                                        @endif
+                                        <div data-contenedor-corregir class="{{ ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'pt-1' : 'hidden pt-1' }}">
+                                            <a href="{{ route('jurado.calificaciones.corregir.form', $presentacion) }}"
+                                               class="block text-center py-2 px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
+                                                ✏️ Corregir calificación
+                                            </a>
+                                        </div>
                                     </div>
 
                                 @else

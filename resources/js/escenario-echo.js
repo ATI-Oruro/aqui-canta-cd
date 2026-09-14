@@ -28,9 +28,31 @@ export function inicializarEscenario() {
 
     let presentacionId = parseInt(raiz.dataset.escenarioId || raiz.dataset.escenarioEcho || '0', 10) || null;
     let corriendo = raiz.dataset.cronometroCorriendo === '1';
-    let segundosRestantes = parseInt(raiz.dataset.segundosRestantes || '0', 10);
+    let iniciadoAt = raiz.dataset.cronometroIniciadoAt ? new Date(raiz.dataset.cronometroIniciadoAt).getTime() : null;
+    let finalizadoAt = raiz.dataset.cronometroFinalizadoAt ? new Date(raiz.dataset.cronometroFinalizadoAt).getTime() : null;
     let tiempoMaximo = parseInt(raiz.dataset.tiempoMaximo || '10', 10);
+    let segundosRestantes = parseInt(raiz.dataset.segundosRestantes || '0', 10);
     let recargaPendiente = false;
+
+    function calcularSegundosRestantes() {
+        const totalSegundos = tiempoMaximo * 60;
+
+        if (corriendo && iniciadoAt) {
+            const ahora = Date.now();
+            const transcurridoSegundos = Math.max(0, (ahora - iniciadoAt) / 1000);
+            return Math.max(0, Math.ceil(totalSegundos - transcurridoSegundos));
+        }
+
+        if (finalizadoAt && iniciadoAt) {
+            const transcurridoSegundos = Math.max(0, (finalizadoAt - iniciadoAt) / 1000);
+            return Math.max(0, Math.ceil(totalSegundos - transcurridoSegundos));
+        }
+
+        return Math.max(0, segundosRestantes);
+    }
+
+    // Inicializar cálculo sincronizado
+    segundosRestantes = calcularSegundosRestantes();
 
     function formatear(segundos) {
         const seguros = Math.max(0, Math.ceil(segundos));
@@ -104,16 +126,59 @@ export function inicializarEscenario() {
         if (spanIcono) spanIcono.textContent = '⏳';
     }
 
+    function mostrarModoFinalizado(estadoLabel) {
+        corriendo = false;
+        if (estadoEl) {
+            estadoEl.textContent = estadoLabel || 'Finalizado';
+            actualizarEstilosEstado('FINALIZADO');
+        }
+        if (avisoFinalizadoEl) {
+            avisoFinalizadoEl.classList.remove('hidden');
+            avisoFinalizadoEl.classList.add('block');
+        }
+        habilitarBotonCalificar();
+
+        // Mostrar botón de corrección de calificación en jurados que ya emitieron su voto
+        const contenedoresCorregir = document.querySelectorAll('[data-contenedor-corregir]');
+        contenedoresCorregir.forEach(el => {
+            el.classList.remove('hidden');
+            el.classList.add('block', 'pt-1');
+        });
+
+        // Si existe caja de control de cronómetro y está finalizado, actualizar estado visual
+        const controlCaja = document.querySelector('[data-control-tiempo-caja]');
+        if (controlCaja) {
+            const formBtn = controlCaja.querySelector('form');
+            if (formBtn) {
+                formBtn.innerHTML = '<span class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+            }
+        }
+    }
+
     function aplicarCronometro(datos) {
         if (typeof datos.corriendo === 'boolean') {
             corriendo = datos.corriendo;
             if (corriendo) {
                 habilitarBotonCalificar();
+                if (avisoFinalizadoEl) {
+                    avisoFinalizadoEl.classList.add('hidden');
+                    avisoFinalizadoEl.classList.remove('block');
+                }
             }
         }
-        if (typeof datos.segundos_restantes === 'number') {
-            segundosRestantes = datos.segundos_restantes;
+
+        if (datos.cronometro_iniciado_at) {
+            iniciadoAt = new Date(datos.cronometro_iniciado_at).getTime();
+        } else if (datos.estado === 'EN_ESCENARIO') {
+            iniciadoAt = null;
         }
+
+        if (datos.cronometro_finalizado_at) {
+            finalizadoAt = new Date(datos.cronometro_finalizado_at).getTime();
+        } else if (corriendo) {
+            finalizadoAt = null;
+        }
+
         if (typeof datos.tiempo_maximo === 'number') {
             tiempoMaximo = datos.tiempo_maximo;
             if (tiempoMaxDisplayEl) {
@@ -124,19 +189,27 @@ export function inicializarEscenario() {
             }
         }
 
-        // Si el cronómetro fue detenido o finalizado
-        if (!corriendo && datos.cronometro_finalizado_at) {
-            if (estadoEl) {
-                estadoEl.textContent = 'Finalizado';
-                actualizarEstilosEstado('FINALIZADO');
-            }
-            if (avisoFinalizadoEl) {
-                avisoFinalizadoEl.classList.remove('hidden');
-                avisoFinalizadoEl.classList.add('block');
-            }
-            habilitarBotonCalificar();
+        if (typeof datos.segundos_restantes === 'number') {
+            segundosRestantes = datos.segundos_restantes;
         }
 
+        // Si el cronómetro fue detenido o finalizado
+        if (!corriendo && (datos.cronometro_finalizado_at || datos.estado === 'FINALIZADO')) {
+            mostrarModoFinalizado(datos.estado_label);
+        } else if (!corriendo && datos.estado === 'EN_ESCENARIO') {
+            deshabilitarBotonCalificar();
+            if (estadoEl) {
+                estadoEl.textContent = datos.estado_label ?? 'En escenario';
+                actualizarEstilosEstado('EN_ESCENARIO');
+            }
+        } else if (corriendo && datos.estado === 'PARTICIPANDO') {
+            if (estadoEl) {
+                estadoEl.textContent = datos.estado_label ?? 'Participando';
+                actualizarEstilosEstado('PARTICIPANDO');
+            }
+        }
+
+        segundosRestantes = calcularSegundosRestantes();
         renderizar();
     }
 
@@ -212,21 +285,29 @@ export function inicializarEscenario() {
             }
         }
 
+        if (datos.cronometro_iniciado_at) {
+            iniciadoAt = new Date(datos.cronometro_iniciado_at).getTime();
+        } else if (datos.estado === 'EN_ESCENARIO') {
+            iniciadoAt = null;
+        }
+
+        if (datos.cronometro_finalizado_at) {
+            finalizadoAt = new Date(datos.cronometro_finalizado_at).getTime();
+        } else if (datos.estado === 'PARTICIPANDO') {
+            finalizadoAt = null;
+        }
+
         // Gestión del estado
         if (datos.estado === 'FINALIZADO') {
-            corriendo = false;
-            segundosRestantes = 0;
-            if (avisoFinalizadoEl) {
-                avisoFinalizadoEl.classList.remove('hidden');
-                avisoFinalizadoEl.classList.add('block');
-            }
-            habilitarBotonCalificar();
+            mostrarModoFinalizado(datos.estado_label);
         } else if (datos.estado === 'PARTICIPANDO') {
             corriendo = true;
             if (avisoFinalizadoEl) {
                 avisoFinalizadoEl.classList.add('hidden');
                 avisoFinalizadoEl.classList.remove('block');
             }
+            const contenedoresCorregir = document.querySelectorAll('[data-contenedor-corregir]');
+            contenedoresCorregir.forEach(el => el.classList.add('hidden'));
             habilitarBotonCalificar();
         } else if (datos.estado === 'EN_ESCENARIO') {
             corriendo = false;
@@ -235,6 +316,8 @@ export function inicializarEscenario() {
                 avisoFinalizadoEl.classList.add('hidden');
                 avisoFinalizadoEl.classList.remove('block');
             }
+            const contenedoresCorregir = document.querySelectorAll('[data-contenedor-corregir]');
+            contenedoresCorregir.forEach(el => el.classList.add('hidden'));
             deshabilitarBotonCalificar();
         }
 
@@ -242,33 +325,25 @@ export function inicializarEscenario() {
             segundosRestantes = datos.segundos_restantes;
         }
 
+        segundosRestantes = calcularSegundosRestantes();
         renderizar();
     }
 
-    // Intervalo de decremento segundo a segundo
+    // Intervalo de renderizado y sincronización en alta frecuencia (100ms)
+    // Calcula contra la marca de tiempo oficial para evitar desfases o retrasos acumulativos entre clientes
     window.setInterval(() => {
-        // Cronómetro de presentación
         if (corriendo) {
-            if (segundosRestantes > 1) {
-                segundosRestantes -= 1;
-            } else if (segundosRestantes === 1) {
-                segundosRestantes = 0;
-                corriendo = false;
-                
-                // Actualizar estado visual a FINALIZADO
-                if (estadoEl) {
-                    estadoEl.textContent = 'Finalizado';
-                    actualizarEstilosEstado('FINALIZADO');
+            const nuevosSegundos = calcularSegundosRestantes();
+            if (nuevosSegundos !== segundosRestantes) {
+                segundosRestantes = nuevosSegundos;
+                if (segundosRestantes <= 0) {
+                    segundosRestantes = 0;
+                    mostrarModoFinalizado();
                 }
-                if (avisoFinalizadoEl) {
-                    avisoFinalizadoEl.classList.remove('hidden');
-                    avisoFinalizadoEl.classList.add('block');
-                }
-                habilitarBotonCalificar();
+                renderizar();
             }
-            renderizar();
         }
-    }, 1000);
+    }, 100);
 
     // Escuchar el canal privado 'presentaciones'
     window.Echo.private('presentaciones')

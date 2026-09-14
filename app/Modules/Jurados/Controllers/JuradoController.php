@@ -74,12 +74,14 @@ class JuradoController
             'presentacion_id' => ['required', 'integer', 'exists:presentaciones,id'],
             'usuario_ids' => ['required', 'array'],
             'usuario_ids.*' => ['integer'],
+            'secreto_usuario_id' => ['nullable', 'integer'],
         ]);
 
         $presentacion = Presentacion::findOrFail((int) $validados['presentacion_id']);
+        $secretoUsuarioId = isset($validados['secreto_usuario_id']) && $validados['secreto_usuario_id'] !== '' ? (int) $validados['secreto_usuario_id'] : null;
 
         try {
-            $this->asignacion->asignar($presentacion, $validados['usuario_ids']);
+            $this->asignacion->asignar($presentacion, $validados['usuario_ids'], $secretoUsuarioId);
         } catch (\UnexpectedValueException $e) {
             return back()->with('error', $e->getMessage());
         }
