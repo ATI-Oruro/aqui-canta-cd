@@ -224,4 +224,20 @@ class PublicoRankingTest extends TestCase
         $response->assertDontSee('En Escenario');
         $response->assertDontSee('Directorio Oficial');
     }
+
+    public function test_vista_publica_incluye_sidebar_categorias_y_pantalla_completa(): void
+    {
+        $data = $this->setupEscenarioPublico();
+
+        $response = $this->get(route('inicio', ['categoria' => $data['categoria1']->id]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Solista vocal');
+        $response->assertSee('Mateo Flores');
+        $response->assertSee('Pantalla Completa');
+        $response->assertSee('toggleFullscreen');
+        $response->assertSee('sidebarCategorias');
+        $response->assertSee('13 Categorías Oficiales');
+    }
 }
+
