@@ -181,7 +181,7 @@ class RegistrarInscripcionService
                     ?? $this->nombreCompleto($datos['integrantes'][0] ?? null);
 
                 if ($cambiaCategoria && $presentacion->estado === PresentacionEstadoEnum::POR_PARTICIPAR) {
-                    $presentacion->tiempo_maximo = $categoria->tiempo_presentacion;
+                    $presentacion->tiempo_maximo = $categoria->tiempoParaFase($fase?->fase);
                 }
 
                 $presentacion->save();
@@ -240,7 +240,7 @@ class RegistrarInscripcionService
             'nombre_presentacion' => $datos['nombre_presentacion']
                 ?? $this->nombreCompleto($datos['integrantes'][0] ?? null),
             'estado' => PresentacionEstadoEnum::POR_PARTICIPAR,
-            'tiempo_maximo' => $categoria->tiempo_presentacion,
+            'tiempo_maximo' => $categoria->tiempoParaFase($fase?->fase),
         ]);
 
         return $inscripcion;

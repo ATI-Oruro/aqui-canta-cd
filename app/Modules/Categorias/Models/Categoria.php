@@ -83,6 +83,21 @@ class Categoria extends Model
         return preg_match('/d[uú]o|tr[ií]o|estudiantina|especial/i', $this->categoria) === 1;
     }
 
+    public function esNusta(): bool
+    {
+        return mb_stripos($this->categoria, 'ñusta') !== false || mb_stripos($this->categoria, 'nusta') !== false;
+    }
+
+    public function tiempoParaFase(\App\Support\Enums\FaseEnum|string|null $fase = null): int
+    {
+        $faseStr = $fase instanceof \App\Support\Enums\FaseEnum ? $fase->value : (string) $fase;
+        if ($this->esNusta() && strtoupper($faseStr) === \App\Support\Enums\FaseEnum::FINAL->value) {
+            return 15;
+        }
+
+        return (int) $this->tiempo_presentacion;
+    }
+
     public function estaFinalizada(): bool
     {
         return (bool) $this->finalizada;
