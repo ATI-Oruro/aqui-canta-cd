@@ -277,7 +277,8 @@
                                                                    value="{{ $valorPrevio }}"
                                                                    required
                                                                    class="w-16 py-1 px-1.5 text-center text-xs font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
-                                                                   oninput="sincronizarDesdeInput({{ $idParam }})">
+                                                                   oninput="sincronizarDesdeInput({{ $idParam }})"
+                                                                   onblur="validarLimiteBlur(this)">
                                                         </div>
 
                                                         @error("valores.{$idParam}")
@@ -406,7 +407,13 @@
                 const badge = document.getElementById('badge_nota_' + idParam);
 
                 if (slider && input) {
-                    const val = parseFloat(slider.value) || 0;
+                    const min = parseFloat(slider.min) || 0;
+                    const max = parseFloat(slider.max) || 100;
+                    let val = parseFloat(slider.value) || 0;
+                    if (val > max) val = max;
+                    if (val < min) val = min;
+
+                    slider.value = val;
                     input.value = val;
                     if (badge) badge.textContent = val.toFixed(1);
                     recalcularTotal();
@@ -419,17 +426,50 @@
                 const badge = document.getElementById('badge_nota_' + idParam);
 
                 if (slider && input) {
-                    const val = parseFloat(input.value) || 0;
-                    slider.value = val;
-                    if (badge) badge.textContent = val.toFixed(1);
+                    const min = parseFloat(input.min) || 0;
+                    const max = parseFloat(input.max) || 100;
+                    let val = parseFloat(input.value);
+
+                    if (!isNaN(val)) {
+                        if (val > max) {
+                            val = max;
+                            input.value = max;
+                        } else if (val < 0) {
+                            val = min;
+                            input.value = min;
+                        }
+                        slider.value = Math.max(min, Math.min(max, val));
+                        if (badge) badge.textContent = val.toFixed(1);
+                    }
                     recalcularTotal();
                 }
+            }
+
+            function validarLimiteBlur(input) {
+                const min = parseFloat(input.min) || 0;
+                const max = parseFloat(input.max) || 100;
+                let val = parseFloat(input.value);
+
+                if (isNaN(val) || val < min) {
+                    input.value = min;
+                } else if (val > max) {
+                    input.value = max;
+                }
+                const idParam = input.id.replace('input_', '');
+                sincronizarDesdeInput(idParam);
             }
 
             function recalcularTotal() {
                 let total = 0;
                 document.querySelectorAll('input[type="number"][name^="valores"]').forEach(inp => {
-                    const val = parseFloat(inp.value) || 0;
+                    const min = parseFloat(inp.min) || 0;
+                    const max = parseFloat(inp.max) || 100;
+                    let val = parseFloat(inp.value);
+                    if (isNaN(val) || val < min) {
+                        val = min;
+                    } else if (val > max) {
+                        val = max;
+                    }
                     total += val;
                 });
 
@@ -444,6 +484,9 @@
             }
 
             function abrirModalConfirmacion() {
+                document.querySelectorAll('input[type="number"][name^="valores"]').forEach(inp => {
+                    validarLimiteBlur(inp);
+                });
                 recalcularTotal();
                 const modal = document.getElementById('modalConfirmacion');
                 if (modal) modal.classList.remove('hidden');
