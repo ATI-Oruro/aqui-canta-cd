@@ -37,5 +37,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('asignarJurados', function (Usuario $usuario) {
             return $usuario->esAdmin();
         });
+
+        Gate::define('controlarMesa', function (Usuario $usuario) {
+            return $usuario->esAdmin()
+                || $usuario->puedeControlarTiempo()
+                || JuradoPresentacion::where('id_usuario', $usuario->id)->where('es_controlador', true)->exists();
+        });
     }
 }

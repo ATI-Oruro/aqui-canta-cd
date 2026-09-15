@@ -21,6 +21,7 @@ class Categoria extends Model
         'revelado_at',
         'finalizada',
         'finalizada_at',
+        'es_activa',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Categoria extends Model
         'revelado_at' => 'datetime',
         'finalizada' => 'boolean',
         'finalizada_at' => 'datetime',
+        'es_activa' => 'boolean',
     ];
 
     public function juradoSecreto(): BelongsTo
@@ -124,4 +126,46 @@ class Categoria extends Model
             'finalizada_at' => null,
         ]);
     }
+
+    public function marcarActiva(): void
+    {
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categorias', 'es_activa')) {
+            self::where('es_activa', true)->where('id', '!=', $this->id)->update(['es_activa' => false]);
+            $this->update(['es_activa' => true]);
+        }
+    }
+
+    public static function categoriaActiva(?int $categoriaId = null): ?Categoria
+    {
+        if ($categoriaId !== null && $categoriaId > 0) {
+            $cat = self::find($categoriaId);
+            if ($cat) {
+                return $cat;
+            }
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categorias', 'es_activa')) {
+            $activa = self::where('es_activa', true)->first();
+            if ($activa) {
+                return $activa;
+            }
+        }
+
+        $presEnEscenario = \App\Modules\Presentaciones\Models\Presentacion::query()
+            ->whereIn('estado', [
+                \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value,
+                \App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
+            ])
+            ->with('inscripcion.categoria')
+            ->latest('updated_at')
+            ->first();
+
+        if ($presEnEscenario?->inscripcion?->categoria) {
+            return $presEnEscenario->inscripcion->categoria;
+        }
+
+        return self::whereHas('inscripciones.fase', fn ($f) => $f->where('fase', \App\Support\Enums\FaseEnum::FINAL->value))
+            ->first() ?? self::orderBy('id')->first();
+    }
 }
+

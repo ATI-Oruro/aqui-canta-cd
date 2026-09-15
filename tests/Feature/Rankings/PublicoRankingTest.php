@@ -33,6 +33,7 @@ class PublicoRankingTest extends TestCase
             'categoria' => 'Solista vocal',
             'max_participantes' => 1,
             'tiempo_presentacion' => 10,
+            'es_activa' => true,
         ]);
 
         $categoria2 = Categoria::create([
@@ -61,8 +62,10 @@ class PublicoRankingTest extends TestCase
         $fase = Fase::create(['fase' => FaseEnum::FINAL->value]);
         $oruro = Departamento::create(['nombre' => 'Oruro']);
         $laPaz = Departamento::create(['nombre' => 'La Paz']);
+        $cbba = Departamento::create(['nombre' => 'Cochabamba']);
+        $potosi = Departamento::create(['nombre' => 'Potosí']);
 
-        // Presentación 1 (Oruro, Solista)
+        // Presentación 1 (Oruro, Solista) -> 1° Lugar
         $part1 = Participante::create(['nombre' => 'Mateo', 'paterno' => 'Flores']);
         $insc1 = Inscripcion::create([
             'fecha_inscripcion' => now(),
@@ -80,22 +83,58 @@ class PublicoRankingTest extends TestCase
             'nota_final' => 96.5,
         ]);
 
-        // Presentación 2 (La Paz, Dúo)
+        // Presentación 2 (La Paz, Solista) -> 2° Lugar
         $part2 = Participante::create(['nombre' => 'Valeria', 'paterno' => 'Quiroga']);
         $insc2 = Inscripcion::create([
             'fecha_inscripcion' => now(),
             'id_fase' => $fase->id,
-            'id_categoria' => $categoria2->id,
+            'id_categoria' => $categoria1->id,
             'id_departamento' => $laPaz->id,
             'estado' => InscripcionEstadoEnum::CONFIRMADA,
         ]);
         $insc2->participantes()->attach($part2->id);
         $pres2 = Presentacion::create([
             'id_inscripcion' => $insc2->id,
-            'nombre_presentacion' => 'Dúo Armonía',
+            'nombre_presentacion' => 'Valeria Quiroga',
             'estado' => PresentacionEstadoEnum::FINALIZADO,
             'tiempo_maximo' => 10,
-            'nota_final' => 91.0,
+            'nota_final' => 92.0,
+        ]);
+
+        // Presentación 3 (Cochabamba, Solista) -> 3° Lugar
+        $part3 = Participante::create(['nombre' => 'Carlos', 'paterno' => 'Mendoza']);
+        $insc3 = Inscripcion::create([
+            'fecha_inscripcion' => now(),
+            'id_fase' => $fase->id,
+            'id_categoria' => $categoria1->id,
+            'id_departamento' => $cbba->id,
+            'estado' => InscripcionEstadoEnum::CONFIRMADA,
+        ]);
+        $insc3->participantes()->attach($part3->id);
+        $pres3 = Presentacion::create([
+            'id_inscripcion' => $insc3->id,
+            'nombre_presentacion' => 'Carlos Mendoza',
+            'estado' => PresentacionEstadoEnum::FINALIZADO,
+            'tiempo_maximo' => 10,
+            'nota_final' => 88.0,
+        ]);
+
+        // Presentación 4 (Potosí, Solista) -> 4° Lugar
+        $part4 = Participante::create(['nombre' => 'David', 'paterno' => 'Vargas']);
+        $insc4 = Inscripcion::create([
+            'fecha_inscripcion' => now(),
+            'id_fase' => $fase->id,
+            'id_categoria' => $categoria1->id,
+            'id_departamento' => $potosi->id,
+            'estado' => InscripcionEstadoEnum::CONFIRMADA,
+        ]);
+        $insc4->participantes()->attach($part4->id);
+        $pres4 = Presentacion::create([
+            'id_inscripcion' => $insc4->id,
+            'nombre_presentacion' => 'David Vargas',
+            'estado' => PresentacionEstadoEnum::FINALIZADO,
+            'tiempo_maximo' => 10,
+            'nota_final' => 84.0,
         ]);
 
         // Jurados
@@ -129,7 +168,7 @@ class PublicoRankingTest extends TestCase
             ]);
         }
 
-        return compact('categoria1', 'categoria2', 'oruro', 'laPaz', 'pres1', 'pres2', 'jurados');
+        return compact('categoria1', 'categoria2', 'oruro', 'laPaz', 'pres1', 'pres2', 'pres3', 'pres4', 'jurados');
     }
 
     public function test_vista_publica_carga_correctamente_sin_boton_de_ingreso(): void
@@ -145,7 +184,7 @@ class PublicoRankingTest extends TestCase
         $response->assertDontSee('/login');
     }
 
-    public function test_vista_publica_muestra_participaciones_y_calificaciones(): void
+    public function test_vista_publica_muestra_participaciones_de_categoria_activa(): void
     {
         $data = $this->setupEscenarioPublico();
 
@@ -153,20 +192,8 @@ class PublicoRankingTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Mateo Flores');
-        $response->assertSee('Dúo Armonía');
-        $response->assertSee('96.50');
-        $response->assertSee('91.00');
-    }
-
-    public function test_vista_publica_filtra_por_departamento(): void
-    {
-        $data = $this->setupEscenarioPublico();
-
-        $response = $this->get(route('inicio', ['departamento' => $data['oruro']->id]));
-
-        $response->assertStatus(200);
-        $response->assertSee('Mateo Flores');
-        $response->assertDontSee('Dúo Armonía');
+        $response->assertSee('Valeria Quiroga');
+        $response->assertSee('Solista vocal');
     }
 
     public function test_vista_publica_filtra_por_categoria(): void
@@ -176,8 +203,7 @@ class PublicoRankingTest extends TestCase
         $response = $this->get(route('inicio', ['categoria' => $data['categoria2']->id]));
 
         $response->assertStatus(200);
-        $response->assertSee('Dúo Armonía');
-        $response->assertDontSee('Mateo Flores');
+        $response->assertSee('Dúo vocal instrumental');
     }
 
     public function test_vista_publica_enmascara_calificacion_reservada_cuando_no_esta_revelada(): void
@@ -190,13 +216,12 @@ class PublicoRankingTest extends TestCase
         $response = $this->get(route('inicio', ['categoria' => $categoria1->id]));
 
         $response->assertStatus(200);
-        // Debe mostrar "Calificación Reservada" o "En Resguardo" y no el nombre del jurado secreto
-        $response->assertSee('Calificación Reservada');
+        $response->assertSee('🔒 Reservado');
         $juradoSecreto = $data['jurados'][4];
         $response->assertDontSee("{$juradoSecreto->nombre} {$juradoSecreto->paterno}");
     }
 
-    public function test_vista_publica_muestra_puntaje_oficial_al_revelar(): void
+    public function test_vista_publica_muestra_podio_f1_al_revelar(): void
     {
         $data = $this->setupEscenarioPublico();
         $categoria1 = $data['categoria1'];
@@ -207,37 +232,39 @@ class PublicoRankingTest extends TestCase
         $response = $this->get(route('inicio', ['categoria' => $categoria1->id]));
 
         $response->assertStatus(200);
-        $response->assertSee('Puntaje Oficial Consolidado');
-        $response->assertSee("{$juradoSecreto->nombre} {$juradoSecreto->paterno}");
+        $response->assertSee('Podio de Ganadores');
+        $response->assertSee('Primer Lugar');
+        $response->assertSee('Segundo Lugar');
+        $response->assertSee('Tercer Lugar');
+        $response->assertSee('Clasificación General');
+        $response->assertSee('Mateo Flores');
+        $response->assertSee('Valeria Quiroga');
+        $response->assertSee('Carlos Mendoza');
+        $response->assertSee('David Vargas');
+        $response->assertSee('96.50');
     }
 
-    public function test_vista_publica_modo_tabla_y_sin_pestanas_innecesarias(): void
+    public function test_vista_publica_no_incluye_pantalla_completa_ni_tabla_ni_sidebar(): void
     {
         $data = $this->setupEscenarioPublico();
 
-        $response = $this->get(route('inicio', ['vista' => 'tabla']));
+        $response = $this->get(route('inicio'));
+
         $response->assertStatus(200);
-        $response->assertSee('Participación Oficial');
-        $response->assertSee('Mesa de Evaluación');
-        
-        // El nav no debe tener las opciones removidas
-        $response->assertDontSee('En Escenario');
-        $response->assertDontSee('Directorio Oficial');
+        $response->assertDontSee('Pantalla Completa');
+        $response->assertDontSee('toggleFullscreen');
+        $response->assertDontSee('sidebarCategorias');
+        $response->assertDontSee('Modo Tabla Oficial');
     }
 
-    public function test_vista_publica_incluye_sidebar_categorias_y_pantalla_completa(): void
+    public function test_vista_publica_muestra_indicador_de_categoria_activa_con_linea_dorada(): void
     {
         $data = $this->setupEscenarioPublico();
 
-        $response = $this->get(route('inicio', ['categoria' => $data['categoria1']->id]));
+        $response = $this->get(route('inicio'));
 
         $response->assertStatus(200);
         $response->assertSee('Solista vocal');
-        $response->assertSee('Mateo Flores');
-        $response->assertSee('Pantalla Completa');
-        $response->assertSee('toggleFullscreen');
-        $response->assertSee('sidebarCategorias');
-        $response->assertSee('13 Categorías Oficiales');
+        $response->assertSee('#d4af37');
     }
 }
-

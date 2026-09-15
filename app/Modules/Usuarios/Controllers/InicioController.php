@@ -22,34 +22,82 @@ class InicioController extends Controller
 
     public function jurado(Request $request): View
     {
-        return view('jurado.inicio');
+        $usuario = $request->user();
+        $esDelegadoMesa = $usuario && ($usuario->esAdmin() || $usuario->puedeControlarTiempo() || \App\Modules\Jurados\Models\JuradoPresentacion::where('id_usuario', $usuario->id)->where('es_controlador', true)->exists());
+
+        $categorias = collect();
+        $categoriaActiva = null;
+        $presentacionesCategoria = collect();
+        $resumenCategorias = collect();
+
+        if ($esDelegadoMesa && Schema::hasTable('categorias')) {
+            $categorias = Categoria::orderBy('id')->get();
+            $categoriaIdReq = $request->has('cat') ? $request->integer('cat') : null;
+            $categoriaActiva = Categoria::categoriaActiva($categoriaIdReq);
+
+            if ($categoriaActiva) {
+                $presentacionesCategoria = \App\Modules\Presentaciones\Models\Presentacion::query()
+                    ->select('presentaciones.*')
+                    ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
+                    ->join('fases', 'inscripciones.id_fase', '=', 'fases.id')
+                    ->where('fases.fase', \App\Support\Enums\FaseEnum::FINAL->value)
+                    ->where('inscripciones.id_categoria', $categoriaActiva->id)
+                    ->with([
+                        'inscripcion.categoria',
+                        'inscripcion.departamento',
+                        'inscripcion.participantes',
+                        'jurados.usuario',
+                        'jurados.calificacion',
+                    ])
+                    ->orderBy('inscripciones.fecha_presentacion')
+                    ->orderBy('inscripciones.hora_presentacion')
+                    ->orderBy('presentaciones.id')
+                    ->get();
+            }
+
+            $resumenCategorias = $this->rankingService->resumenCategoriasEtapaFinal();
+        }
+
+        return view('jurado.inicio', [
+            'esDelegadoMesa' => $esDelegadoMesa,
+            'categorias' => $categorias,
+            'categoriaActiva' => $categoriaActiva,
+            'presentacionesCategoria' => $presentacionesCategoria,
+            'resumenCategorias' => $resumenCategorias,
+        ]);
     }
 
     public function publico(Request $request): View
     {
         $categorias = Schema::hasTable('categorias') ? Categoria::orderBy('id')->get() : collect();
         
-        $tabActiva = $request->string('tab', 'ranking')->toString();
-        if (! in_array($tabActiva, ['ranking', 'escenario', 'participantes', 'categorias'], true)) {
-            $tabActiva = 'ranking';
-        }
-
         $categoriaId = $request->has('categoria') ? $request->integer('categoria') : null;
-        $departamentoId = $request->has('departamento') ? $request->integer('departamento') : null;
-        $modoVista = $request->string('vista', 'tarjetas')->toString();
-
-        $categoriaSeleccionada = $categoriaId ? $categorias->firstWhere('id', $categoriaId) : null;
+        $categoriaSeleccionada = Categoria::categoriaActiva($categoriaId);
 
         $ranking = collect();
-        $conteoDepartamentos = collect();
-        $conteoCategorias = collect();
-        $resumenCategorias = collect();
+        if ($this->rankingService && $categoriaSeleccionada) {
+            $ranking = $this->rankingService->rankingPorCategoria($categoriaSeleccionada, null, true);
+        }
 
-        if ($this->rankingService) {
-            $ranking = $this->rankingService->rankingPorCategoria($categoriaSeleccionada, null, true, $departamentoId);
-            $conteoDepartamentos = $this->rankingService->conteoDepartamentos($categoriaId, null);
-            $conteoCategorias = $this->rankingService->conteoCategorias($departamentoId, null);
-            $resumenCategorias = $this->rankingService->resumenCategoriasEtapaFinal();
+        $esPodio = (bool) ($categoriaSeleccionada?->estaRevelada() ?? false);
+
+        $primerLugar = null;
+        $segundoLugar = null;
+        $tercerLugar = null;
+        $restoParticipantes = collect();
+
+        if ($esPodio && $ranking->isNotEmpty()) {
+            $primerLugar = $ranking->firstWhere('posicion', 1);
+            $segundoLugar = $ranking->firstWhere('posicion', 2);
+            $tercerLugar = $ranking->firstWhere('posicion', 3);
+
+            $idsPodio = array_filter([
+                $primerLugar['id'] ?? null,
+                $segundoLugar['id'] ?? null,
+                $tercerLugar['id'] ?? null,
+            ]);
+
+            $restoParticipantes = $ranking->reject(fn ($item) => in_array($item['id'], $idsPodio, true))->values();
         }
 
         // Presentación en escenario
@@ -61,25 +109,16 @@ class InicioController extends Controller
             ])
             ->first();
 
-        // Total general de participantes/presentaciones en etapa final
-        $totalGeneral = \App\Modules\Presentaciones\Models\Presentacion::query()
-            ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
-            ->join('fases', 'inscripciones.id_fase', '=', 'fases.id')
-            ->where('fases.fase', \App\Support\Enums\FaseEnum::FINAL->value)
-            ->count();
-
         return view('publico.inicio', [
             'categorias' => $categorias,
             'categoriaSeleccionada' => $categoriaSeleccionada,
-            'departamentoSeleccionadoId' => $departamentoId,
             'ranking' => $ranking,
-            'conteoDepartamentos' => $conteoDepartamentos,
-            'conteoCategorias' => $conteoCategorias,
-            'resumenCategorias' => $resumenCategorias,
+            'esPodio' => $esPodio,
+            'primerLugar' => $primerLugar,
+            'segundoLugar' => $segundoLugar,
+            'tercerLugar' => $tercerLugar,
+            'restoParticipantes' => $restoParticipantes,
             'presentacionEnEscenario' => $presentacionEnEscenario,
-            'totalGeneral' => $totalGeneral,
-            'tabActiva' => $tabActiva,
-            'modoVista' => $modoVista,
         ]);
     }
 }

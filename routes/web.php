@@ -107,6 +107,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('presentaciones.cronometro.iniciar');
     Route::post('/presentaciones/{presentacion}/cronometro/detener', [PresentacionController::class, 'cronometroDetener'])
         ->name('presentaciones.cronometro.detener');
+
+    // Mesa de Jurados / Delegado de Mesa
+    Route::prefix('mesa')->name('mesa.')->group(function () {
+        Route::post('/categorias/{categoria}/seleccionar', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'seleccionarCategoria'])
+            ->name('categorias.seleccionar');
+        Route::post('/categorias/{categoria}/cerrar', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'cerrarCalificaciones'])
+            ->name('categorias.cerrar');
+        Route::post('/categorias/{categoria}/revelar', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'revelarGanador'])
+            ->name('categorias.revelar');
+        Route::post('/presentaciones/{presentacion}/transicion', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'transicion'])
+            ->name('presentaciones.transicion');
+    });
 });
 
 Route::middleware('auth')->group(function () {
