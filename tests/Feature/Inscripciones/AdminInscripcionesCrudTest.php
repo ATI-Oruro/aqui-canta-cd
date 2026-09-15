@@ -144,6 +144,22 @@ class AdminInscripcionesCrudTest extends TestCase
     }
 
     #[Test]
+    public function una_inscripcion_final_puede_registrar_departamento_representado(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.inscripciones.store'), $this->datosInscripcion([
+                'fase' => 'FINAL',
+                'departamento' => 'Oruro',
+            ]))
+            ->assertRedirect(route('admin.inscripciones.index'));
+
+        $inscripcion = Inscripcion::first();
+        $this->assertNotNull($inscripcion->id_departamento);
+        $this->assertSame('Oruro', $inscripcion->departamento?->nombre);
+        $this->assertSame('FINAL', $inscripcion->fase?->fase?->value);
+    }
+
+    #[Test]
     public function sin_departamento_en_preseleccion_no_se_guarda_nada(): void
     {
         $this->actingAs($this->admin())

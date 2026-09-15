@@ -144,7 +144,9 @@ class RegistrarInscripcionService
 
             $categoria = $categorias[$this->clave($datos['categoria'] ?? '')];
             $esFinal = $this->esFinal($datos);
-            $departamento = $esFinal ? null : ($departamentos[$this->clave($datos['departamento'] ?? '')] ?? null);
+            $departamento = isset($datos['departamento']) && $datos['departamento'] !== null && $datos['departamento'] !== ''
+                ? ($departamentos[$this->clave((string) $datos['departamento'])] ?? null)
+                : null;
             $fase = $this->resolverFase($esFinal, $departamento);
 
             $cambiaCategoria = $inscripcion->id_categoria !== $categoria->id;
@@ -213,7 +215,9 @@ class RegistrarInscripcionService
 
         $categoria = $categorias[$this->clave($datos['categoria'] ?? '')];
         $esFinal = $this->esFinal($datos);
-        $departamento = $esFinal ? null : ($departamentos[$this->clave($datos['departamento'] ?? '')] ?? null);
+        $departamento = isset($datos['departamento']) && $datos['departamento'] !== null && $datos['departamento'] !== ''
+            ? ($departamentos[$this->clave((string) $datos['departamento'])] ?? null)
+            : null;
         $fase = $this->resolverFase($esFinal, $departamento);
 
         $inscripcion = Inscripcion::create([

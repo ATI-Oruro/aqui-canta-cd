@@ -91,6 +91,13 @@
                                             {{ $segundoLugar['nombre'] }}
                                         </h3>
 
+                                        @if (!empty($segundoLugar['departamento']))
+                                            <p class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1">
+                                                <span>{{ $banderas[$segundoLugar['departamento']] ?? '🇧🇴' }}</span>
+                                                <span>{{ $segundoLugar['departamento'] }}</span>
+                                            </p>
+                                        @endif
+
                                         <div class="pt-2 border-t border-slate-800/80 flex items-center justify-center">
                                             <span class="text-base sm:text-lg font-black text-slate-200 font-mono tabular-nums bg-slate-900/90 border border-slate-700 px-3 py-1 rounded-xl shadow-inner">
                                                 {{ number_format($segundoLugar['nota_final'], 2) }} <span class="text-[10px] text-slate-400">pts</span>
@@ -138,6 +145,13 @@
                                             {{ $primerLugar['nombre'] }}
                                         </h3>
 
+                                        @if (!empty($primerLugar['departamento']))
+                                            <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1">
+                                                <span>{{ $banderas[$primerLugar['departamento']] ?? '🇧🇴' }}</span>
+                                                <span>{{ $primerLugar['departamento'] }}</span>
+                                            </p>
+                                        @endif
+
                                         <div class="pt-2 border-t border-[#800020]/80 flex items-center justify-center">
                                             <span class="text-lg sm:text-xl font-black gold-gradient-text font-mono tabular-nums bg-[#1f0511] border border-[#d4af37] px-4 py-1 rounded-xl shadow-lg">
                                                 {{ number_format($primerLugar['nota_final'], 2) }} <span class="text-xs text-amber-300">pts</span>
@@ -179,6 +193,13 @@
                                         <h3 class="text-sm sm:text-base font-bold text-white font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.5rem] flex items-center justify-center" title="{{ $tercerLugar['nombre'] }}">
                                             {{ $tercerLugar['nombre'] }}
                                         </h3>
+
+                                        @if (!empty($tercerLugar['departamento']))
+                                            <p class="text-[11px] font-semibold text-amber-400/90 uppercase tracking-wider flex items-center justify-center gap-1">
+                                                <span>{{ $banderas[$tercerLugar['departamento']] ?? '🇧🇴' }}</span>
+                                                <span>{{ $tercerLugar['departamento'] }}</span>
+                                            </p>
+                                        @endif
 
                                         <div class="pt-2 border-t border-[#3b000b] flex items-center justify-center">
                                             <span class="text-base sm:text-lg font-black text-amber-400 font-mono tabular-nums bg-[#15040a] border border-amber-800/60 px-3 py-1 rounded-xl shadow-inner">

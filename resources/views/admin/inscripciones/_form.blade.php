@@ -54,7 +54,7 @@
         </div>
 
         <div id="campo-departamento">
-            <x-input-label for="departamento" :value="__('Departamento')" />
+            <x-input-label for="departamento" :value="__('Departamento / Delegación')" />
             <select id="departamento" name="departamento"
                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                 <option value="">Seleccione un departamento</option>
@@ -65,6 +65,9 @@
                 @endforeach
             </select>
             <x-input-error :messages="$errors->get('departamento')" class="mt-2" />
+            <p class="mt-1 text-xs text-slate-400">
+                Delegación departamental a la que representa (obligatorio en Preselección, representativo en Fase Final).
+            </p>
         </div>
 
         <div>
@@ -225,8 +228,6 @@
 
         var categoria = document.getElementById('categoria');
         var maxHint = document.getElementById('max-integrante');
-        var campoDepartamento = document.getElementById('campo-departamento');
-        var fase = document.getElementById('fase');
 
         function actualizarMax() {
             var opcion = categoria.selectedOptions[0];
@@ -234,15 +235,7 @@
             maxHint.textContent = 'Máximo ' + max + ' integrante(s) por presentación.';
         }
 
-        function actualizarDepartamento() {
-            if (campoDepartamento) {
-                campoDepartamento.classList.toggle('hidden', fase.value === 'FINAL');
-            }
-        }
-
         categoria.addEventListener('change', actualizarMax);
-        fase.addEventListener('change', actualizarDepartamento);
         actualizarMax();
-        actualizarDepartamento();
     });
 </script>
