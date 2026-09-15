@@ -7,7 +7,8 @@
 
         <title>{{ config('app.name', 'Aquí Canta Bolivia') }} — XXXIII Festival Nacional</title>
 
-        <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+        <link rel="icon" type="image/png" href="/images/logo-oficial.png">
+        <link rel="shortcut icon" href="/images/favicon.ico">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -71,7 +72,7 @@
                     
                     <!-- Identidad / Logo del Festival (Sin recuadro dorado) -->
                     <div class="flex items-center gap-3.5 cursor-pointer" onclick="window.location.href='{{ route('inicio') }}'">
-                        <img src="/images/acb_logo.png" alt="Aquí Canta Bolivia" class="h-10 w-10 object-contain drop-shadow" onerror="this.src='/images/favicon.ico'">
+                        <img src="/images/logo-oficial.png" alt="Aquí Canta Bolivia" class="h-10 w-10 object-contain drop-shadow" onerror="this.src='/images/logo-oficial.png'">
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="font-cinzel text-base sm:text-lg font-black tracking-[0.15em] gold-gradient-text uppercase">

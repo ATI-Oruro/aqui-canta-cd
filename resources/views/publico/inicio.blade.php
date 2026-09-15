@@ -79,7 +79,7 @@
                                             <img src="{{ $segundoLugar['foto_url'] }}" alt="{{ $segundoLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(100,116,139,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/acb_logo.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#070104] via-transparent to-transparent pointer-events-none"></div>
@@ -126,7 +126,7 @@
                                             <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.4),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/acb_logo.png" alt="ACB" class="h-24 w-24 object-contain opacity-90 group-hover:opacity-100 transition drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-24 w-24 object-contain opacity-90 group-hover:opacity-100 transition drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#090105] via-transparent to-transparent pointer-events-none"></div>
@@ -168,7 +168,7 @@
                                             <img src="{{ $tercerLugar['foto_url'] }}" alt="{{ $tercerLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(180,83,9,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/acb_logo.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-transparent to-transparent pointer-events-none"></div>
@@ -298,7 +298,7 @@
                                     <img src="{{ $foto }}" alt="{{ $item['nombre'] }}" class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
                                 @else
                                     <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(128,0,32,0.4),rgba(5,1,3,0.95)_70%)] p-6">
-                                        <img src="/images/acb_logo.png" alt="Aquí Canta Bolivia" class="h-24 w-24 object-contain opacity-80 group-hover:opacity-100 transition duration-500" onerror="this.src='/images/favicon.ico'">
+                                        <img src="/images/logo-oficial.png" alt="Aquí Canta Bolivia" class="h-24 w-24 object-contain opacity-80 group-hover:opacity-100 transition duration-500" onerror="this.src='/images/logo-oficial.png'">
                                         <span class="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]/80 font-cinzel font-bold mt-3">Festival 2026</span>
                                     </div>
                                 @endif

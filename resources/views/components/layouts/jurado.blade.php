@@ -7,7 +7,8 @@
 
         <title>{{ config('app.name', 'ACB Canta Bolivia') }} — Jurado</title>
 
-        <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+        <link rel="icon" type="image/png" href="/images/logo-oficial.png">
+        <link rel="shortcut icon" href="/images/favicon.ico">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
@@ -19,7 +20,7 @@
             <!-- Sidebar jurado -->
             <aside class="w-64 shrink-0 bg-slate-800 text-slate-200 flex flex-col">
                 <div class="px-6 py-5 flex items-center gap-3 border-b border-slate-700">
-                    <img src="/images/acb_logo.png" alt="ACB" class="h-10 w-10 object-contain">
+                    <img src="/images/logo-oficial.png" alt="ACB" class="h-10 w-10 object-contain">
                     <div>
                         <p class="font-bold text-white leading-tight">ACB Canta Bolivia</p>
                         <p class="text-xs text-slate-400">Panel de Jurado</p>

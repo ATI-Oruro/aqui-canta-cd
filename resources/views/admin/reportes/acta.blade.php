@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acta Oficial de Escrutinio y Calificaciones — ACB 2026</title>
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/png" href="/images/logo-oficial.png">
+    <link rel="shortcut icon" href="/images/favicon.ico">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=cinzel:700,900|figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
     
@@ -69,7 +70,7 @@
             </div>
 
             <div class="flex items-center justify-between gap-4">
-                <img src="/images/acb_logo.png" alt="Logo ACB" class="h-16 w-16 object-contain">
+                <img src="/images/logo-oficial.png" alt="Logo ACB" class="h-16 w-16 object-contain">
                 <div>
                     <h3 class="font-bold text-xs uppercase tracking-widest text-slate-600">Gobierno Autónomo Departamental de Oruro — GADOR</h3>
                     <h1 class="font-black text-lg sm:text-xl text-[#5c0618] tracking-tight uppercase" style="font-family: 'Cinzel', serif;">

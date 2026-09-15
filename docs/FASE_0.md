@@ -198,7 +198,7 @@ Cada layout inyecta:
 - Bloque `@stack('scripts')`
 - Slots: cuerpo (`$slot`), `header` (título) y `sidebar` (navegación)
 
-Identidad visual: `public/images/acb_logo.png`, `favicon.ico` y `fondo.png` copiados desde `recursos/`.
+Identidad visual: `public/images/logo-oficial.png`, `favicon.ico` y `fondo.png` copiados desde `recursos/`.
 
 ---
 
