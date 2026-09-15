@@ -11,28 +11,80 @@
         <link rel="shortcut icon" href="/images/favicon.ico">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
         <style>
-            .font-cinzel { font-family: 'Cinzel', serif; }
-            .font-outfit { font-family: 'Outfit', sans-serif; }
+            .font-cinzel, .font-serif { font-family: 'Cinzel', serif !important; }
+            .font-outfit, .font-sans, .font-montserrat { font-family: 'Montserrat', sans-serif !important; }
             
-            /* Esquineros dorados de gala */
-            .corner-bracket-tl { position: absolute; top: 8px; left: 8px; width: 14px; height: 14px; border-top: 1.5px solid #d4af37; border-left: 1.5px solid #d4af37; pointer-events: none; z-index: 10; }
-            .corner-bracket-tr { position: absolute; top: 8px; right: 8px; width: 14px; height: 14px; border-top: 1.5px solid #d4af37; border-right: 1.5px solid #d4af37; pointer-events: none; z-index: 10; }
-            .corner-bracket-bl { position: absolute; bottom: 8px; left: 8px; width: 14px; height: 14px; border-bottom: 1.5px solid #d4af37; border-left: 1.5px solid #d4af37; pointer-events: none; z-index: 10; }
-            .corner-bracket-br { position: absolute; bottom: 8px; right: 8px; width: 14px; height: 14px; border-bottom: 1.5px solid #d4af37; border-right: 1.5px solid #d4af37; pointer-events: none; z-index: 10; }
+            /* Esquineros dorados de gala - diseño code.html */
+            .musician-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            }
+            .musician-card:hover {
+                transform: translateY(-4px) !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px 4px rgba(212, 175, 55, 0.35) !important;
+            }
+            .corner-bracket {
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                border-color: #d4af37 !important;
+                border-style: solid !important;
+                pointer-events: none;
+                z-index: 25;
+                transition: border-color 0.3s ease, filter 0.3s ease !important;
+            }
+            .corner-tl {
+                top: 14px;
+                left: 14px;
+                border-top-width: 2px !important;
+                border-left-width: 2px !important;
+                border-right-width: 0 !important;
+                border-bottom-width: 0 !important;
+            }
+            .corner-tr {
+                top: 14px;
+                right: 14px;
+                border-top-width: 2px !important;
+                border-right-width: 2px !important;
+                border-left-width: 0 !important;
+                border-bottom-width: 0 !important;
+            }
+            .corner-bl {
+                bottom: 14px;
+                left: 14px;
+                border-bottom-width: 2px !important;
+                border-left-width: 2px !important;
+                border-top-width: 0 !important;
+                border-right-width: 0 !important;
+            }
+            .corner-br {
+                bottom: 14px;
+                right: 14px;
+                border-bottom-width: 2px !important;
+                border-right-width: 2px !important;
+                border-top-width: 0 !important;
+                border-left-width: 0 !important;
+            }
+            .musician-card:hover .corner-bracket,
+            .group:hover .corner-bracket {
+                border-color: #fde68a !important;
+                filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.85)) !important;
+            }
             
             /* Gradientes de oro y carmesí */
             .gold-gradient-text {
-                background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #d4af37 60%, #b45309 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                background: linear-gradient(135deg, #FFF8DC 0%, #F5D061 40%, #D4AF37 75%, #AA7C11 100%) !important;
+                -webkit-background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
             }
-            .oruro-gradient-text {
-                background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #e11d48 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .bandera-bolivia {
+                max-height: 0.7rem;
+            }
+            .card-dot-pattern {
+                background-image: radial-gradient(#d4af37 1px, transparent 1px) !important;
+                background-size: 16px 16px !important;
             }
 
             /* Scrollbars guindo sobrio estilo Oruro */
@@ -55,6 +107,7 @@
                 scrollbar-color: #6b0015 transparent;
             }
         </style>
+
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('scripts')

@@ -299,125 +299,34 @@
         @else
             
             @if ($ranking->isEmpty())
-                <div class="bg-[#0e0307]/80 rounded-2xl border border-[#6b0015]/40 p-16 text-center space-y-3 shadow-2xl">
+                <div class="bg-[#0e0307]/80 rounded-2xl border border-[#6b0015]/40 p-16 text-center space-y-3 shadow-2xl max-w-xl mx-auto">
                     <span class="text-4xl text-[#d4af37]">🎵</span>
                     <h3 class="text-base font-bold text-white font-cinzel">No hay participaciones para la categoría activa</h3>
                     <p class="text-xs text-slate-400">El jurado delegado de mesa iniciará las evaluaciones para esta categoría.</p>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
+                <!-- BEGIN: ContestantsGrid -->
+                <main class="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 md:gap-6 justify-items-center relative z-10" data-purpose="desktop-showcase-grid">
                     @foreach ($ranking as $item)
                         @php
                             $pos = $item['posicion'];
+                            $numero = is_numeric($pos) ? $pos : $loop->iteration;
                             $foto = $item['foto_url'] ?: null;
-                            $estaRevelada = $item['categoria_revelada'] || $item['categoria_finalizada'];
+                            $bandera = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($item['departamento']);
                         @endphp
 
-                        <!-- TARJETA RETRATO COMPACTA (ASPECT RATIO 3/4) -->
-                        <div class="relative w-full max-w-[290px] aspect-[3/4] bg-gradient-to-b from-[#14040a] via-[#090205] to-[#050103] rounded-2xl border border-[#6b0015]/40 hover:border-[#d4af37]/80 p-4 shadow-2xl flex flex-col justify-between overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-[#800020]/25 cursor-pointer"
-                             onclick="abrirModalDesglose({{ $item['id'] }})">
-                            
-                            <!-- Esquineros Dorados Finos -->
-                            <div class="corner-bracket-tl"></div>
-                            <div class="corner-bracket-tr"></div>
-                            <div class="corner-bracket-bl"></div>
-                            <div class="corner-bracket-br"></div>
-
-                            <!-- Fondo / Fotografía del Participante -->
-                            <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050103]">
-                                @if ($foto)
-                                    <img src="{{ $foto }}" alt="{{ $item['nombre'] }}" class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
-                                @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(128,0,32,0.4),rgba(5,1,3,0.95)_70%)] p-6">
-                                        <img src="/images/logo-oficial.png" alt="Aquí Canta Bolivia" class="h-24 w-24 object-contain opacity-80 group-hover:opacity-100 transition duration-500" onerror="this.src='/images/logo-oficial.png'">
-                                        <span class="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]/80 font-cinzel font-bold mt-3">Festival 2026</span>
-                                    </div>
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-[#050103]/75 to-transparent pointer-events-none"></div>
-                            </div>
-
-                            <!-- Header Superior del Card -->
-                            <div class="relative z-10 flex items-center justify-between gap-2 border-b border-[#3b000b]/80 pb-2">
-                                <div>
-                                    @if ($pos === 1 && $item['nota_final'] !== null)
-                                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] font-cinzel">
-                                            1° LUGAR
-                                        </span>
-                                    @elseif ($pos === 2 && $item['nota_final'] !== null)
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 font-cinzel">
-                                            2° LUGAR
-                                        </span>
-                                    @elseif ($pos === 3 && $item['nota_final'] !== null)
-                                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600 font-cinzel">
-                                            3° LUGAR
-                                        </span>
-                                    @elseif (is_numeric($pos))
-                                        <span class="text-[10px] font-semibold text-slate-400 font-mono">
-                                            #{{ str_pad($pos, 2, '0', STR_PAD_LEFT) }}
-                                        </span>
-                                    @else
-                                        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">
-                                            EN CURSO
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]/90 font-cinzel truncate max-w-[130px]" title="{{ $item['categoria'] }}">
-                                    {{ $item['categoria'] }}
-                                </span>
-                            </div>
-
-                            <!-- Información Inferior -->
-                            <div class="relative z-10 space-y-2 text-center pt-8">
-                                
-                                <div class="w-6 h-[1.5px] bg-[#d4af37]/50 mx-auto"></div>
-
-                                <div class="space-y-0.5">
-                                    <h3 class="text-base sm:text-lg font-bold text-[#fef9c3] tracking-[0.08em] uppercase font-cinzel group-hover:text-[#d4af37] transition line-clamp-1" title="{{ $item['nombre'] }}">
-                                        {{ $item['nombre'] }}
-                                    </h3>
-                                    
-                                    @php
-                                        $banderaCard = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($item['departamento']);
-                                    @endphp
-                                    <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        @if ($banderaCard)
-                                            <img src="{{ $banderaCard }}" alt="{{ $item['departamento'] }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
-                                        @endif
-                                        <span>{{ $item['departamento'] ?? 'Bolivia' }}</span>
-                                    </div>
-
-                                    @if (!empty($item['participantes']) && $item['participantes'][0] !== $item['nombre'])
-                                        <p class="text-[9px] text-slate-400 truncate px-2" title="{{ implode(', ', $item['participantes']) }}">
-                                            {{ implode(' · ', $item['participantes']) }}
-                                        </p>
-                                    @endif
-                                </div>
-
-                                <div class="pt-2 border-t border-[#3b000b]/80 flex items-center justify-between gap-2">
-                                    <div class="text-left font-mono">
-                                        @if ($item['nota_final'] !== null)
-                                            <span class="text-sm font-black gold-gradient-text tabular-nums">
-                                                {{ number_format($item['nota_final'], 2) }}
-                                            </span>
-                                            <span class="text-[8px] text-slate-500">pts</span>
-                                        @else
-                                            <span class="text-[10px] text-slate-500 font-sans uppercase">
-                                                Evaluando
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    <span class="px-2 py-0.5 rounded bg-[#1a050d] border border-[#6b0015] group-hover:border-amber-400/60 text-amber-200/90 text-[10px] font-semibold uppercase tracking-wider transition">
-                                        {{ $estaRevelada ? 'Desglose' : '🔒 Reservado' }}
-                                    </span>
-                                </div>
-
-                            </div>
-
-                        </div>
+                        <x-participante-card
+                            :numero="$numero"
+                            :nombre="$item['nombre']"
+                            :departamento="$item['departamento']"
+                            :banderaUrl="$bandera"
+                            :fotoUrl="$foto"
+                            :notaFinal="$item['nota_final']"
+                            onclick="abrirModalDesglose({{ $item['id'] }})"
+                        />
                     @endforeach
-                </div>
+                </main>
+                <!-- END: ContestantsGrid -->
             @endif
 
         @endif
@@ -454,7 +363,7 @@
                                                 Jurado Secreto
                                             </span>
                                             <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#3b000b] text-amber-300 border border-[#800020]">
-                                                En Resguardo
+                                                🔒 Reservado
                                             </span>
                                         @else
                                             <span class="text-xs font-semibold text-slate-200">
