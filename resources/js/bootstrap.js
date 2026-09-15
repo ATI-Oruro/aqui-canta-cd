@@ -10,7 +10,12 @@ window.Pusher = Pusher;
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-const wsHost = window.location.hostname || import.meta.env.VITE_REVERB_HOST || '192.168.200.232';
+let currentHost = window.location.hostname;
+if (!currentHost || currentHost === '0.0.0.0') {
+    currentHost = '127.0.0.1';
+}
+
+const wsHost = currentHost;
 const wsPort = import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT, 10) : 6080;
 const wsScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
 const wsKey = import.meta.env.VITE_REVERB_APP_KEY || 'rlml9nwlxkswhus5t6ca';

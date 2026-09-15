@@ -515,19 +515,26 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        function setupLiveSync() {
             if (!iniciarEscuchaEcho()) {
                 let attempts = 0;
                 const echoInterval = setInterval(function () {
                     attempts++;
-                    if (iniciarEscuchaEcho() || attempts > 25) {
+                    if (iniciarEscuchaEcho() || attempts > 30) {
                         clearInterval(echoInterval);
                     }
-                }, 200);
+                }, 250);
             }
+        }
 
-            setInterval(refrescarRankingEnVivo, 2500);
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupLiveSync);
+        } else {
+            setupLiveSync();
+        }
+        window.addEventListener('load', setupLiveSync);
+
+        setInterval(refrescarRankingEnVivo, 2500);
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
