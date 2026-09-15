@@ -17,13 +17,37 @@
             .font-cinzel, .font-serif { font-family: 'Cinzel', serif !important; }
             .font-outfit, .font-sans, .font-montserrat { font-family: 'Montserrat', sans-serif !important; }
             
-            /* Esquineros dorados de gala - diseño code.html */
+            /* Card Participante - Alto Rendimiento y Aceleración 60/120fps */
             .musician-card {
-                transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+                will-change: transform;
+                transform: translateZ(0);
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+                perspective: 1000px;
+                contain: layout paint;
             }
-            .musician-card:hover {
-                transform: translateY(-4px) !important;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px 4px rgba(212, 175, 55, 0.35) !important;
+            .musician-card:not(.is-reordering):not(.is-static) {
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .musician-card:hover:not(.is-reordering) {
+                transform: translateY(-4px) translateZ(0);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px 4px rgba(212, 175, 55, 0.35);
+            }
+            .musician-card.is-static {
+                transition: none !important;
+            }
+            .musician-card.is-reordering {
+                transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease !important;
+                z-index: 40 !important;
+                box-shadow: 0 0 32px 4px rgba(212, 175, 55, 0.45) !important;
+            }
+            .score-updated-pulse {
+                animation: galaScorePulse 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            @keyframes galaScorePulse {
+                0% { transform: scale(1) translateZ(0); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+                25% { transform: scale(1.04) translateZ(0); box-shadow: 0 0 32px 5px rgba(251, 191, 36, 0.65); }
+                100% { transform: scale(1) translateZ(0); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
             }
             .corner-bracket {
                 position: absolute;

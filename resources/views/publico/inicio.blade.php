@@ -53,7 +53,7 @@
                         <!-- 2° LUGAR (ESCALÓN PLATA)  -->
                         <!-- ========================= -->
                         @if ($segundoLugar)
-                            <div class="order-2 sm:order-1 flex flex-col items-center">
+                            <div class="order-2 sm:order-1 flex flex-col items-center cursor-pointer" data-card-id="{{ $segundoLugar['id'] }}" onclick="abrirModalDesglose({{ $segundoLugar['id'] }})">
                                 <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1e0813] via-[#10030a] to-[#070104] rounded-2xl border-2 border-slate-400/50 hover:border-slate-300 shadow-2xl overflow-hidden group transition-all duration-300 transform hover:-translate-y-1">
                                     
                                     <!-- Insignia Número 2 -->
@@ -109,7 +109,7 @@
                         <!-- 1° LUGAR (ESCALÓN ORO)    -->
                         <!-- ========================= -->
                         @if ($primerLugar)
-                            <div class="order-1 sm:order-2 flex flex-col items-center sm:-translate-y-4">
+                            <div class="order-1 sm:order-2 flex flex-col items-center sm:-translate-y-4 cursor-pointer" data-card-id="{{ $primerLugar['id'] }}" onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
                                 <div class="w-full max-w-[280px] bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)] hover:shadow-[0_0_40px_rgba(212,175,55,0.4)] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 relative">
                                     
                                     <!-- Corona / Insignia Número 1 -->
@@ -166,7 +166,7 @@
                         <!-- 3° LUGAR (ESCALÓN BRONCE) -->
                         <!-- ========================= -->
                         @if ($tercerLugar)
-                            <div class="order-3 flex flex-col items-center">
+                            <div class="order-3 flex flex-col items-center cursor-pointer" data-card-id="{{ $tercerLugar['id'] }}" onclick="abrirModalDesglose({{ $tercerLugar['id'] }})">
                                 <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1a080f] via-[#0e0308] to-[#050103] rounded-2xl border-2 border-amber-700/60 hover:border-amber-600 shadow-2xl overflow-hidden group transition-all duration-300 transform hover:-translate-y-1">
                                     
                                     <!-- Insignia Número 3 -->
@@ -247,6 +247,7 @@
                         <div class="space-y-2">
                             @foreach ($restoParticipantes as $p)
                                 <div class="p-2.5 rounded-xl bg-[#070104]/80 border border-[#3b000b]/80 hover:border-[#6b0015] flex items-center justify-between gap-3 transition cursor-pointer group"
+                                     data-card-id="{{ $p['id'] }}"
                                      onclick="abrirModalDesglose({{ $p['id'] }})">
                                     
                                     <div class="flex items-center gap-2.5 min-w-0">
@@ -316,6 +317,7 @@
                         @endphp
 
                         <x-participante-card
+                            :id="$item['id']"
                             :numero="$numero"
                             :nombre="$item['nombre']"
                             :departamento="$item['departamento']"
@@ -348,50 +350,35 @@
                             <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37] font-cinzel">Mesa Evaluadora Oficial</span>
                             <h4 class="text-base font-bold text-white uppercase font-cinzel">{{ $item['nombre'] }}</h4>
                         </div>
-                        <button type="button" onclick="cerrarModalDesglose({{ $item['id'] }})" class="text-slate-400 hover:text-white text-lg font-bold">
+                        <button onclick="cerrarModalDesglose({{ $item['id'] }})" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
                             ✕
                         </button>
                     </div>
 
-                    <div class="space-y-1.5">
-                        @foreach ($item['jurados'] as $idx => $j)
-                            <div class="py-2 px-3 rounded-xl bg-[#070104] border border-[#3b000b] flex items-center justify-between">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        @if ($j['es_secreto'] && ! $j['es_revelado'])
-                                            <span class="text-xs font-bold text-amber-300">
-                                                Jurado Secreto
-                                            </span>
-                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#3b000b] text-amber-300 border border-[#800020]">
-                                                🔒 Reservado
-                                            </span>
-                                        @else
-                                            <span class="text-xs font-semibold text-slate-200">
-                                                {{ $j['jurado_nombre'] }}
-                                            </span>
-                                            @if ($j['es_secreto'])
-                                                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-950/60 text-purple-300 border border-purple-500/40">
-                                                    Oficial
-                                                </span>
-                                            @endif
-                                        @endif
-                                    </div>
-                                    <span class="text-[9px] text-slate-500">Mesa Calificadora</span>
+                    <!-- Lista de Jurados y Puntajes -->
+                    <div class="space-y-1.5 pt-1">
+                        @foreach ($item['jurados'] as $j)
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-[#070104] border border-[#3b000b]">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-[#1a050d] border border-[#6b0015] text-[10px] font-bold text-[#d4af37] flex items-center justify-center">
+                                        {{ $loop->iteration }}
+                                    </span>
+                                    <span class="text-xs text-slate-300 font-medium">
+                                        {{ $j['jurado_nombre'] ?? $j['nombre_jurado'] ?? 'Jurado' }}
+                                    </span>
+                                    @if (!empty($j['es_secreto']) && empty($j['es_revelado']))
+                                        <span class="text-[9px] bg-[#3b000b] text-amber-300 border border-[#800020] px-1.5 py-0.2 rounded font-mono font-bold">
+                                            🔒 Reservado
+                                        </span>
+                                    @endif
                                 </div>
 
-                                <div class="text-right font-mono">
-                                    @if ($j['es_revelado'] && $j['nota_total'] !== null)
-                                        <span class="text-sm font-bold text-amber-300 tabular-nums">
-                                            {{ number_format($j['nota_total'], 1) }}
-                                        </span>
-                                        <span class="text-[9px] text-slate-500">pts</span>
-                                    @elseif ($j['es_secreto'] && ! $j['es_revelado'])
-                                        <span class="text-xs font-semibold text-amber-400/80">
-                                            Calificación Reservada
-                                        </span>
-                                    @elseif ($j['calificado'] && $j['nota_total'] !== null)
-                                        <span class="text-sm font-bold text-emerald-400 tabular-nums">
-                                            {{ number_format($j['nota_total'], 1) }}
+                                <div class="text-right">
+                                    @if (!empty($j['es_secreto']) && empty($j['es_revelado']))
+                                        <span class="text-xs font-semibold text-purple-400 italic">Reservada</span>
+                                    @elseif (isset($j['nota_total']) && $j['nota_total'] !== null)
+                                        <span class="text-xs font-bold font-mono text-amber-300">
+                                            {{ is_numeric($j['nota_total']) ? number_format($j['nota_total'], 2) : $j['nota_total'] }}
                                         </span>
                                         <span class="text-[9px] text-slate-500">pts</span>
                                     @else
@@ -402,23 +389,14 @@
                         @endforeach
                     </div>
 
-                    <div class="pt-2 border-t border-[#3b000b] flex items-center justify-between bg-[#070104] p-3 rounded-xl">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 font-cinzel">Puntaje Final:</span>
-                            <p class="text-[9px] text-slate-500">
-                                {{ ($item['categoria_revelada'] || $item['categoria_finalizada']) ? 'Promedio Oficial Consolidado (5 jurados)' : 'Puntaje Preliminar (Jurados públicos)' }}
-                            </p>
-                        </div>
-                        <span class="text-lg font-bold gold-gradient-text font-mono tabular-nums">
-                            {{ $item['nota_final'] !== null ? number_format($item['nota_final'], 2).' pts' : 'En evaluación' }}
+                    <!-- Promedio / Nota Final -->
+                    <div class="pt-2 border-t border-[#3b000b] flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-300 uppercase font-cinzel tracking-wider">Promedio Final Oficial:</span>
+                        <span class="text-sm font-black gold-gradient-text font-mono tabular-nums">
+                            {{ $item['nota_final'] !== null ? number_format($item['nota_final'], 2) . ' pts' : 'En Evaluación' }}
                         </span>
                     </div>
 
-                    <div class="text-right pt-1">
-                        <button type="button" onclick="cerrarModalDesglose({{ $item['id'] }})" class="px-4 py-1.5 bg-[#1f050f] hover:bg-[#3b000b] text-white text-xs font-semibold rounded-lg border border-[#6b0015] transition">
-                            Cerrar
-                        </button>
-                    </div>
                 </div>
             </div>
         @endforeach
@@ -426,7 +404,7 @@
     </div>
 
     <!-- ============================================================== -->
-    <!-- SCRIPTS DE ACTUALIZACIÓN EN VIVO (WEBSOCKETS Y MODALES)        -->
+    <!-- SCRIPTS DE ACTUALIZACIÓN EN VIVO (WEBSOCKETS Y ANIMACIÓN FLIP) -->
     <!-- ============================================================== -->
     <script>
         function abrirModalDesglose(id) {
@@ -439,7 +417,160 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // Actualización fluida del DOM en tiempo real
+        // ==============================================================
+        // MOTOR DE ANIMACIÓN FLIP ULTRA-FLUIDO EN TIEMPO REAL (60/120 FPS)
+        // ==============================================================
+        
+        // Interpolador numérico suave para actualización de notas
+        function interpolarPuntaje(element, valorInicial, valorFinal, duracion = 500) {
+            if (isNaN(valorInicial) || isNaN(valorFinal)) {
+                element.textContent = isNaN(valorFinal) ? 'N/C' : valorFinal.toFixed(1);
+                return;
+            }
+            if (Math.abs(valorFinal - valorInicial) < 0.05) {
+                element.textContent = valorFinal.toFixed(1);
+                return;
+            }
+
+            const inicio = performance.now();
+            function paso(ahora) {
+                const progreso = Math.min((ahora - inicio) / duracion, 1);
+                // Easing cúbico desacelerado suave
+                const factor = 1 - Math.pow(1 - progreso, 3);
+                const actual = valorInicial + (valorFinal - valorInicial) * factor;
+                element.textContent = actual.toFixed(1);
+                if (progreso < 1) {
+                    requestAnimationFrame(paso);
+                } else {
+                    element.textContent = valorFinal.toFixed(1);
+                }
+            }
+            requestAnimationFrame(paso);
+        }
+
+        function animarReordenamientoCards(gridContainer, accionReordenar) {
+            if (!gridContainer) return;
+
+            // 1. FIRST: Lectura por lote (Batch Read) sin mutaciones intermedias
+            const cards = Array.from(gridContainer.querySelectorAll('.musician-card[data-card-id]'));
+            const firstRects = new Map();
+            for (let i = 0; i < cards.length; i++) {
+                const id = cards[i].getAttribute('data-card-id');
+                if (id) {
+                    firstRects.set(id, cards[i].getBoundingClientRect());
+                }
+            }
+
+            // 2. MUTACIÓN POR LOTE: Reordenamiento y actualización de datos en el DOM
+            accionReordenar();
+
+            // 3. LAST: Segunda lectura por lote (Batch Read 2)
+            const currentCards = Array.from(gridContainer.querySelectorAll('.musician-card[data-card-id]'));
+            const movingCards = [];
+
+            for (let i = 0; i < currentCards.length; i++) {
+                const card = currentCards[i];
+                const id = card.getAttribute('data-card-id');
+                if (id && firstRects.has(id)) {
+                    const first = firstRects.get(id);
+                    const last = card.getBoundingClientRect();
+                    const dx = first.left - last.left;
+                    const dy = first.top - last.top;
+
+                    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                        movingCards.push({ card, dx, dy });
+                    }
+                }
+            }
+
+            // 4. INVERT: Escritura por lote de transformaciones iniciales
+            for (let i = 0; i < movingCards.length; i++) {
+                const item = movingCards[i];
+                item.card.classList.add('is-static');
+                item.card.style.transform = `translate3d(${item.dx}px, ${item.dy}px, 0)`;
+            }
+
+            // 5. PLAY: Disparar reflow único y transición GPU en frame sincronizado
+            if (movingCards.length > 0) {
+                void gridContainer.offsetHeight;
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        for (let i = 0; i < movingCards.length; i++) {
+                            const card = movingCards[i].card;
+                            card.classList.remove('is-static');
+                            card.classList.add('is-reordering');
+                            card.style.transform = 'translate3d(0, 0, 0)';
+                        }
+
+                        setTimeout(() => {
+                            for (let i = 0; i < movingCards.length; i++) {
+                                const card = movingCards[i].card;
+                                card.classList.remove('is-reordering');
+                                card.style.transform = '';
+                            }
+                        }, 800);
+                    });
+                });
+            }
+        }
+
+        // Procesar evento WebSocket directo sin peticiones de red
+        function procesarRankingWebSocket(data) {
+            if (!data || !Array.isArray(data.ranking)) {
+                refrescarRankingEnVivo();
+                return;
+            }
+
+            const gridContainer = document.querySelector('[data-purpose="desktop-showcase-grid"]');
+            if (!gridContainer) {
+                // Si estamos en vista de podio o estado finalizado, refrescar por fetch
+                refrescarRankingEnVivo();
+                return;
+            }
+
+            animarReordenamientoCards(gridContainer, () => {
+                data.ranking.forEach((item, index) => {
+                    const card = gridContainer.querySelector(`.musician-card[data-card-id="${item.id}"]`);
+                    if (card) {
+                        // Actualizar puntaje de forma interpolada con resplandor
+                        const scoreEl = card.querySelector('.card-score-value');
+                        let numFinal = NaN;
+                        if (item.nota_final !== null && item.nota_final !== undefined && item.nota_final !== '') {
+                            numFinal = parseFloat(item.nota_final);
+                        }
+
+                        if (scoreEl) {
+                            const textoActual = scoreEl.textContent.trim();
+                            const numInicial = parseFloat(textoActual);
+                            const notaStr = isNaN(numFinal) ? 'N/C' : numFinal.toFixed(1);
+
+                            if (textoActual !== notaStr) {
+                                if (!isNaN(numInicial) && !isNaN(numFinal)) {
+                                    interpolarPuntaje(scoreEl, numInicial, numFinal, 500);
+                                } else {
+                                    scoreEl.textContent = notaStr;
+                                }
+                                card.classList.add('score-updated-pulse');
+                                setTimeout(() => card.classList.remove('score-updated-pulse'), 1300);
+                            }
+                        }
+
+                        // Actualizar número de posición
+                        const numEl = card.querySelector('.card-numero-value');
+                        const pos = item.posicion !== undefined && item.posicion !== null ? item.posicion : (index + 1);
+                        if (numEl) {
+                            numEl.textContent = 'N° ' + pos;
+                        }
+
+                        // Reordenar nodo DOM en el contenedor
+                        gridContainer.appendChild(card);
+                    }
+                });
+            });
+        }
+
+        // Actualización inteligente del DOM con preservación de nodos
         let actualizandoContenido = false;
         async function refrescarRankingEnVivo() {
             if (actualizandoContenido) return;
@@ -463,17 +594,71 @@
                     const contenedorActual = document.getElementById('rankingLiveWrapper');
 
                     if (nuevoContenido && contenedorActual) {
-                        const modalesAbiertos = [];
-                        document.querySelectorAll('[id^="modalDesglose_"]:not(.hidden)').forEach(m => {
-                            modalesAbiertos.push(m.id);
-                        });
+                        const gridActual = contenedorActual.querySelector('[data-purpose="desktop-showcase-grid"]');
+                        const gridNuevo = nuevoContenido.querySelector('[data-purpose="desktop-showcase-grid"]');
 
-                        contenedorActual.innerHTML = nuevoContenido.innerHTML;
+                        // Si ambos son modo Gala Grid, reordenar en sitio preservando nodos
+                        if (gridActual && gridNuevo) {
+                            animarReordenamientoCards(gridActual, () => {
+                                const newCards = Array.from(gridNuevo.querySelectorAll('.musician-card[data-card-id]'));
+                                newCards.forEach(newCard => {
+                                    const id = newCard.getAttribute('data-card-id');
+                                    const existingCard = gridActual.querySelector(`.musician-card[data-card-id="${id}"]`);
+                                    if (existingCard) {
+                                        // Actualizar textos/puntajes
+                                        const oldScore = existingCard.querySelector('.card-score-value');
+                                        const newScore = newCard.querySelector('.card-score-value');
+                                        if (oldScore && newScore && oldScore.textContent.trim() !== newScore.textContent.trim()) {
+                                            const nInit = parseFloat(oldScore.textContent.trim());
+                                            const nEnd = parseFloat(newScore.textContent.trim());
+                                            if (!isNaN(nInit) && !isNaN(nEnd)) {
+                                                interpolarPuntaje(oldScore, nInit, nEnd, 500);
+                                            } else {
+                                                oldScore.textContent = newScore.textContent.trim();
+                                            }
+                                            existingCard.classList.add('score-updated-pulse');
+                                            setTimeout(() => existingCard.classList.remove('score-updated-pulse'), 1300);
+                                        }
 
-                        modalesAbiertos.forEach(id => {
-                            const modal = document.getElementById(id);
-                            if (modal) modal.classList.remove('hidden');
-                        });
+                                        const oldNum = existingCard.querySelector('.card-numero-value');
+                                        const newNum = newCard.querySelector('.card-numero-value');
+                                        if (oldNum && newNum) {
+                                            oldNum.textContent = newNum.textContent.trim();
+                                        }
+
+                                        gridActual.appendChild(existingCard);
+                                    } else {
+                                        gridActual.appendChild(newCard.cloneNode(true));
+                                    }
+                                });
+                            });
+
+                            // Actualizar modales de desglose
+                            const modalesNuevos = nuevoContenido.querySelectorAll('[id^="modalDesglose_"]');
+                            modalesNuevos.forEach(m => {
+                                const mActual = document.getElementById(m.id);
+                                if (mActual) {
+                                    const estaAbierto = !mActual.classList.contains('hidden');
+                                    mActual.innerHTML = m.innerHTML;
+                                    if (estaAbierto) mActual.classList.remove('hidden');
+                                } else {
+                                    contenedorActual.appendChild(m.cloneNode(true));
+                                }
+                            });
+                        } else {
+                            // Cambio de modo (e.g. paso a podio de gala)
+                            const modalesAbiertos = [];
+                            document.querySelectorAll('[id^="modalDesglose_"]:not(.hidden)').forEach(m => {
+                                modalesAbiertos.push(m.id);
+                            });
+
+                            contenedorActual.innerHTML = nuevoContenido.innerHTML;
+
+                            modalesAbiertos.forEach(id => {
+                                const modal = document.getElementById(id);
+                                if (modal) modal.classList.remove('hidden');
+                            });
+                        }
                     }
                 }
             } catch (err) {
@@ -490,21 +675,34 @@
             try {
                 const canalRanking = window.Echo.channel('ranking');
                 if (canalRanking) {
-                    canalRanking.listenToAll((event, data) => {
-                        refrescarRankingEnVivo();
+                    canalRanking.listen('.ranking.actualizado', (data) => {
+                        procesarRankingWebSocket(data);
                     });
-                    ['.ranking.actualizado', 'ranking.actualizado', '.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.jurado_secreto.revelado', 'jurado_secreto.revelado', '.categoria.finalizada', 'categoria.finalizada', '.categoria.activa.cambiada', 'categoria.activa.cambiada', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado'].forEach(ev => {
-                        canalRanking.listen(ev, refrescarRankingEnVivo);
+                    canalRanking.listen('ranking.actualizado', (data) => {
+                        procesarRankingWebSocket(data);
+                    });
+                    
+                    ['.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.jurado_secreto.revelado', 'jurado_secreto.revelado', '.categoria.finalizada', 'categoria.finalizada', '.categoria.activa.cambiada', 'categoria.activa.cambiada', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado'].forEach(ev => {
+                        canalRanking.listen(ev, (data) => {
+                            if (data && data.ranking) {
+                                procesarRankingWebSocket(data);
+                            } else {
+                                refrescarRankingEnVivo();
+                            }
+                        });
                     });
                 }
 
                 const canalPresentaciones = window.Echo.channel('presentaciones');
                 if (canalPresentaciones) {
-                    canalPresentaciones.listenToAll((event, data) => {
-                        refrescarRankingEnVivo();
-                    });
                     ['.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado', '.cronometro.actualizado', 'cronometro.actualizado', '.categoria.activa.cambiada', 'categoria.activa.cambiada'].forEach(ev => {
-                        canalPresentaciones.listen(ev, refrescarRankingEnVivo);
+                        canalPresentaciones.listen(ev, (data) => {
+                            if (data && data.ranking) {
+                                procesarRankingWebSocket(data);
+                            } else {
+                                refrescarRankingEnVivo();
+                            }
+                        });
                     });
                 }
 
@@ -534,7 +732,8 @@
         }
         window.addEventListener('load', setupLiveSync);
 
-        setInterval(refrescarRankingEnVivo, 2500);
+        // Polling de respaldo de baja frecuencia para evitar colisiones
+        setInterval(refrescarRankingEnVivo, 8000);
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {

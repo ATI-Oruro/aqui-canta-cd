@@ -1,4 +1,5 @@
 @props([
+    'id' => null,
     'numero' => 1,
     'nombre' => '',
     'departamento' => null,
@@ -23,6 +24,7 @@
 <article {{ $attributes->merge(['class' => 'musician-card relative w-full max-w-[270px] xl:max-w-[245px] aspect-[3/4.6] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black transition-all duration-300 hover:shadow-gold-500/20 hover:-translate-y-1 flex flex-col justify-between p-3 group cursor-pointer']) }}
          style="aspect-ratio: 3 / 4.6; min-height: 380px;"
          data-purpose="musician-score-card"
+         @if($id) id="card_participante_{{ $id }}" data-card-id="{{ $id }}" @endif
          @if($onclick) onclick="{{ $onclick }}" @endif>
     <!-- Remates angulares dorados -->
     <div class="corner-bracket corner-tl"></div>
@@ -42,7 +44,7 @@
     <!-- Header con Número y Bandera -->
     <header class="relative z-10 px-4 pt-4 flex flex-col gap-2" data-purpose="card-top-category">
         <div class="flex items-center justify-between">
-            <span class="text-[12px] tracking-[0.2em] uppercase font-bold text-gold-400/90 drop-shadow-md" style="color: #fbbf24;">
+            <span class="card-numero-value text-[12px] tracking-[0.2em] uppercase font-bold text-gold-400/90 drop-shadow-md" style="color: #fbbf24;">
                 N° {{ $numero }}
             </span>
             @if ($bandera)
@@ -55,7 +57,7 @@
     <!-- Parte baja: Calificación sobre el Nombre y Departamento -->
     <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center" data-purpose="artist-info-and-score">
         <div class="flex items-baseline gap-1 mb-1">
-            <span class="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+            <span class="card-score-value font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
                 {{ $notaTexto }}
             </span>
             <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
