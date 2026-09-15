@@ -12,8 +12,13 @@
             <h3 class="font-semibold text-slate-800 mb-3">Departamentos</h3>
             <ul class="space-y-1 text-sm text-slate-600">
                 @foreach ($departamentos as $departamento)
-                    <li class="flex justify-between border-b border-slate-100 py-1">
-                        <span class="font-medium text-slate-700">{{ $departamento->nombre }}</span>
+                    <li class="flex items-center justify-between border-b border-slate-100 py-1.5">
+                        <div class="flex items-center gap-2">
+                            @if ($departamento->bandera_url)
+                                <img src="{{ $departamento->bandera_url }}" alt="{{ $departamento->nombre }}" class="h-4 w-6 object-cover rounded shadow-xs border border-slate-200">
+                            @endif
+                            <span class="font-medium text-slate-700">{{ $departamento->nombre }}</span>
+                        </div>
                         <span class="text-xs text-slate-400">{{ $departamento->fases_count }} fase(s)</span>
                     </li>
                 @endforeach

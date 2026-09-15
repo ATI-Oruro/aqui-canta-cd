@@ -330,8 +330,15 @@
                                         {{ $pres->nombreMostrado() }}
                                     </h3>
                                     
+                                    @php
+                                        $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
+                                    @endphp
                                     <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        <span>🇧🇴</span>
+                                        @if ($departamentoBandera)
+                                            <img src="{{ $departamentoBandera }}" alt="{{ $departamentoNombre }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
+                                        @else
+                                            <span>🇧🇴</span>
+                                        @endif
                                         <span>{{ $departamentoNombre }}</span>
                                     </div>
 
@@ -543,8 +550,15 @@
                                         {{ $pres->nombreMostrado() }}
                                     </h3>
                                     
+                                    @php
+                                        $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
+                                    @endphp
                                     <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        <span>🇧🇴</span>
+                                        @if ($departamentoBandera)
+                                            <img src="{{ $departamentoBandera }}" alt="{{ $departamentoNombre }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
+                                        @else
+                                            <span>🇧🇴</span>
+                                        @endif
                                         <span>{{ $departamentoNombre }}</span>
                                     </div>
                                 </div>

@@ -10,19 +10,22 @@ class DepartamentoSeeder extends Seeder
     public function run(): void
     {
         $departamentos = [
-            'Chuquisaca',
-            'La Paz',
-            'Cochabamba',
-            'Oruro',
-            'Potosí',
-            'Tarija',
-            'Santa Cruz',
-            'Beni',
-            'Pando',
+            'Chuquisaca' => 'chuquisaca.png',
+            'La Paz' => 'lapaz.png',
+            'Cochabamba' => 'cochabamba.png',
+            'Oruro' => 'oruro.png',
+            'Potosí' => 'potosi.png',
+            'Tarija' => 'tarija.png',
+            'Santa Cruz' => 'santacruz.png',
+            'Beni' => 'beni.png',
+            'Pando' => 'pando.png',
         ];
 
-        foreach ($departamentos as $nombre) {
-            Departamento::firstOrCreate(['nombre' => $nombre]);
+        foreach ($departamentos as $nombre => $bandera) {
+            Departamento::updateOrCreate(
+                ['nombre' => $nombre],
+                ['bandera' => $bandera]
+            );
         }
     }
 }

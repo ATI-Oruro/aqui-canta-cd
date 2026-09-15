@@ -109,8 +109,15 @@
                             {{ $nombrePrincipal }}
                         </h2>
 
+                        @php
+                            $departamentoBandera = $inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
+                        @endphp
                         <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
-                            <span>🇧🇴</span>
+                            @if ($departamentoBandera)
+                                <img src="{{ $departamentoBandera }}" alt="{{ $departamentoNombre }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
+                            @else
+                                <span>🇧🇴</span>
+                            @endif
                             <span>{{ $departamentoNombre }}</span>
                             @if ($pseudonimo !== $nombrePrincipal)
                                 <span class="text-amber-400/80 italic font-sans lowercase">(«{{ $pseudonimo }}»)</span>

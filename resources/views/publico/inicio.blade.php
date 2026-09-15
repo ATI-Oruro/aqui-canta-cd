@@ -2,17 +2,6 @@
     
     @php
         $catId = $categoriaSeleccionada?->id;
-        $banderas = [
-            'Oruro' => '⚪🔴',
-            'La Paz' => '🔴🟢',
-            'Cochabamba' => '🔵',
-            'Potosí' => '🔴⚪',
-            'Santa Cruz' => '🟢⚪🟢',
-            'Chuquisaca' => '⚪🔴',
-            'Tarija' => '🔴⚪',
-            'Beni' => '🟢',
-            'Pando' => '⚪🟢',
-        ];
     @endphp
 
     <div id="rankingLiveWrapper" class="space-y-6">
@@ -92,8 +81,13 @@
                                         </h3>
 
                                         @if (!empty($segundoLugar['departamento']))
-                                            <p class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1">
-                                                <span>{{ $banderas[$segundoLugar['departamento']] ?? '🇧🇴' }}</span>
+                                            @php
+                                                $bandera2 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($segundoLugar['departamento']);
+                                            @endphp
+                                            <p class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                                                @if ($bandera2)
+                                                    <img src="{{ $bandera2 }}" alt="{{ $segundoLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
+                                                @endif
                                                 <span>{{ $segundoLugar['departamento'] }}</span>
                                             </p>
                                         @endif
@@ -146,8 +140,13 @@
                                         </h3>
 
                                         @if (!empty($primerLugar['departamento']))
-                                            <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1">
-                                                <span>{{ $banderas[$primerLugar['departamento']] ?? '🇧🇴' }}</span>
+                                            @php
+                                                $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento']);
+                                            @endphp
+                                            <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                                                @if ($bandera1)
+                                                    <img src="{{ $bandera1 }}" alt="{{ $primerLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
+                                                @endif
                                                 <span>{{ $primerLugar['departamento'] }}</span>
                                             </p>
                                         @endif
@@ -195,8 +194,13 @@
                                         </h3>
 
                                         @if (!empty($tercerLugar['departamento']))
-                                            <p class="text-[11px] font-semibold text-amber-400/90 uppercase tracking-wider flex items-center justify-center gap-1">
-                                                <span>{{ $banderas[$tercerLugar['departamento']] ?? '🇧🇴' }}</span>
+                                            @php
+                                                $bandera3 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($tercerLugar['departamento']);
+                                            @endphp
+                                            <p class="text-[11px] font-semibold text-amber-400/90 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                                                @if ($bandera3)
+                                                    <img src="{{ $bandera3 }}" alt="{{ $tercerLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
+                                                @endif
                                                 <span>{{ $tercerLugar['departamento'] }}</span>
                                             </p>
                                         @endif
@@ -260,8 +264,14 @@
                                             <h4 class="text-xs font-bold text-slate-200 font-cinzel truncate group-hover:text-amber-200 transition" title="{{ $p['nombre'] }}">
                                                 {{ $p['nombre'] }}
                                             </h4>
-                                            <span class="text-[9px] text-slate-400 uppercase tracking-wider block">
-                                                {{ $banderas[$p['departamento']] ?? '🇧🇴' }} {{ $p['departamento'] ?? 'Bolivia' }}
+                                            @php
+                                                $banderaP = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($p['departamento']);
+                                            @endphp
+                                            <span class="text-[9px] text-slate-400 uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                                                @if ($banderaP)
+                                                    <img src="{{ $banderaP }}" alt="{{ $p['departamento'] }}" class="h-2.5 w-auto object-cover rounded-[1px] inline-block">
+                                                @endif
+                                                <span>{{ $p['departamento'] ?? 'Bolivia' }}</span>
                                             </span>
                                         </div>
                                     </div>
@@ -367,8 +377,13 @@
                                         {{ $item['nombre'] }}
                                     </h3>
                                     
+                                    @php
+                                        $banderaCard = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($item['departamento']);
+                                    @endphp
                                     <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        <span>{{ $banderas[$item['departamento']] ?? '🇧🇴' }}</span>
+                                        @if ($banderaCard)
+                                            <img src="{{ $banderaCard }}" alt="{{ $item['departamento'] }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
+                                        @endif
                                         <span>{{ $item['departamento'] ?? 'Bolivia' }}</span>
                                     </div>
 

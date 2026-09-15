@@ -59,7 +59,13 @@
                         <p data-categoria-fase class="mt-4 text-xs sm:text-sm uppercase tracking-[0.25em] text-slate-400 font-medium">
                             {{ $presentacion?->inscripcion?->categoria?->categoria ?? '' }} · {{ $presentacion?->inscripcion?->fase?->fase?->label() ?? '' }}
                             @if ($presentacion?->inscripcion?->departamento)
-                                · {{ $presentacion->inscripcion->departamento->nombre }}
+                                <span class="inline-flex items-center gap-1.5 align-middle">
+                                    <span>·</span>
+                                    @if ($presentacion->inscripcion->departamento->bandera_url)
+                                        <img src="{{ $presentacion->inscripcion->departamento->bandera_url }}" alt="{{ $presentacion->inscripcion->departamento->nombre }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm inline-block">
+                                    @endif
+                                    <span>{{ $presentacion->inscripcion->departamento->nombre }}</span>
+                                </span>
                             @endif
                         </p>
 
