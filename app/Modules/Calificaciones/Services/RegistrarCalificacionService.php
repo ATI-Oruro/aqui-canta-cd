@@ -55,6 +55,10 @@ class RegistrarCalificacionService
             throw new DomainException('La presentación no tiene una categoría asociada.');
         }
 
+        if ($categoria->estaFinalizada()) {
+            throw new DomainException("Las calificaciones para la categoría [{$categoria->categoria}] han sido cerradas. No se permiten nuevos registros.");
+        }
+
         return DB::transaction(function () use ($juradoPresentacion, $presentacion, $categoria, $valoresPorParametro) {
             // Verificar si ya existe calificación emitida
             $calificacion = Calificacion::firstOrNew([

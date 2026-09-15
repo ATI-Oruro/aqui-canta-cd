@@ -6,6 +6,10 @@ window.Alpine = Alpine;
 
 import { inicializarEscenario } from './escenario-echo';
 
-document.addEventListener('DOMContentLoaded', inicializarEscenario);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarEscenario);
+} else {
+    inicializarEscenario();
+}
 
 Alpine.start();

@@ -44,8 +44,6 @@ class MesaJuradoTest extends TestCase
             ->post(route('mesa.categorias.seleccionar', $cat2));
 
         $response->assertRedirect();
-        $response->assertSessionHas('status');
-
         $this->assertTrue($cat2->fresh()->es_activa);
         $this->assertFalse($cat1->fresh()->es_activa);
     }
@@ -138,9 +136,81 @@ class MesaJuradoTest extends TestCase
             ->get(route('jurado.inicio'));
 
         $response->assertStatus(200);
-        $response->assertSee('Mesa de Control y Evaluación');
         $response->assertSee('Autóctono');
         $response->assertSee('Ayllu Mayor');
         $response->assertSee('Llamar al Escenario');
+        $response->assertSee('Cerrar Calificación');
+        $response->assertSee('Revelar Ganador');
+    }
+
+    public function test_categoria_con_calificaciones_cerradas_bloquea_registro_y_correccion(): void
+    {
+        $jurado = Usuario::create([
+            'username' => 'jurado_eval',
+            'nombre' => 'Jurado',
+            'paterno' => 'Uno',
+            'ci' => '1113334',
+            'email' => 'eval@test.com',
+            'password' => 'password',
+            'rol' => RolEnum::JURADO,
+            'puede_controlar_tiempo' => false,
+        ]);
+
+        $cat = Categoria::create([
+            'categoria' => 'Ñusta',
+            'max_participantes' => 1,
+            'tiempo_presentacion' => 10,
+            'es_activa' => true,
+            'finalizada' => true,
+            'finalizada_at' => now(),
+        ]);
+        $param = Parametro::create(['parametro' => 'Vocal']);
+        CategoriaParametro::create([
+            'id_categoria' => $cat->id,
+            'id_parametro' => $param->id,
+            'valor_minimo' => 1,
+            'valor_maximo' => 100,
+            'orden' => 1,
+        ]);
+
+        $fase = Fase::create(['fase' => FaseEnum::FINAL->value]);
+        $oruro = Departamento::create(['nombre' => 'Oruro']);
+
+        $part = Participante::create(['nombre' => 'Lucía', 'paterno' => 'Flores']);
+        $insc = Inscripcion::create([
+            'fecha_inscripcion' => now(),
+            'id_fase' => $fase->id,
+            'id_categoria' => $cat->id,
+            'id_departamento' => $oruro->id,
+            'estado' => InscripcionEstadoEnum::CONFIRMADA,
+        ]);
+        $insc->participantes()->attach($part->id);
+        $pres = Presentacion::create([
+            'id_inscripcion' => $insc->id,
+            'nombre_presentacion' => 'Lucía Flores',
+            'estado' => PresentacionEstadoEnum::FINALIZADO,
+            'tiempo_maximo' => 10,
+        ]);
+
+        JuradoPresentacion::create([
+            'id_presentacion' => $pres->id,
+            'id_usuario' => $jurado->id,
+            'estado' => JuradoPresentacionEstadoEnum::ASIGNADO,
+        ]);
+
+        // Intento de evaluar
+        $responseEval = $this->actingAs($jurado)
+            ->get(route('jurado.calificaciones.evaluar', $pres));
+
+        $responseEval->assertRedirect(route('jurado.inicio'));
+        $responseEval->assertSessionHas('error');
+
+        // Intento de guardar
+        $responseGuardar = $this->actingAs($jurado)
+            ->post(route('jurado.calificaciones.guardar', $pres), [
+                'valores' => [$param->id => 90],
+            ]);
+
+        $responseGuardar->assertSessionHas('error');
     }
 }

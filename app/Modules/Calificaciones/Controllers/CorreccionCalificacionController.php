@@ -42,6 +42,12 @@ class CorreccionCalificacionController extends Controller
         }
 
         $categoria = $presentacion->inscripcion?->categoria;
+
+        if ($categoria && $categoria->estaFinalizada()) {
+            return redirect()->route('jurado.inicio')
+                ->with('error', sprintf('Las calificaciones para la categoría "%s" han sido cerradas. No se permiten más correcciones.', $categoria->categoria));
+        }
+
         $categoriaParametros = $categoria?->categoriaParametros()
             ->with('parametro')
             ->orderBy('orden')

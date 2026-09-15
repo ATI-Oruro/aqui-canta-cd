@@ -309,11 +309,10 @@ class JuradoSecretoServiceTest extends TestCase
 
         $catFresh = $categoria->fresh();
         $this->assertTrue($catFresh->estaFinalizada());
-        $this->assertTrue($catFresh->estaRevelada());
+        $this->assertFalse($catFresh->estaRevelada());
         $this->assertNotNull($catFresh->finalizada_at);
 
         Event::assertDispatched(CategoriaFinalizada::class);
-        Event::assertDispatched(JuradoSecretoRevelado::class);
         Event::assertDispatched(RankingActualizado::class);
     }
 }

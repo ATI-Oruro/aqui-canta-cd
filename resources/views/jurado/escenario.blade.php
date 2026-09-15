@@ -183,12 +183,33 @@
                                             @endforeach
                                         </div>
 
-                                        <div data-contenedor-corregir class="{{ ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'pt-1' : 'hidden pt-1' }}">
-                                            <a href="{{ route('jurado.calificaciones.corregir.form', $presentacion) }}"
-                                               class="block text-center py-2 px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
-                                                ✏️ Corregir calificación
-                                            </a>
+                                        @if ($presentacion->inscripcion?->categoria?->estaFinalizada())
+                                            <div class="pt-1">
+                                                <div class="py-2 px-3 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                                                    <span>🔒</span>
+                                                    <span>Calificaciones cerradas para esta categoría</span>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div data-contenedor-corregir class="{{ ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'pt-1' : 'hidden pt-1' }}">
+                                                <a href="{{ route('jurado.calificaciones.corregir.form', $presentacion) }}"
+                                                   class="block text-center py-2 px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
+                                                    ✏️ Corregir calificación
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                @elseif ($presentacion->inscripcion?->categoria?->estaFinalizada())
+                                    <!-- Caso: Calificaciones cerradas sin emitir voto -->
+                                    <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 text-center space-y-3 shadow-xl">
+                                        <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 mx-auto flex items-center justify-center text-xl">
+                                            🔒
                                         </div>
+                                        <h3 class="text-sm font-bold text-white">Calificaciones Cerradas</h3>
+                                        <p class="text-xs text-slate-400">
+                                            La categoría "{{ $presentacion->inscripcion?->categoria?->categoria }}" ha cerrado sus evaluaciones. No se permiten nuevos registros de notas.
+                                        </p>
                                     </div>
 
                                 @else

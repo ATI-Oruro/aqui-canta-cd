@@ -48,13 +48,19 @@ class CalificacionJuradoController extends Controller
                 ->with('info', 'Ya emitió su calificación para esta presentación.');
         }
 
+        $categoria = $presentacion->inscripcion?->categoria;
+
+        if ($categoria && $categoria->estaFinalizada()) {
+            return redirect()->route('jurado.inicio')
+                ->with('error', sprintf('Las calificaciones para la categoría "%s" han sido cerradas.', $categoria->categoria));
+        }
+
         // Marcar que el jurado empezó a evaluar
         if (! $calificacion) {
             $juradoPresentacion->estado = JuradoPresentacionEstadoEnum::CALIFICANDO;
             $juradoPresentacion->save();
         }
 
-        $categoria = $presentacion->inscripcion?->categoria;
         $categoriaParametros = $categoria?->categoriaParametros()
             ->with('parametro')
             ->orderBy('orden')

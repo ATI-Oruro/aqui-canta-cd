@@ -1,168 +1,163 @@
 <x-layouts.jurado>
+    @php
+        $inscripcion = $presentacion->inscripcion;
+        $participante = $inscripcion?->participantes->first();
+        $nombrePrincipal = $presentacion->nombreMostrado();
+        $pseudonimo = $participante?->pseudonimo ?? $presentacion->nombre_presentacion ?? $nombrePrincipal;
+        $inicial = mb_substr($nombrePrincipal, 0, 1, 'UTF-8');
+        $departamentoNombre = $inscripcion?->departamento?->nombre ?? 'Bolivia';
+    @endphp
+
     <x-slot:header>
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('jurado.inicio') }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
-                    ← Volver
+        <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="{{ route('jurado.inicio') }}"
+                   class="px-2.5 py-1 rounded-lg bg-[#14040a] hover:bg-[#250714] text-xs font-bold text-amber-300 hover:text-amber-200 border border-[#6b0015]/60 transition flex items-center gap-1.5 shadow-sm">
+                    <span>←</span>
+                    <span class="hidden sm:inline">Panel</span>
                 </a>
-                <h2 class="text-xl font-bold text-slate-800">Corrección de Calificación (Auditoría)</h2>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <h2 class="font-cinzel text-base sm:text-lg font-bold text-white tracking-wide truncate max-w-[280px] sm:max-w-md">
+                        Corrección Auditada
+                    </h2>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full border border-amber-300">
+
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <span class="px-2.5 py-0.5 bg-[#1a050d] text-amber-300 text-[11px] font-bold rounded-full border border-amber-500/40">
                     Modo Corrección
                 </span>
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-300">
-                    {{ $presentacion->inscripcion?->categoria?->categoria ?? 'Categoría' }}
+                <span class="px-2.5 py-0.5 bg-[#260a15] text-rose-300 text-[11px] font-bold rounded-full border border-rose-500/40 truncate max-w-[150px] sm:max-w-[220px]"
+                      title="{{ $inscripcion?->categoria?->categoria }}">
+                    {{ $inscripcion?->categoria?->categoria ?? 'Categoría' }}
                 </span>
             </div>
         </div>
     </x-slot:header>
 
-    <x-slot:sidebar>
-        <a href="{{ route('jurado.inicio') }}" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">Inicio</a>
-        <a href="{{ route('jurado.presentaciones.actual') }}" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">Escenario en vivo</a>
-    </x-slot:sidebar>
-
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-3">
 
         <!-- Banner de advertencia de auditoría -->
-        <div class="p-4 bg-amber-50 border border-amber-200/80 rounded-2xl text-amber-900 text-xs flex items-start gap-3 shadow-sm">
-            <span class="text-lg shrink-0">⚠️</span>
-            <div>
-                <p class="font-bold text-sm">Registro de Auditoría Activo</p>
-                <p class="mt-0.5 text-amber-800">
-                    Cualquier cambio a esta calificación quedará registrado con snapshot de datos anteriores y nuevos, marca de tiempo y usuario en el historial oficial del festival.
-                </p>
-            </div>
+        <div class="p-2.5 bg-[#1a0d03] border border-amber-500/50 rounded-xl text-amber-200 text-xs flex items-center gap-2.5 shadow-md">
+            <span class="text-base shrink-0">⚠️</span>
+            <p class="text-[11px] leading-tight text-amber-100/90">
+                <strong>Registro de Auditoría Forense:</strong> Toda modificación asentará un snapshot histórico con fecha, usuario y valores previos para garantizar la fe notarial del festival.
+            </p>
         </div>
 
         @if (session('error'))
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-3 shadow-sm">
-                <span class="text-xl">⚠️</span>
-                <p class="font-medium">{{ session('error') }}</p>
+            <div class="p-3 rounded-xl bg-[#2b080f] border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2 shadow-md animate-fadeIn">
+                <span class="text-base font-bold text-rose-400">⚠️</span>
+                <p class="font-semibold">{{ session('error') }}</p>
             </div>
         @endif
 
-        @php
-            $inscripcion = $presentacion->inscripcion;
-            $participante = $inscripcion?->participantes->first();
-            $nombrePrincipal = $presentacion->nombreMostrado();
-            $pseudonimo = $participante?->pseudonimo ?? $presentacion->nombre_presentacion ?? $nombrePrincipal;
-            $inicial = mb_substr($nombrePrincipal, 0, 1, 'UTF-8');
-            $esActivo = in_array($presentacion->estado?->value, [
-                App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value,
-                App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
-            ], true);
-        @endphp
-
         <!-- Contenedor Principal: 2 Columnas -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5 items-start">
             
             <!-- Columna Izquierda: Tarjeta Resumen del Participante (4 cols) -->
-            <div class="lg:col-span-4 space-y-4 sticky top-6">
-                <div class="bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden">
-                    <!-- Franja Tricolor Superior -->
-                    <div class="h-2 w-full flex">
-                        <div class="w-1/3 bg-[#dc2626]"></div>
-                        <div class="w-1/3 bg-[#facc15]"></div>
-                        <div class="w-1/3 bg-[#16a34a]"></div>
+            <div class="lg:col-span-4 space-y-3">
+                <div class="bg-[#120409]/95 rounded-2xl border border-[#3b000b] p-3.5 sm:p-4 text-center space-y-3 shadow-xl">
+                    
+                    <!-- Header / Foto o Logo -->
+                    <div class="relative flex items-center justify-center pt-1">
+                        @if ($presentacion->fotoUrl())
+                            <img src="{{ $presentacion->fotoUrl() }}"
+                                 alt="{{ $nombrePrincipal }}"
+                                 class="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover object-top border border-[#4a0817] shadow-lg">
+                        @else
+                            <div class="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(180,83,9,0.25),rgba(5,1,3,0.95)_70%)] border border-[#4a0817] shadow-md flex flex-col items-center justify-center p-2">
+                                <img src="/images/logo-oficial.png"
+                                     alt="Aquí Canta Bolivia"
+                                     class="h-12 w-12 object-contain drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                                     onerror="this.src='/images/logo-oficial.png'">
+                                <span class="text-[8px] uppercase tracking-wider text-[#d4af37] font-cinzel font-bold mt-1">Gador 2026</span>
+                            </div>
+                        @endif
                     </div>
 
-                    <div class="p-6 text-center space-y-4">
-                        <!-- Avatar con Inicial -->
-                        <div class="relative inline-block mx-auto">
-                            <div class="h-24 w-24 rounded-full bg-[#5c0618] border-4 border-[#e2b765] shadow-md flex items-center justify-center text-white font-black text-4xl">
-                                {{ $inicial }}
-                            </div>
-                            <span class="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white"></span>
+                    <!-- Nombre del participante -->
+                    <div class="space-y-0.5">
+                        <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#20050e] text-amber-300 text-[10px] font-bold border border-[#4a0817]">
+                            <span>♪</span>
+                            <span class="truncate max-w-[200px]">{{ $inscripcion?->categoria?->categoria ?? 'Categoría' }}</span>
                         </div>
 
-                        <!-- Categoría -->
-                        <div>
-                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#3d040f] text-amber-300 text-xs font-bold tracking-wide">
-                                <span>♪</span>
-                                <span>{{ $inscripcion?->categoria?->categoria ?? 'Categoría' }}</span>
-                            </span>
+                        <h2 class="text-base sm:text-lg font-black text-[#fef9c3] font-cinzel tracking-wide leading-tight line-clamp-1"
+                            title="{{ $nombrePrincipal }}">
+                            {{ $nombrePrincipal }}
+                        </h2>
+
+                        <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                            <span>🇧🇴</span>
+                            <span>{{ $departamentoNombre }}</span>
+                            @if ($pseudonimo !== $nombrePrincipal)
+                                <span class="text-amber-400/80 italic font-sans lowercase">(«{{ $pseudonimo }}»)</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Grid 3 cajas informativas -->
+                    <div class="grid grid-cols-3 gap-1.5 text-left pt-1">
+                        <div class="bg-black/50 border border-[#2d050f] rounded-xl p-1.5 text-center">
+                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400 block">N.° Pres.</span>
+                            <p class="text-xs font-black text-amber-300">#{{ $presentacion->id }}</p>
                         </div>
 
-                        <!-- Nombre del participante -->
-                        <div>
-                            <h2 class="text-xl font-black text-slate-900 leading-tight">
-                                {{ $nombrePrincipal }}
-                            </h2>
-                            <p class="text-xs font-semibold text-[#8b1528] italic mt-0.5">
-                                «{{ $pseudonimo }}»
+                        <div class="bg-black/50 border border-[#2d050f] rounded-xl p-1.5 text-center">
+                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400 block">Hora</span>
+                            <p class="text-xs font-bold text-slate-200">
+                                {{ $inscripcion?->hora_presentacion ?? ($presentacion->hora_inicio ? $presentacion->hora_inicio->format('H:i') : 'Finalizado') }}
                             </p>
                         </div>
 
-                        <!-- Grid 4 cajas informativas -->
-                        <div class="grid grid-cols-2 gap-2 text-left pt-2">
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5">
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Fecha</span>
-                                <p class="text-xs font-bold text-slate-800 truncate">
-                                    {{ $inscripcion?->fecha_presentacion ? \Carbon\Carbon::parse($inscripcion->fecha_presentacion)->isoFormat('D MMM YYYY') : 'Hoy' }}
-                                </p>
-                            </div>
-
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5">
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Hora</span>
-                                <p class="text-xs font-bold text-slate-800">
-                                    {{ $inscripcion?->hora_presentacion ?? ($presentacion->hora_inicio ? $presentacion->hora_inicio->format('H:i') : '14:35') }}
-                                </p>
-                            </div>
-
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5">
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">N.° Presentación</span>
-                                <p class="text-xs font-black text-[#8b1528]">
-                                    #{{ $presentacion->id }}
-                                </p>
-                            </div>
-
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex flex-col justify-center">
-                                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Estado</span>
-                                <div>
-                                    <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">
-                                        {{ $presentacion->estado?->label() }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Nota Previa -->
-                        <div class="bg-[#3d040f] text-white rounded-2xl p-4 text-center">
-                            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-400 block">Nota Previa Emitida</span>
-                            <div class="text-3xl font-black tabular-nums text-white mt-0.5">
-                                {{ number_format($calificacion->nota_total, 2) }}
-                            </div>
-                            <span class="text-[10px] text-slate-400">/ 100 puntos</span>
+                        <div class="bg-black/50 border border-[#2d050f] rounded-xl p-1.5 text-center">
+                            <span class="text-[8px] font-bold uppercase tracking-wider text-slate-400 block">Estado</span>
+                            <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                                Finalizado
+                            </span>
                         </div>
                     </div>
+
+                    <!-- Nota Previa Emitida -->
+                    <div class="bg-black/60 border border-[#3b000b] rounded-xl p-2.5 sm:p-3 text-center space-y-0.5 shadow-inner">
+                        <span class="text-[9px] uppercase font-black tracking-widest text-amber-400 block">Nota Previa Emitida</span>
+                        <div class="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white tabular-nums">
+                            {{ number_format($calificacion->nota_total, 2) }}
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-medium">/ 100 puntos</span>
+                    </div>
+
                 </div>
             </div>
 
             <!-- Columna Derecha: Formulario de Corrección de Criterios (8 cols) -->
-            <div class="lg:col-span-8 space-y-6">
+            <div class="lg:col-span-8">
                 <form id="formCorreccion" method="POST" action="{{ route('jurado.calificaciones.corregir', $calificacion) }}">
                     @csrf
 
-                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200/80 p-6 sm:p-8 space-y-6">
+                    <div class="bg-[#120409]/95 rounded-2xl border border-[#3b000b] p-3.5 sm:p-5 shadow-xl space-y-3 sm:space-y-4">
                         
-                        <!-- Header del Card Criterios de Calificación -->
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
+                        <!-- Header del Card Criterios -->
+                        <div class="flex items-center justify-between gap-3 border-b border-[#2d050f] pb-2.5">
                             <div>
-                                <h3 class="text-xl font-black text-[#5c0618] tracking-tight">Criterios de Calificación (Ajuste)</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Modifica los valores deslizando o escribiendo la nota</p>
+                                <h3 class="font-cinzel text-base sm:text-lg font-bold text-[#fef9c3] tracking-wide flex items-center gap-2">
+                                    <span>✏️</span>
+                                    <span>Criterios de Calificación (Ajuste)</span>
+                                </h3>
+                                <p class="text-[11px] text-slate-400">Modifique los valores correspondientes</p>
                             </div>
 
-                            <div class="flex items-center gap-3 bg-[#faf5f0] border border-amber-200/80 px-4 py-2 rounded-2xl self-start sm:self-auto shadow-sm">
-                                <span class="text-xs font-bold text-slate-700">Nueva Nota:</span>
-                                <span id="displayTotalTop" class="text-xl font-black text-[#8b1528] tabular-nums">0.00</span>
-                                <span id="displayDiffTop" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">=</span>
+                            <div class="flex items-center gap-2.5 bg-black/60 border border-[#4a0817] px-3.5 py-1.5 rounded-xl shadow-inner">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Nueva Nota:</span>
+                                <span id="displayTotalTop" class="text-xl sm:text-2xl font-black text-amber-300 tabular-nums font-mono">0.00</span>
+                                <span id="displayDiffTop" class="text-[10px] font-black px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-300">=</span>
                             </div>
                         </div>
 
                         <!-- Lista de Parámetros -->
-                        <div class="space-y-6">
+                        <div class="space-y-2.5 sm:space-y-3">
                             @foreach ($categoriaParametros as $cp)
                                 @php
                                     $idParam = $cp->id_parametro;
@@ -172,87 +167,85 @@
                                     $valorPrevio = (float) old("valores.{$idParam}", $detallesActuales->get($idParam)?->valor ?? $minVal);
                                 @endphp
 
-                                <div class="bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 transition space-y-3"
+                                <div class="bg-black/50 hover:bg-black/70 border border-[#2d050f] hover:border-[#4a0817] rounded-xl p-2.5 sm:p-3 transition space-y-1.5"
                                      data-param-container="{{ $idParam }}">
                                     
                                     <!-- Fila Superior: Nombre + Rango + Nota -->
                                     <div class="flex items-center justify-between gap-2">
-                                        <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">
+                                        <h4 class="font-semibold text-slate-200 text-xs sm:text-sm leading-snug">
                                             {{ $nombreParam }}
                                         </h4>
 
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <span class="text-[11px] text-slate-400 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 font-medium">
-                                                Rango: {{ number_format($minVal, 2) }} - {{ number_format($maxVal, 2) }}
+                                        <div class="flex items-center gap-1.5 shrink-0 font-mono">
+                                            <span class="text-[10px] text-slate-400 bg-black/60 px-2 py-0.5 rounded border border-[#2d050f]">
+                                                Rango: {{ number_format($minVal, 0) }} - {{ number_format($maxVal, 0) }} pts
                                             </span>
-                                            <span class="text-[11px] font-bold text-[#5c0618] bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+                                            <span class="text-[11px] font-bold text-amber-300 bg-[#2b0813] px-2.5 py-0.5 rounded border border-amber-500/30">
                                                 Nota: <span id="badge_nota_{{ $idParam }}">{{ number_format($valorPrevio, 1) }}</span>
                                             </span>
                                         </div>
                                     </div>
 
-                                    <!-- Fila de Controles: Slider Gradiente + Input Numérico Sincronizado -->
-                                    <div class="flex items-center gap-4">
-                                        <!-- Slider -->
-                                        <div class="flex-1 space-y-1">
+                                    <!-- Fila de Controles: Slider + Input Numérico Dark -->
+                                    <div class="flex items-center gap-3 sm:gap-4">
+                                        <div class="flex-1 space-y-0.5">
                                             <input type="range"
                                                    id="slider_{{ $idParam }}"
                                                    min="{{ $minVal }}"
                                                    max="{{ $maxVal }}"
                                                    step="0.5"
                                                    value="{{ $valorPrevio }}"
-                                                   class="festival-slider w-full"
+                                                   class="festival-slider w-full h-2 cursor-pointer"
                                                    oninput="sincronizarDesdeSlider({{ $idParam }})">
                                             
-                                            <div class="flex justify-between text-[10px] text-slate-400 font-bold px-0.5">
-                                                <span>{{ number_format($minVal, 2) }}</span>
-                                                <span id="label_center_{{ $idParam }}" class="text-[#8b1528]">{{ number_format($valorPrevio, 1) }}</span>
-                                                <span>{{ number_format($maxVal, 2) }}</span>
+                                            <div class="flex justify-between text-[9px] text-slate-500 font-bold px-0.5 font-mono">
+                                                <span>{{ number_format($minVal, 0) }}</span>
+                                                <span id="label_center_{{ $idParam }}" class="text-amber-400 font-black">{{ number_format($valorPrevio, 1) }}</span>
+                                                <span>{{ number_format($maxVal, 0) }}</span>
                                             </div>
                                         </div>
 
-                                        <!-- Caja de Texto Numérica -->
-                                        <div class="shrink-0 w-24">
+                                        <div class="shrink-0 w-20 sm:w-24">
                                             <input type="number"
                                                    name="valores[{{ $idParam }}]"
                                                    id="input_{{ $idParam }}"
                                                    min="{{ $minVal }}"
-                                                   max="{{ $maxVal }}"
                                                    step="0.5"
                                                    value="{{ $valorPrevio }}"
                                                    required
-                                                   class="w-full px-3 py-2 text-center text-base font-black text-slate-900 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-[#5c0618] focus:border-[#5c0618] shadow-sm transition tabular-nums"
+                                                   style="background-color: #0b0206 !important; color: #ffffff !important;"
+                                                   class="w-full py-1.5 px-2 text-center text-sm sm:text-base font-black !text-white !bg-[#0b0206] border border-[#4a0817] focus:border-amber-400 rounded-xl shadow-inner focus:outline-none transition tabular-nums font-mono"
                                                    oninput="sincronizarDesdeInput({{ $idParam }})">
                                         </div>
                                     </div>
                                     
                                     @error("valores.{$idParam}")
-                                        <p class="text-xs text-rose-600 font-semibold mt-1">{{ $message }}</p>
+                                        <p class="text-[11px] text-rose-400 font-semibold">{{ $message }}</p>
                                     @enderror
                                 </div>
                             @endforeach
                         </div>
 
-                        <!-- Motivo / Justificación -->
-                        <div class="pt-4 border-t border-slate-100 space-y-2">
-                            <label for="motivo" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                Motivo o Justificación de la corrección <span class="text-rose-600 font-bold">*</span>
+                        <!-- Motivo / Justificación Obligatoria -->
+                        <div class="pt-2 border-t border-[#3b000b] space-y-1.5">
+                            <label for="motivo" class="block text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+                                Motivo o Justificación del ajuste <span class="text-rose-400 font-bold">*</span>
                             </label>
                             <textarea name="motivo"
                                       id="motivo"
                                       rows="2"
                                       required
-                                      placeholder="Indique obligatoriamente el motivo del ajuste (ej: Rectificación tras deliberación oficial)..."
-                                      class="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-[#5c0618] focus:border-[#5c0618] transition">{{ old('motivo') }}</textarea>
+                                      placeholder="Indique obligatoriamente el motivo del ajuste (ej: Rectificación tras deliberación oficial de mesa)..."
+                                      class="w-full px-3 py-2 text-xs text-slate-100 bg-black/80 border border-[#6b0015] focus:border-amber-400 rounded-xl transition placeholder:text-slate-600 focus:outline-none">{{ old('motivo') }}</textarea>
                             @error('motivo')
-                                <p class="text-xs text-rose-600 font-semibold">{{ $message }}</p>
+                                <p class="text-[11px] text-rose-400 font-semibold">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <!-- Botón de Guardar Corrección -->
-                        <div class="pt-2">
+                        <div class="pt-1">
                             <button type="submit"
-                                    class="w-full py-4 px-6 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-black text-base tracking-wide shadow-xl hover:shadow-2xl transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    class="w-full py-3 sm:py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
                                 <span>✏️</span>
                                 <span>Guardar Corrección Auditada</span>
                             </button>
@@ -316,13 +309,13 @@
                 const diff = Math.round((total - notaAnterior) * 100) / 100;
                 if (diff > 0) {
                     displayDiff.textContent = '+' + diff.toFixed(2);
-                    displayDiff.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+                    displayDiff.className = 'text-[10px] font-black px-2 py-0.5 rounded font-mono bg-emerald-950 text-emerald-300 border border-emerald-500/50';
                 } else if (diff < 0) {
                     displayDiff.textContent = diff.toFixed(2);
-                    displayDiff.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+                    displayDiff.className = 'text-[10px] font-black px-2 py-0.5 rounded font-mono bg-rose-950 text-rose-300 border border-rose-500/50';
                 } else {
                     displayDiff.textContent = '=';
-                    displayDiff.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700';
+                    displayDiff.className = 'text-[10px] font-black px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-300';
                 }
             }
         }
@@ -333,3 +326,4 @@
     </script>
     @endpush
 </x-layouts.jurado>
+

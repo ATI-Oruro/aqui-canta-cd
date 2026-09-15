@@ -35,7 +35,7 @@ class MesaJuradoController extends Controller
         $ranking = $this->rankingService->rankingPorCategoria($categoria, null, true);
         event(new RankingActualizado($categoria, $ranking));
 
-        return back()->with('status', sprintf('Categoría "%s" seleccionada y fijada como activa en el festival.', $categoria->categoria));
+        return back();
     }
 
     public function cerrarCalificaciones(Categoria $categoria): RedirectResponse

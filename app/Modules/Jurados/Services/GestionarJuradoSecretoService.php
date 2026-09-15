@@ -120,16 +120,13 @@ class GestionarJuradoSecretoService
     }
 
     /**
-     * Finaliza oficialmente la categoría, revelando automáticamente el jurado secreto.
+     * Finaliza/cierra oficialmente las calificaciones de la categoría.
      */
     public function finalizarCategoria(Categoria $categoria): void
     {
         $categoria->marcarFinalizada();
 
-        $juradoSecreto = $this->asignarJuradosService->juradoSecretoDeCategoria($categoria);
-
         event(new CategoriaFinalizada($categoria));
-        event(new JuradoSecretoRevelado($categoria, $juradoSecreto));
 
         $ranking = $this->calcularRankingService->rankingPorCategoria($categoria, null, true);
         event(new RankingActualizado($categoria, $ranking));

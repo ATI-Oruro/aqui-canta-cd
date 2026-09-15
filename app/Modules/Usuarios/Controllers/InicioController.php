@@ -30,7 +30,7 @@ class InicioController extends Controller
         $presentacionesCategoria = collect();
         $resumenCategorias = collect();
 
-        if ($esDelegadoMesa && Schema::hasTable('categorias')) {
+        if (Schema::hasTable('categorias')) {
             $categorias = Categoria::orderBy('id')->get();
             $categoriaIdReq = $request->has('cat') ? $request->integer('cat') : null;
             $categoriaActiva = Categoria::categoriaActiva($categoriaIdReq);
@@ -47,7 +47,7 @@ class InicioController extends Controller
                         'inscripcion.departamento',
                         'inscripcion.participantes',
                         'jurados.usuario',
-                        'jurados.calificacion',
+                        'jurados.calificacion.detalles.parametro',
                     ])
                     ->orderBy('inscripciones.fecha_presentacion')
                     ->orderBy('inscripciones.hora_presentacion')
@@ -58,12 +58,23 @@ class InicioController extends Controller
             $resumenCategorias = $this->rankingService->resumenCategoriasEtapaFinal();
         }
 
+        $presentacionEnVivo = $presentacionesCategoria->first(fn ($p) => in_array($p->estado, [
+            \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO,
+            \App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO,
+        ], true));
+
+        $cronometroEnVivo = $presentacionEnVivo
+            ? app(\App\Modules\Presentaciones\Services\GestionarCronometroService::class)->obtenerEstado($presentacionEnVivo)
+            : null;
+
         return view('jurado.inicio', [
             'esDelegadoMesa' => $esDelegadoMesa,
             'categorias' => $categorias,
             'categoriaActiva' => $categoriaActiva,
             'presentacionesCategoria' => $presentacionesCategoria,
             'resumenCategorias' => $resumenCategorias,
+            'presentacionEnVivo' => $presentacionEnVivo,
+            'cronometroEnVivo' => $cronometroEnVivo,
         ]);
     }
 

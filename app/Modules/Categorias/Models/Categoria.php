@@ -105,7 +105,7 @@ class Categoria extends Model
 
     public function estaRevelada(): bool
     {
-        return (bool) $this->jurado_secreto_revelado || $this->estaFinalizada();
+        return (bool) $this->jurado_secreto_revelado;
     }
 
     public function marcarRevelada(): void
@@ -129,8 +129,6 @@ class Categoria extends Model
         $this->update([
             'finalizada' => true,
             'finalizada_at' => now(),
-            'jurado_secreto_revelado' => true,
-            'revelado_at' => $this->revelado_at ?? now(),
         ]);
     }
 
@@ -139,6 +137,8 @@ class Categoria extends Model
         $this->update([
             'finalizada' => false,
             'finalizada_at' => null,
+            'jurado_secreto_revelado' => false,
+            'revelado_at' => null,
         ]);
     }
 

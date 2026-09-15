@@ -345,9 +345,15 @@ export function inicializarEscenario() {
         }
     }, 100);
 
-    // Escuchar el canal privado 'presentaciones'
-    window.Echo.private('presentaciones')
-        .listen('.presentacion.estado.cambiado', (datos) => {
+    // Escuchar el canal de presentaciones (privado y público para máxima compatibilidad)
+    const canales = [
+        window.Echo.private('presentaciones'),
+        window.Echo.channel('presentaciones'),
+    ];
+
+    canales.forEach((ch) => {
+        if (!ch) return;
+        ch.listen('.presentacion.estado.cambiado', (datos) => {
             aplicarEstadoCambiado(datos);
         })
         .listen('.cronometro.actualizado', (datos) => {
@@ -375,6 +381,7 @@ export function inicializarEscenario() {
                 }
             }
         });
+    });
 
     renderizar();
 }

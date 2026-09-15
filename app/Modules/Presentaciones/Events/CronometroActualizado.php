@@ -20,6 +20,8 @@ class CronometroActualizado implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
+            new Channel('ranking'),
+            new Channel('presentaciones'),
             new PrivateChannel('presentaciones'),
             new PrivateChannel('presentaciones.'.$this->presentacion->id),
         ];

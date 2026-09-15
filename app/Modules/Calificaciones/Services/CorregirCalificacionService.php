@@ -55,6 +55,10 @@ class CorregirCalificacionService
             throw new DomainException('La presentación no tiene una categoría asociada.');
         }
 
+        if ($categoria->estaFinalizada()) {
+            throw new DomainException("Las calificaciones para la categoría [{$categoria->categoria}] han sido cerradas. No se permiten modificaciones ni correcciones.");
+        }
+
         return DB::transaction(function () use ($calificacion, $juradoPresentacion, $presentacion, $categoria, $nuevosValoresPorParametro, $usuario, $motivo) {
             // Cargar detalles anteriores para snapshot
             $detallesAnteriores = $calificacion->detalles()->get();

@@ -142,7 +142,7 @@ class AdminJuradoSecretoTest extends TestCase
 
         $responseFinalizar->assertRedirect();
         $this->assertTrue($this->categoria->fresh()->estaFinalizada());
-        $this->assertTrue($this->categoria->fresh()->estaRevelada());
+        $this->assertFalse($this->categoria->fresh()->estaRevelada());
 
         // Reabrir
         $responseReabrir = $this->actingAs($this->admin)
