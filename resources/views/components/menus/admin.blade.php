@@ -31,6 +31,13 @@
 </a>
 
 <span class="block px-4 pt-4 pb-1 text-xs uppercase tracking-wider text-slate-500">Resultados</span>
-<a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Ranking</a>
-<a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Reportes</a>
-<a href="#" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">Auditoría</a>
+<a href="{{ route('inicio') }}" target="_blank" class="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white flex items-center justify-between">
+    <span>Ranking Público</span>
+    <span class="text-[10px] text-amber-300">↗</span>
+</a>
+<a href="{{ route('admin.reportes.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.reportes.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.reportes.*')])>
+    Reportes & Actas
+</a>
+<a href="{{ route('admin.auditoria.index') }}" @class(['block px-4 py-2 rounded-lg', 'bg-slate-800 text-white font-semibold' => request()->routeIs('admin.auditoria.*'), 'text-slate-300 hover:bg-slate-800 hover:text-white' => ! request()->routeIs('admin.auditoria.*')])>
+    Auditoría
+</a>

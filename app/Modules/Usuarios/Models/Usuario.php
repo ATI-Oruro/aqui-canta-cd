@@ -59,6 +59,15 @@ class Usuario extends Authenticatable
         return $this->rol?->esJurado() ?? false;
     }
 
+    public function nombreCompleto(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->nombre,
+            $this->paterno,
+            $this->materno,
+        ]))) ?: ($this->username ?? 'Usuario');
+    }
+
     public function puedeControlarTiempo(): bool
     {
         return $this->puede_controlar_tiempo;

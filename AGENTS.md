@@ -40,7 +40,8 @@ La convocatoria debe ser tomada como fuente de la configuración inicial de cate
 - **FASE 3 (presentaciones, estados, asignación de jurados, cronómetro backend y cliente, WebSockets en tiempo real)** — completada.
 - **FASE 4 (motor de calificaciones, notas por parámetro, cálculo de nota final, correcciones auditadas, tiempo real)** — completada.
 - **FASE 5 (jurado secreto, selección/asignación, ocultamiento, cálculo interno, revelación, actualización del ranking)** — completada.
-- **FASE 6 en adelante** — pendiente.
+- **FASE 6 (ranking público de gala, filtros de categorías/departamentos, modal de mesa de evaluación, tiempo real)** — completada.
+- **FASE 7 (reportes oficiales, acta notarial print-ready, sábana de parámetros, auditoría forense, motivo obligatorio en correcciones)** — completada.
 
 Para verificar el estado del código: `php artisan test` (suite completa, sqlite en memoria).
 
@@ -1004,12 +1005,15 @@ Respetar estrictamente estas fases y no adelantar funcionalidades sin necesidad.
 - desglose detallado de mesa de evaluación en modal interactivo;
 - sincronización en tiempo real vía WebSockets en el canal `ranking` y `presentaciones`.
 
-## Fase 7 — Reportes y auditoría
+## Fase 7 — Reportes y auditoría (Completada)
 
-- reportes;
-- historial;
-- resultados finales;
-- salida para control/notaría.
+- reportes consolidados por categoría y fase;
+- historial y auditoría forense de correcciones;
+- resultados finales y podio de honor;
+- acta oficial de escrutinio para Notaría de Fe Pública (print-ready);
+- sábana técnica de evaluación por parámetro;
+- exportaciones en formato CSV estructurado;
+- motivo o justificación obligatoria para corrección de notas por jurados.
 
 ---
 

@@ -236,12 +236,13 @@
                         <!-- Motivo / Justificación -->
                         <div class="pt-4 border-t border-slate-100 space-y-2">
                             <label for="motivo" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                Motivo o Justificación de la corrección (Opcional)
+                                Motivo o Justificación de la corrección <span class="text-rose-600 font-bold">*</span>
                             </label>
                             <textarea name="motivo"
                                       id="motivo"
                                       rows="2"
-                                      placeholder="Ej: Ajuste por deliberación con el comité de jurados..."
+                                      required
+                                      placeholder="Indique obligatoriamente el motivo del ajuste (ej: Rectificación tras deliberación oficial)..."
                                       class="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-[#5c0618] focus:border-[#5c0618] transition">{{ old('motivo') }}</textarea>
                             @error('motivo')
                                 <p class="text-xs text-rose-600 font-semibold">{{ $message }}</p>

@@ -19,7 +19,7 @@ class CorregirCalificacionRequest extends FormRequest
         return [
             'valores' => ['required', 'array', 'min:1'],
             'valores.*' => ['required', 'numeric', 'min:0'],
-            'motivo' => ['nullable', 'string', 'max:255'],
+            'motivo' => ['required', 'string', 'min:3', 'max:255'],
         ];
     }
 
@@ -34,6 +34,8 @@ class CorregirCalificacionRequest extends FormRequest
             'valores.*.required' => 'Cada parámetro debe tener una calificación.',
             'valores.*.numeric' => 'Cada calificación debe ser un valor numérico.',
             'valores.*.min' => 'La calificación no puede ser menor a 0.',
+            'motivo.required' => 'El motivo o justificación de la corrección es obligatorio.',
+            'motivo.min' => 'El motivo de corrección debe tener al menos 3 caracteres.',
             'motivo.max' => 'El motivo de corrección no puede superar los 255 caracteres.',
         ];
     }

@@ -51,6 +51,11 @@ class Presentacion extends Model
         return $this->hasMany(JuradoPresentacion::class, 'id_presentacion');
     }
 
+    public function juradosPresentacion(): HasMany
+    {
+        return $this->jurados();
+    }
+
     public function juradosAsignados(): HasMany
     {
         return $this->jurados()->with(['usuario', 'calificacion.detalles']);

@@ -72,6 +72,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
         Route::get('/presentacion/{presentacion}', [AdminCalificacionesController::class, 'presentacion'])->name('presentacion');
         Route::get('/historial/{calificacion}', [AdminCalificacionesController::class, 'historial'])->name('historial');
     });
+
+    Route::prefix('auditoria')->name('auditoria.')->group(function () {
+        Route::get('/', [\App\Modules\Auditoria\Controllers\AuditoriaController::class, 'index'])->name('index');
+        Route::get('/{historial}', [\App\Modules\Auditoria\Controllers\AuditoriaController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('reportes')->name('reportes.')->group(function () {
+        Route::get('/', [\App\Modules\Reportes\Controllers\ReportesController::class, 'index'])->name('index');
+        Route::get('/resultados', [\App\Modules\Reportes\Controllers\ReportesController::class, 'resultados'])->name('resultados');
+        Route::get('/acta', [\App\Modules\Reportes\Controllers\ReportesController::class, 'acta'])->name('acta');
+        Route::get('/sabana', [\App\Modules\Reportes\Controllers\ReportesController::class, 'sabana'])->name('sabana');
+        Route::get('/exportar/resultados', [\App\Modules\Reportes\Controllers\ReportesController::class, 'exportarResultadosCsv'])->name('exportar.resultados');
+        Route::get('/exportar/sabana', [\App\Modules\Reportes\Controllers\ReportesController::class, 'exportarSabanaCsv'])->name('exportar.sabana');
+    });
 });
 
 // Panel de jurado
