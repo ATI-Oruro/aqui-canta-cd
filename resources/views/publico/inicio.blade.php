@@ -63,12 +63,119 @@
                     <!-- Título de Ganadores Oficial -->
                     <div class="text-center mb-6 border-b border-[#3b000b] pb-4">
                         <h2 class="text-xl sm:text-2xl font-black gold-gradient-text font-cinzel tracking-wider uppercase">
-                            Ganadores de la Categoría
+                            @if ($categoriaSeleccionada?->tieneUnSoloGanador())
+                                {{ $categoriaSeleccionada->esNusta() ? 'Elección y Proclamación de la Ñusta' : 'Ganador Oficial de la Categoría' }}
+                            @else
+                                Ganadores de la Categoría
+                            @endif
                         </h2>
                     </div>
 
-                    <!-- Estructura de Podio: 2° Lugar (Izquierda), 1° Lugar (Centro), 3° Lugar (Derecha) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-end justify-center pt-4 max-w-4xl mx-auto w-full">
+                    @if ($categoriaSeleccionada?->tieneUnSoloGanador())
+                        <!-- ================================================= -->
+                        <!-- MODO GANADOR ÚNICO (ÑUSTA / ESPECIAL: 1 GANADOR) -->
+                        <!-- ================================================= -->
+                        <div class="flex flex-col items-center justify-center pt-4 pb-2 max-w-lg mx-auto w-full">
+                            @if ($primerLugar)
+                                <div class="podio-card-flip-container w-full max-w-[340px]">
+                                    <div id="podioCard_1" class="podio-card-inner {{ $lugar1Revelado ? 'is-flipped' : '' }}">
+                                        
+                                        <!-- CARA TRASERA: MISTERIO CON SIGNO '?' -->
+                                        <div class="podio-card-back w-full bg-gradient-to-b from-[#2a0618] via-[#14030c] to-[#070104] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_35px_rgba(212,175,55,0.3)] overflow-hidden flex flex-col items-center justify-between p-5 min-h-[430px] select-none">
+                                            <div class="w-full bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-4 flex items-center justify-between text-slate-950 rounded-xl">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-2xl">👑</span>
+                                                    <span class="text-xl font-black font-cinzel tracking-wider">★</span>
+                                                </div>
+                                                <span class="text-xs font-black uppercase tracking-[0.2em] font-cinzel">
+                                                    {{ $categoriaSeleccionada->etiquetaGanador() }}
+                                                </span>
+                                            </div>
+
+                                            <div class="my-auto flex flex-col items-center justify-center py-6">
+                                                <div class="relative flex items-center justify-center mb-4">
+                                                    <div class="absolute inset-0 rounded-full bg-amber-400/25 blur-2xl animate-pulse"></div>
+                                                    <svg class="w-28 h-28 text-amber-400 drop-shadow-[0_0_25px_rgba(212,175,55,0.7)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10" class="stroke-amber-600/80 fill-slate-950/90"></circle>
+                                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"></line>
+                                                    </svg>
+                                                </div>
+                                                <span class="text-sm font-black uppercase tracking-[0.3em] gold-gradient-text font-cinzel animate-pulse text-center">
+                                                    ★ Ganador Único ★
+                                                </span>
+                                                <span class="text-[10px] text-amber-300/70 font-cinzel mt-1 uppercase tracking-widest">
+                                                    En Espera de Revelación
+                                                </span>
+                                            </div>
+
+                                            <div class="w-full text-center py-2 border-t border-[#800020]/80">
+                                                <span class="text-[9px] uppercase tracking-widest text-amber-400/70 font-mono">XXXIII Festival Aquí Canta Bolivia</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- CARA DELANTERA: GANADOR REVELADO -->
+                                        <div class="podio-card-front absolute inset-0 w-full bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_35px_rgba(212,175,55,0.3)] overflow-hidden cursor-pointer flex flex-col justify-between"
+                                             data-card-id="{{ $primerLugar['id'] }}"
+                                             onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
+                                            
+                                            <!-- Corona / Insignia -->
+                                            <div class="bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-4 flex items-center justify-between text-slate-950">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-2xl">👑</span>
+                                                    <span class="text-lg font-black font-cinzel tracking-wider">1°</span>
+                                                </div>
+                                                <span class="text-xs font-black uppercase tracking-[0.2em] font-cinzel">
+                                                    {{ $categoriaSeleccionada->etiquetaGanador() }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Imagen del Participante -->
+                                            <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
+                                                @if ($primerLugar['foto_url'])
+                                                    <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top card-foto">
+                                                @else
+                                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.4),rgba(5,1,3,0.95)_70%)] p-4">
+                                                        <img src="/images/logo-oficial.png" alt="ACB" class="h-28 w-28 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">
+                                                    </div>
+                                                @endif
+                                                <div class="absolute inset-0 bg-gradient-to-t from-[#090105] via-transparent to-transparent pointer-events-none"></div>
+                                            </div>
+
+                                            <!-- Nombre y Puntaje Final -->
+                                            <div class="p-4 text-center space-y-2 bg-[#090105]">
+                                                <h3 class="text-lg sm:text-xl font-black text-[#fef9c3] font-cinzel uppercase tracking-wide line-clamp-2 min-h-[3rem] flex items-center justify-center card-nombre" title="{{ $primerLugar['nombre'] }}">
+                                                    {{ $primerLugar['nombre'] }}
+                                                </h3>
+
+                                                @if (!empty($primerLugar['departamento']))
+                                                    @php
+                                                        $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento']);
+                                                    @endphp
+                                                    <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                                                        @if ($bandera1)
+                                                            <img src="{{ $bandera1 }}" alt="{{ $primerLugar['departamento'] }}" class="h-4 w-auto object-cover rounded-[2px] shadow-sm">
+                                                        @endif
+                                                        <span>{{ $primerLugar['departamento'] }}</span>
+                                                    </p>
+                                                @endif
+
+                                                <div class="pt-2 border-t border-[#800020]/80 flex items-center justify-center">
+                                                    <span class="text-xl sm:text-2xl font-black gold-gradient-text font-mono tabular-nums bg-[#1f0511] border border-[#d4af37] px-5 py-1.5 rounded-xl shadow-lg card-score">
+                                                        {{ number_format($primerLugar['nota_final'], 2) }} <span class="text-xs text-amber-300">pts</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <!-- Estructura de Podio: 2° Lugar (Izquierda), 1° Lugar (Centro), 3° Lugar (Derecha) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-end justify-center pt-4 max-w-4xl mx-auto w-full">
                         
                         <!-- ========================= -->
                         <!-- 2° LUGAR (ESCALÓN PLATA)  -->
@@ -348,6 +455,7 @@
                         @endif
 
                     </div>
+                    @endif
 
                 </div>
 

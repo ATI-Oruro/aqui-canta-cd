@@ -410,6 +410,17 @@ No pedir al administrador que vuelva a introducir manualmente las categorías y 
 
 Todos los máximos anteriores suman 100 puntos por categoría.
 
+### Cantidad de ganadores por categoría (Premiaciones y Podio)
+
+- **Categorías con 1 solo ganador:**
+  - **Ñusta** (`Categoria.esNusta()`)
+  - **Especial** (`Categoria.esEspecial()`)
+  En estas dos categorías solo se premia y proclama al **1° Lugar** (Ganador Único / Ñusta del Festival / Ganador Especial). No existe podio de 3 escalones ni 2° ni 3° lugar premiados; los demás participantes integran la clasificación general tras el ganador.
+
+- **Demás categorías (11 restantes):**
+  - Solista vocal, Solista instrumental armónico, Solista instrumental melódico, Dúo vocal instrumental, Trío vocal instrumental, Grupo vocal instrumental, Estudiantina, Autóctono, Composición, Solista vocal infantil y Solista instrumental infantil.
+  Tienen podio de honor de **3 ganadores** (1°, 2° y 3° lugar).
+
 ---
 
 # Fases

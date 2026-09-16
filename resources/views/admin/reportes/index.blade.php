@@ -203,11 +203,11 @@
                                             <span class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-amber-400 text-amber-950 font-black text-xs shadow-sm">
                                                 1°
                                             </span>
-                                        @elseif ($item['posicion'] === 2)
+                                        @elseif ($item['posicion'] === 2 && ! $categoriaSeleccionada->tieneUnSoloGanador())
                                             <span class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-slate-300 text-slate-800 font-black text-xs">
                                                 2°
                                             </span>
-                                        @elseif ($item['posicion'] === 3)
+                                        @elseif ($item['posicion'] === 3 && ! $categoriaSeleccionada->tieneUnSoloGanador())
                                             <span class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-amber-700 text-amber-100 font-black text-xs">
                                                 3°
                                             </span>

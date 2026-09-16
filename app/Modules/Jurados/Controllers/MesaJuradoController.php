@@ -53,7 +53,11 @@ class MesaJuradoController extends Controller
 
         $this->juradoSecretoService->revelarJuradoSecreto($categoria, 0);
 
-        return back()->with('status', sprintf('¡Ganador y jurado secreto de "%s" revelados en Modo Misterio! Proceda a revelar el 3°, 2° y 1° lugar.', $categoria->categoria));
+        $msg = $categoria->tieneUnSoloGanador()
+            ? sprintf('¡Ganador y jurado secreto de "%s" revelados en Modo Misterio! Proceda a revelar al ganador oficial.', $categoria->categoria)
+            : sprintf('¡Ganador y jurado secreto de "%s" revelados en Modo Misterio! Proceda a revelar el 3°, 2° y 1° lugar.', $categoria->categoria);
+
+        return back()->with('status', $msg);
     }
 
     public function podioPaso(Request $request, Categoria $categoria): RedirectResponse
@@ -67,12 +71,19 @@ class MesaJuradoController extends Controller
         $paso = (int) $validados['paso'];
         $this->juradoSecretoService->avanzarPasoPodio($categoria, $paso);
 
-        $mensajes = [
-            0 => 'Podio reiniciado en modo misterio.',
-            3 => '¡3° Lugar revelado en vivo!',
-            2 => '¡2° Lugar revelado en vivo!',
-            1 => '¡1° Lugar revelado y podio completado!',
-        ];
+        if ($categoria->tieneUnSoloGanador()) {
+            $mensajes = [
+                0 => 'Modo misterio activado (carta tapada).',
+                1 => sprintf('¡%s revelado en vivo!', $categoria->etiquetaGanador()),
+            ];
+        } else {
+            $mensajes = [
+                0 => 'Podio reiniciado en modo misterio.',
+                3 => '¡3° Lugar revelado en vivo!',
+                2 => '¡2° Lugar revelado en vivo!',
+                1 => '¡1° Lugar revelado y podio completado!',
+            ];
+        }
 
         return back()->with('status', $mensajes[$paso] ?? 'Paso de podio actualizado.');
     }

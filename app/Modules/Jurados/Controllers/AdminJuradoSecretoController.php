@@ -60,7 +60,11 @@ class AdminJuradoSecretoController extends Controller
 
         $this->juradoSecretoService->prepararPodio($categoria);
 
-        return back()->with('status', sprintf('¡Podio preparado para "%s"! La pantalla pública está en Modo Misterio con cartas tapadas. Ya puede revelar del 3° al 1° lugar.', $categoria->categoria));
+        $msg = $categoria->tieneUnSoloGanador()
+            ? sprintf('¡Podio preparado para "%s"! La pantalla pública está en Modo Misterio con carta tapada. Ya puede revelar al ganador oficial.', $categoria->categoria)
+            : sprintf('¡Podio preparado para "%s"! La pantalla pública está en Modo Misterio con cartas tapadas. Ya puede revelar del 3° al 1° lugar.', $categoria->categoria);
+
+        return back()->with('status', $msg);
     }
 
     public function revelar(Categoria $categoria): RedirectResponse
@@ -74,11 +78,10 @@ class AdminJuradoSecretoController extends Controller
 
         try {
             $this->juradoSecretoService->ocultarJuradoSecreto($categoria);
-        } catch (UnexpectedValueException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('status', sprintf('Podio de "%s" desactivado. La pantalla pública ha vuelto a la vista de ranking estándar.', $categoria->categoria));
+        } catch (\Throwable $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
-
-        return back()->with('status', sprintf('Jurado secreto de la categoría "%s" ocultado nuevamente.', $categoria->categoria));
     }
 
     public function finalizar(Categoria $categoria): RedirectResponse
@@ -101,12 +104,19 @@ class AdminJuradoSecretoController extends Controller
         $paso = (int) $validados['paso'];
         $this->juradoSecretoService->avanzarPasoPodio($categoria, $paso);
 
-        $mensajes = [
-            0 => 'Podio reiniciado en modo misterio (cartas tapadas).',
-            3 => '¡3° Lugar revelado en el podio!',
-            2 => '¡2° Lugar revelado en el podio!',
-            1 => '¡1° Lugar revelado y clasificación general desplegada!',
-        ];
+        if ($categoria->tieneUnSoloGanador()) {
+            $mensajes = [
+                0 => 'Modo misterio activado (carta tapada).',
+                1 => sprintf('¡%s revelado y clasificación general desplegada!', $categoria->etiquetaGanador()),
+            ];
+        } else {
+            $mensajes = [
+                0 => 'Podio reiniciado en modo misterio (cartas tapadas).',
+                3 => '¡3° Lugar revelado en el podio!',
+                2 => '¡2° Lugar revelado en el podio!',
+                1 => '¡1° Lugar revelado y clasificación general desplegada!',
+            ];
+        }
 
         return back()->with('status', $mensajes[$paso] ?? 'Paso de podio actualizado.');
     }

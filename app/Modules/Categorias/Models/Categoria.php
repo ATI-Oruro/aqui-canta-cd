@@ -90,6 +90,34 @@ class Categoria extends Model
         return mb_stripos($this->categoria, 'ñusta') !== false || mb_stripos($this->categoria, 'nusta') !== false;
     }
 
+    public function esEspecial(): bool
+    {
+        return mb_stripos($this->categoria, 'especial') !== false;
+    }
+
+    public function tieneUnSoloGanador(): bool
+    {
+        return $this->esNusta() || $this->esEspecial();
+    }
+
+    public function cantidadGanadores(): int
+    {
+        return $this->tieneUnSoloGanador() ? 1 : 3;
+    }
+
+    public function etiquetaGanador(): string
+    {
+        if ($this->esNusta()) {
+            return 'Ñusta del Festival';
+        }
+
+        if ($this->esEspecial()) {
+            return 'Ganador Categoría Especial';
+        }
+
+        return 'Ganador Oficial';
+    }
+
     public function tiempoParaFase(\App\Support\Enums\FaseEnum|string|null $fase = null): int
     {
         $faseStr = $fase instanceof \App\Support\Enums\FaseEnum ? $fase->value : (string) $fase;
@@ -125,6 +153,10 @@ class Categoria extends Model
         $paso = $this->podioPasoActual();
         if ($paso === null) {
             return false;
+        }
+
+        if ($this->tieneUnSoloGanador()) {
+            return $posicion === 1 && $paso === 1;
         }
 
         return match ($paso) {

@@ -276,4 +276,71 @@ class PublicoRankingTest extends TestCase
         $response->assertSee('Solista vocal');
         $response->assertSee('#d4af37');
     }
+
+    public function test_vista_publica_muestra_un_solo_ganador_en_categoria_nusta(): void
+    {
+        $nusta = Categoria::create([
+            'categoria' => 'Ñusta',
+            'max_participantes' => 1,
+            'tiempo_presentacion' => 15,
+            'es_activa' => true,
+        ]);
+
+        $parametro = Parametro::firstOrCreate(['parametro' => 'Interpretación vocal']);
+        CategoriaParametro::create([
+            'id_categoria' => $nusta->id,
+            'id_parametro' => $parametro->id,
+            'valor_minimo' => 1,
+            'valor_maximo' => 100,
+            'orden' => 1,
+        ]);
+
+        $fase = Fase::firstOrCreate(['fase' => FaseEnum::FINAL->value]);
+        $oruro = Departamento::firstOrCreate(['nombre' => 'Oruro']);
+        $cocha = Departamento::firstOrCreate(['nombre' => 'Cochabamba']);
+
+        $part1 = Participante::create(['nombre' => 'Lucía', 'paterno' => 'Méndez']);
+        $insc1 = Inscripcion::create([
+            'fecha_inscripcion' => now(),
+            'id_fase' => $fase->id,
+            'id_categoria' => $nusta->id,
+            'id_departamento' => $oruro->id,
+            'estado' => InscripcionEstadoEnum::CONFIRMADA,
+        ]);
+        $insc1->participantes()->attach($part1->id);
+        Presentacion::create([
+            'id_inscripcion' => $insc1->id,
+            'nombre_presentacion' => 'Lucía Méndez',
+            'estado' => PresentacionEstadoEnum::FINALIZADO,
+            'nota_final' => 95.0,
+        ]);
+
+        $part2 = Participante::create(['nombre' => 'Camila', 'paterno' => 'Torres']);
+        $insc2 = Inscripcion::create([
+            'fecha_inscripcion' => now(),
+            'id_fase' => $fase->id,
+            'id_categoria' => $nusta->id,
+            'id_departamento' => $cocha->id,
+            'estado' => InscripcionEstadoEnum::CONFIRMADA,
+        ]);
+        $insc2->participantes()->attach($part2->id);
+        Presentacion::create([
+            'id_inscripcion' => $insc2->id,
+            'nombre_presentacion' => 'Camila Torres',
+            'estado' => PresentacionEstadoEnum::FINALIZADO,
+            'nota_final' => 88.0,
+        ]);
+
+        app(GestionarJuradoSecretoService::class)->revelarJuradoSecreto($nusta, 1);
+
+        $response = $this->get(route('inicio', ['categoria' => $nusta->id]));
+        $response->assertStatus(200);
+        $response->assertSee('Elección y Proclamación de la Ñusta');
+        $response->assertSee('Ñusta del Festival');
+        $response->assertSee('Lucía Méndez');
+        $response->assertDontSee('Segundo Lugar');
+        $response->assertDontSee('Tercer Lugar');
+        $response->assertSee('Clasificación General');
+        $response->assertSee('Camila Torres');
+    }
 }

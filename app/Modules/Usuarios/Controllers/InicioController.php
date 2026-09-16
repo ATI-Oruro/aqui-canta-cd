@@ -104,14 +104,20 @@ class InicioController extends Controller
 
         if ($esPodio && $ranking->isNotEmpty()) {
             $primerLugar = $ranking->firstWhere('posicion', 1);
-            $segundoLugar = $ranking->firstWhere('posicion', 2);
-            $tercerLugar = $ranking->firstWhere('posicion', 3);
 
-            $idsPodio = array_filter([
-                $primerLugar['id'] ?? null,
-                $segundoLugar['id'] ?? null,
-                $tercerLugar['id'] ?? null,
-            ]);
+            if ($categoriaSeleccionada?->tieneUnSoloGanador()) {
+                $segundoLugar = null;
+                $tercerLugar = null;
+                $idsPodio = array_filter([$primerLugar['id'] ?? null]);
+            } else {
+                $segundoLugar = $ranking->firstWhere('posicion', 2);
+                $tercerLugar = $ranking->firstWhere('posicion', 3);
+                $idsPodio = array_filter([
+                    $primerLugar['id'] ?? null,
+                    $segundoLugar['id'] ?? null,
+                    $tercerLugar['id'] ?? null,
+                ]);
+            }
 
             $restoParticipantes = $ranking->reject(fn ($item) => in_array($item['id'], $idsPodio, true))->values();
         }

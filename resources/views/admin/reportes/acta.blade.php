@@ -131,7 +131,7 @@
                     @forelse ($reporte['items'] as $item)
                         <tr @class([
                             'bg-amber-50/60 font-bold' => $item['posicion'] === 1,
-                            'bg-slate-50/50' => $item['posicion'] === 2 || $item['posicion'] === 3,
+                            'bg-slate-50/50' => ! $reporte['categoria']->tieneUnSoloGanador() && ($item['posicion'] === 2 || $item['posicion'] === 3),
                         ])>
                             <!-- Puesto -->
                             <td class="py-2 px-3 border-r border-slate-300 text-center font-bold text-slate-900">

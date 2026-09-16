@@ -40,75 +40,100 @@
         @endphp
 
         @if ($primeros->isNotEmpty())
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end pt-4">
-                
-                <!-- 2do Lugar (Izquierda) -->
-                @php $segundo = $primeros->firstWhere('posicion', 2); @endphp
-                @if ($segundo)
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 text-center space-y-3 relative overflow-hidden order-2 md:order-1">
-                        <div class="h-2 w-full bg-slate-300 absolute top-0 left-0"></div>
-                        <div class="h-12 w-12 rounded-full bg-slate-200 text-slate-700 font-black text-lg flex items-center justify-center mx-auto shadow-inner">
-                            2°
-                        </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Segundo Lugar</span>
-                            <h3 class="font-black text-slate-900 text-base leading-tight mt-1">{{ $segundo['nombre_presentacion'] }}</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ $segundo['departamento'] }}</p>
-                        </div>
-                        <div class="bg-slate-100 rounded-2xl p-3 border border-slate-200">
-                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Puntaje Final</span>
-                            <span class="text-2xl font-black text-slate-800 tabular-nums">{{ number_format($segundo['nota_final'], 2) }}</span>
-                            <span class="text-[10px] text-slate-400">/ 100</span>
-                        </div>
-                    </div>
-                @else
-                    <div class="hidden md:block order-1"></div>
-                @endif
-
-                <!-- 1er Lugar (Centro, Destacado) -->
+            @if ($reporte['categoria']->tieneUnSoloGanador())
+                <!-- Ganador Único (Ñusta / Especial) -->
                 @php $primero = $primeros->firstWhere('posicion', 1); @endphp
                 @if ($primero)
-                    <div class="bg-gradient-to-b from-[#3d040f] to-[#5c0618] text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 text-center space-y-4 relative overflow-hidden order-1 md:order-2 transform md:-translate-y-2">
-                        <div class="h-2 w-full bg-amber-400 absolute top-0 left-0"></div>
-                        <div class="h-16 w-16 rounded-full bg-amber-400 text-[#3d040f] font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-amber-300/30">
-                            👑 1°
-                        </div>
-                        <div>
-                            <span class="text-xs font-black uppercase tracking-widest text-amber-300 block">★ Ganador Oficial ★</span>
-                            <h3 class="font-black text-white text-lg sm:text-xl leading-tight mt-1">{{ $primero['nombre_presentacion'] }}</h3>
-                            <p class="text-xs text-amber-200 mt-0.5">{{ $primero['departamento'] }}</p>
-                        </div>
-                        <div class="bg-black/30 rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
-                            <span class="text-[10px] uppercase font-bold text-amber-300 block">Puntaje de Excelencia</span>
-                            <span class="text-3xl sm:text-4xl font-black text-amber-300 tabular-nums">{{ number_format($primero['nota_final'], 2) }}</span>
-                            <span class="text-xs text-amber-100/70">/ 100 pts</span>
+                    <div class="max-w-lg mx-auto pt-4">
+                        <div class="bg-gradient-to-b from-[#3d040f] to-[#5c0618] text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 text-center space-y-4 relative overflow-hidden">
+                            <div class="h-2 w-full bg-amber-400 absolute top-0 left-0"></div>
+                            <div class="h-16 w-16 rounded-full bg-amber-400 text-[#3d040f] font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-amber-300/30">
+                                👑 1°
+                            </div>
+                            <div>
+                                <span class="text-xs font-black uppercase tracking-widest text-amber-300 block">★ {{ $reporte['categoria']->etiquetaGanador() }} ★</span>
+                                <h3 class="font-black text-white text-lg sm:text-xl leading-tight mt-1">{{ $primero['nombre_presentacion'] }}</h3>
+                                <p class="text-xs text-amber-200 mt-0.5">{{ $primero['departamento'] }}</p>
+                            </div>
+                            <div class="bg-black/30 rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+                                <span class="text-[10px] uppercase font-bold text-amber-300 block">Puntaje de Excelencia</span>
+                                <span class="text-3xl sm:text-4xl font-black text-amber-300 tabular-nums">{{ number_format($primero['nota_final'], 2) }}</span>
+                                <span class="text-xs text-amber-100/70">/ 100 pts</span>
+                            </div>
                         </div>
                     </div>
                 @endif
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end pt-4">
+                    
+                    <!-- 2do Lugar (Izquierda) -->
+                    @php $segundo = $primeros->firstWhere('posicion', 2); @endphp
+                    @if ($segundo)
+                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 text-center space-y-3 relative overflow-hidden order-2 md:order-1">
+                            <div class="h-2 w-full bg-slate-300 absolute top-0 left-0"></div>
+                            <div class="h-12 w-12 rounded-full bg-slate-200 text-slate-700 font-black text-lg flex items-center justify-center mx-auto shadow-inner">
+                                2°
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Segundo Lugar</span>
+                                <h3 class="font-black text-slate-900 text-base leading-tight mt-1">{{ $segundo['nombre_presentacion'] }}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">{{ $segundo['departamento'] }}</p>
+                            </div>
+                            <div class="bg-slate-100 rounded-2xl p-3 border border-slate-200">
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Puntaje Final</span>
+                                <span class="text-2xl font-black text-slate-800 tabular-nums">{{ number_format($segundo['nota_final'], 2) }}</span>
+                                <span class="text-[10px] text-slate-400">/ 100</span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="hidden md:block order-1"></div>
+                    @endif
 
-                <!-- 3er Lugar (Derecha) -->
-                @php $tercero = $primeros->firstWhere('posicion', 3); @endphp
-                @if ($tercero)
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 text-center space-y-3 relative overflow-hidden order-3">
-                        <div class="h-2 w-full bg-amber-700 absolute top-0 left-0"></div>
-                        <div class="h-12 w-12 rounded-full bg-amber-100 text-amber-900 font-black text-lg flex items-center justify-center mx-auto shadow-inner">
-                            3°
+                    <!-- 1er Lugar (Centro, Destacado) -->
+                    @php $primero = $primeros->firstWhere('posicion', 1); @endphp
+                    @if ($primero)
+                        <div class="bg-gradient-to-b from-[#3d040f] to-[#5c0618] text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 text-center space-y-4 relative overflow-hidden order-1 md:order-2 transform md:-translate-y-2">
+                            <div class="h-2 w-full bg-amber-400 absolute top-0 left-0"></div>
+                            <div class="h-16 w-16 rounded-full bg-amber-400 text-[#3d040f] font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-amber-300/30">
+                                👑 1°
+                            </div>
+                            <div>
+                                <span class="text-xs font-black uppercase tracking-widest text-amber-300 block">★ Ganador Oficial ★</span>
+                                <h3 class="font-black text-white text-lg sm:text-xl leading-tight mt-1">{{ $primero['nombre_presentacion'] }}</h3>
+                                <p class="text-xs text-amber-200 mt-0.5">{{ $primero['departamento'] }}</p>
+                            </div>
+                            <div class="bg-black/30 rounded-2xl p-4 border border-white/10 backdrop-blur-sm">
+                                <span class="text-[10px] uppercase font-bold text-amber-300 block">Puntaje de Excelencia</span>
+                                <span class="text-3xl sm:text-4xl font-black text-amber-300 tabular-nums">{{ number_format($primero['nota_final'], 2) }}</span>
+                                <span class="text-xs text-amber-100/70">/ 100 pts</span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tercer Lugar</span>
-                            <h3 class="font-black text-slate-900 text-base leading-tight mt-1">{{ $tercero['nombre_presentacion'] }}</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ $tercero['departamento'] }}</p>
+                    @endif
+
+                    <!-- 3er Lugar (Derecha) -->
+                    @php $tercero = $primeros->firstWhere('posicion', 3); @endphp
+                    @if ($tercero)
+                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 text-center space-y-3 relative overflow-hidden order-3">
+                            <div class="h-2 w-full bg-amber-700 absolute top-0 left-0"></div>
+                            <div class="h-12 w-12 rounded-full bg-amber-100 text-amber-900 font-black text-lg flex items-center justify-center mx-auto shadow-inner">
+                                3°
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tercer Lugar</span>
+                                <h3 class="font-black text-slate-900 text-base leading-tight mt-1">{{ $tercero['nombre_presentacion'] }}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">{{ $tercero['departamento'] }}</p>
+                            </div>
+                            <div class="bg-slate-100 rounded-2xl p-3 border border-slate-200">
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Puntaje Final</span>
+                                <span class="text-2xl font-black text-slate-800 tabular-nums">{{ number_format($tercero['nota_final'], 2) }}</span>
+                                <span class="text-[10px] text-slate-400">/ 100</span>
+                            </div>
                         </div>
-                        <div class="bg-slate-100 rounded-2xl p-3 border border-slate-200">
-                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Puntaje Final</span>
-                            <span class="text-2xl font-black text-slate-800 tabular-nums">{{ number_format($tercero['nota_final'], 2) }}</span>
-                            <span class="text-[10px] text-slate-400">/ 100</span>
-                        </div>
-                    </div>
-                @else
-                    <div class="hidden md:block order-3"></div>
-                @endif
-            </div>
+                    @else
+                        <div class="hidden md:block order-3"></div>
+                    @endif
+                </div>
+            @endif
         @endif
 
         <!-- Tabla Completa de Posiciones -->
@@ -128,12 +153,12 @@
                     <thead>
                         <tr class="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                             <th class="py-3 px-4 text-center">Puesto</th>
-                            <th class="py-3 px-4">Participante / Obra</th>
+                            <th class="py-3 px-4">Participante / Conjunto</th>
                             <th class="py-3 px-4">Departamento</th>
                             @foreach ($reporte['jurados_cabecera'] as $jurNom)
                                 <th class="py-3 px-4 text-center">{{ $jurNom }}</th>
                             @endforeach
-                            <th class="py-3 px-4 text-center bg-amber-50/60">Nota Final</th>
+                            <th class="py-3 px-4 text-center bg-amber-50/50">Nota Final</th>
                             <th class="py-3 px-4 text-center">Estado</th>
                         </tr>
                     </thead>
@@ -145,14 +170,14 @@
                             ])>
                                 <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                     @if ($item['posicion'] === 1)
-                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-400 text-amber-950 font-black text-xs">
+                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-400 text-amber-950 font-black text-xs shadow-sm">
                                             1°
                                         </span>
-                                    @elseif ($item['posicion'] === 2)
+                                    @elseif ($item['posicion'] === 2 && ! $reporte['categoria']->tieneUnSoloGanador())
                                         <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-slate-300 text-slate-800 font-black text-xs">
                                             2°
                                         </span>
-                                    @elseif ($item['posicion'] === 3)
+                                    @elseif ($item['posicion'] === 3 && ! $reporte['categoria']->tieneUnSoloGanador())
                                         <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-700 text-amber-100 font-black text-xs">
                                             3°
                                         </span>
