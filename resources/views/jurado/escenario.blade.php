@@ -14,6 +14,9 @@
           data-cronometro-corriendo="{{ ($cronometro['corriendo'] ?? false) ? '1' : '0' }}"
           data-cronometro-iniciado-at="{{ $cronometro['cronometro_iniciado_at'] ?? $presentacion?->cronometro_iniciado_at?->toIso8601String() ?? '' }}"
           data-cronometro-finalizado-at="{{ $cronometro['cronometro_finalizado_at'] ?? $presentacion?->cronometro_finalizado_at?->toIso8601String() ?? '' }}"
+          data-cronometro-iniciado-at-ms="{{ $cronometro['cronometro_iniciado_at_ms'] ?? $presentacion?->cronometro_iniciado_at?->valueOf() ?? '' }}"
+          data-cronometro-finalizado-at-ms="{{ $cronometro['cronometro_finalizado_at_ms'] ?? $presentacion?->cronometro_finalizado_at?->valueOf() ?? '' }}"
+          data-server-now-ms="{{ $cronometro['server_now_ms'] ?? (int) (microtime(true) * 1000) }}"
           data-segundos-restantes="{{ $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60) }}"
           data-tiempo-maximo="{{ $presentacion->tiempo_maximo ?? 10 }}">
 
@@ -98,7 +101,10 @@
 
                         <!-- Controles de Cronómetro para Jurado Controlador / Admin -->
                         @if (($puedeControlar ?? false) && $presentacion !== null)
-                            <div data-control-tiempo-caja class="mt-4 p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row items-center gap-2.5">
+                            <div data-control-tiempo-caja
+                                 data-url-iniciar="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}"
+                                 data-url-detener="{{ route('presentaciones.cronometro.detener', $presentacion) }}"
+                                 class="mt-4 p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row items-center gap-2.5">
                                 <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                     Control de Tiempo:
@@ -120,7 +126,7 @@
                                         </button>
                                     </form>
                                 @else
-                                    <span class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>
+                                    <span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>
                                 @endif
                             </div>
                         @endif

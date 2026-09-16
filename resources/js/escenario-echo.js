@@ -28,8 +28,33 @@ export function inicializarEscenario() {
 
     let presentacionId = parseInt(raiz.dataset.escenarioId || raiz.dataset.escenarioEcho || '0', 10) || null;
     let corriendo = raiz.dataset.cronometroCorriendo === '1';
-    let iniciadoAt = raiz.dataset.cronometroIniciadoAt ? new Date(raiz.dataset.cronometroIniciadoAt).getTime() : null;
-    let finalizadoAt = raiz.dataset.cronometroFinalizadoAt ? new Date(raiz.dataset.cronometroFinalizadoAt).getTime() : null;
+
+    // Sincronización precisa con el reloj del servidor (en milisegundos)
+    // Permite que todos los dispositivos (jurado presidente, vocales y público)
+    // calculen el tiempo sobre la misma fuente de verdad sin desfases por reloj local.
+    let serverOffset = 0;
+    function sincronizarHoraServidor(serverNowMs) {
+        if (serverNowMs && !isNaN(Number(serverNowMs))) {
+            serverOffset = Number(serverNowMs) - Date.now();
+        }
+    }
+
+    if (raiz.dataset.serverNowMs) {
+        sincronizarHoraServidor(raiz.dataset.serverNowMs);
+    }
+
+    function obtenerHoraServidor() {
+        return Date.now() + serverOffset;
+    }
+
+    let iniciadoAt = raiz.dataset.cronometroIniciadoAtMs
+        ? parseInt(raiz.dataset.cronometroIniciadoAtMs, 10)
+        : (raiz.dataset.cronometroIniciadoAt ? new Date(raiz.dataset.cronometroIniciadoAt).getTime() : null);
+
+    let finalizadoAt = raiz.dataset.cronometroFinalizadoAtMs
+        ? parseInt(raiz.dataset.cronometroFinalizadoAtMs, 10)
+        : (raiz.dataset.cronometroFinalizadoAt ? new Date(raiz.dataset.cronometroFinalizadoAt).getTime() : null);
+
     let tiempoMaximo = parseInt(raiz.dataset.tiempoMaximo || '10', 10);
     let segundosRestantes = parseInt(raiz.dataset.segundosRestantes || '0', 10);
     let recargaPendiente = false;
@@ -38,7 +63,7 @@ export function inicializarEscenario() {
         const totalSegundos = tiempoMaximo * 60;
 
         if (corriendo && iniciadoAt) {
-            const ahora = Date.now();
+            const ahora = obtenerHoraServidor();
             const transcurridoSegundos = Math.max(0, (ahora - iniciadoAt) / 1000);
             return Math.max(0, Math.ceil(totalSegundos - transcurridoSegundos));
         }
@@ -126,6 +151,44 @@ export function inicializarEscenario() {
         if (spanIcono) spanIcono.textContent = '⏳';
     }
 
+    function actualizarControlTiempoUI() {
+        const controlCaja = document.querySelector('[data-control-tiempo-caja]');
+        if (!controlCaja) return;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const urlIniciar = controlCaja.dataset.urlIniciar || '';
+        const urlDetener = controlCaja.dataset.urlDetener || '';
+
+        const targetElement = controlCaja.querySelector('form, [data-control-estado-texto]');
+        if (!targetElement) return;
+
+        if (corriendo) {
+            targetElement.outerHTML = `
+                <form method="POST" action="${urlDetener}">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-rose-600/30 transition flex items-center gap-1.5">
+                        <span>⏹</span>
+                        <span>Detener cronómetro</span>
+                    </button>
+                </form>
+            `;
+        } else if (finalizadoAt || (estadoEl && estadoEl.textContent.toLowerCase().includes('finaliz'))) {
+            targetElement.outerHTML = '<span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+        } else if (!iniciadoAt) {
+            targetElement.outerHTML = `
+                <form method="POST" action="${urlIniciar}">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-emerald-600/30 transition flex items-center gap-1.5">
+                        <span>▶</span>
+                        <span>Iniciar cronómetro</span>
+                    </button>
+                </form>
+            `;
+        } else {
+            targetElement.outerHTML = '<span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+        }
+    }
+
     function mostrarModoFinalizado(estadoLabel) {
         corriendo = false;
         if (estadoEl) {
@@ -145,17 +208,18 @@ export function inicializarEscenario() {
             el.classList.add('block', 'pt-1');
         });
 
-        // Si existe caja de control de cronómetro y está finalizado, actualizar estado visual
-        const controlCaja = document.querySelector('[data-control-tiempo-caja]');
-        if (controlCaja) {
-            const formBtn = controlCaja.querySelector('form');
-            if (formBtn) {
-                formBtn.innerHTML = '<span class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
-            }
-        }
+        actualizarControlTiempoUI();
     }
 
     function aplicarCronometro(datos) {
+        if (!datos) return;
+
+        if (datos.server_now_ms) {
+            sincronizarHoraServidor(datos.server_now_ms);
+        } else if (datos.server_now) {
+            sincronizarHoraServidor(datos.server_now);
+        }
+
         if (typeof datos.corriendo === 'boolean') {
             corriendo = datos.corriendo;
             if (corriendo) {
@@ -167,13 +231,17 @@ export function inicializarEscenario() {
             }
         }
 
-        if (datos.cronometro_iniciado_at) {
+        if (datos.cronometro_iniciado_at_ms) {
+            iniciadoAt = Number(datos.cronometro_iniciado_at_ms);
+        } else if (datos.cronometro_iniciado_at) {
             iniciadoAt = new Date(datos.cronometro_iniciado_at).getTime();
         } else if (datos.estado === 'EN_ESCENARIO') {
             iniciadoAt = null;
         }
 
-        if (datos.cronometro_finalizado_at) {
+        if (datos.cronometro_finalizado_at_ms) {
+            finalizadoAt = Number(datos.cronometro_finalizado_at_ms);
+        } else if (datos.cronometro_finalizado_at) {
             finalizadoAt = new Date(datos.cronometro_finalizado_at).getTime();
         } else if (corriendo) {
             finalizadoAt = null;
@@ -209,6 +277,7 @@ export function inicializarEscenario() {
             }
         }
 
+        actualizarControlTiempoUI();
         segundosRestantes = calcularSegundosRestantes();
         renderizar();
     }
@@ -285,13 +354,23 @@ export function inicializarEscenario() {
             }
         }
 
-        if (datos.cronometro_iniciado_at) {
+        if (datos.server_now_ms) {
+            sincronizarHoraServidor(datos.server_now_ms);
+        } else if (datos.server_now) {
+            sincronizarHoraServidor(datos.server_now);
+        }
+
+        if (datos.cronometro_iniciado_at_ms) {
+            iniciadoAt = Number(datos.cronometro_iniciado_at_ms);
+        } else if (datos.cronometro_iniciado_at) {
             iniciadoAt = new Date(datos.cronometro_iniciado_at).getTime();
         } else if (datos.estado === 'EN_ESCENARIO') {
             iniciadoAt = null;
         }
 
-        if (datos.cronometro_finalizado_at) {
+        if (datos.cronometro_finalizado_at_ms) {
+            finalizadoAt = Number(datos.cronometro_finalizado_at_ms);
+        } else if (datos.cronometro_finalizado_at) {
             finalizadoAt = new Date(datos.cronometro_finalizado_at).getTime();
         } else if (datos.estado === 'PARTICIPANDO') {
             finalizadoAt = null;
@@ -325,12 +404,63 @@ export function inicializarEscenario() {
             segundosRestantes = datos.segundos_restantes;
         }
 
+        actualizarControlTiempoUI();
         segundosRestantes = calcularSegundosRestantes();
         renderizar();
     }
 
+    // Interceptar envío de formularios de control de cronómetro (Iniciar / Detener)
+    // El jurado presidente envía la orden vía AJAX sin recargar la página,
+    // garantizando que todos los jurados inicien al mismo segundo sin desfase
+    if (!window.__cronometroControlAjaxRegistrado) {
+        window.__cronometroControlAjaxRegistrado = true;
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form || !form.closest('[data-control-tiempo-caja]')) {
+                return;
+            }
+
+            e.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            }
+
+            const actionUrl = form.action;
+            const formData = new FormData(form);
+
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.cronometro) {
+                    aplicarCronometro(data.cronometro);
+                }
+            })
+            .catch(err => {
+                console.error('Error al controlar cronómetro vía AJAX:', err);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                }
+            });
+        });
+    }
+
     // Intervalo de renderizado y sincronización en alta frecuencia (100ms)
-    // Calcula contra la marca de tiempo oficial para evitar desfases o retrasos acumulativos entre clientes
+    // Calcula contra la marca de tiempo oficial del servidor para evitar desfases o retrasos acumulativos entre clientes
     window.setInterval(() => {
         if (corriendo) {
             const nuevosSegundos = calcularSegundosRestantes();

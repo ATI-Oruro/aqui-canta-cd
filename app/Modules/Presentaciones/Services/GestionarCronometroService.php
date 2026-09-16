@@ -104,6 +104,9 @@ class GestionarCronometroService
             'tiempo_maximo' => $presentacion->tiempo_maximo,
             'cronometro_iniciado_at' => $iniciado?->toIso8601String(),
             'cronometro_finalizado_at' => $finalizado?->toIso8601String(),
+            'cronometro_iniciado_at_ms' => $iniciado?->valueOf(),
+            'cronometro_finalizado_at_ms' => $finalizado?->valueOf(),
+            'server_now_ms' => (int) (microtime(true) * 1000),
             'segundos_transcurridos' => $segundosTranscurridos,
             'segundos_restantes' => max(0, $totalSegundos - $segundosTranscurridos),
         ];

@@ -9,6 +9,7 @@ use App\Modules\Presentaciones\Services\GestionarCronometroService;
 use App\Modules\Presentaciones\Services\GestionarPresentacionService;
 use App\Support\Enums\FaseEnum;
 use App\Support\Enums\PresentacionEstadoEnum;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -158,7 +159,7 @@ class PresentacionController
         return back()->with('status', sprintf('Presentación marcada como "%s".', $presentacion->estado?->label()));
     }
 
-    public function cronometroIniciar(Presentacion $presentacion): RedirectResponse
+    public function cronometroIniciar(Request $request, Presentacion $presentacion): RedirectResponse|JsonResponse
     {
         Gate::authorize('controlarCronometro', $presentacion);
 
@@ -169,13 +170,26 @@ class PresentacionController
                 $this->cronometro->iniciar($presentacion);
             }
         } catch (\UnexpectedValueException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return back()->with('error', $e->getMessage());
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'cronometro' => $this->cronometro->obtenerEstado($presentacion),
+                'estado' => $presentacion->estado?->value,
+                'estado_label' => $presentacion->estado?->label(),
+            ]);
         }
 
         return back()->with('status', 'Cronómetro iniciado.');
     }
 
-    public function cronometroDetener(Presentacion $presentacion): RedirectResponse
+    public function cronometroDetener(Request $request, Presentacion $presentacion): RedirectResponse|JsonResponse
     {
         Gate::authorize('controlarCronometro', $presentacion);
 
@@ -186,7 +200,20 @@ class PresentacionController
                 $this->cronometro->detener($presentacion);
             }
         } catch (\UnexpectedValueException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return back()->with('error', $e->getMessage());
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'cronometro' => $this->cronometro->obtenerEstado($presentacion),
+                'estado' => $presentacion->estado?->value,
+                'estado_label' => $presentacion->estado?->label(),
+            ]);
         }
 
         return back()->with('status', 'Cronómetro detenido.');

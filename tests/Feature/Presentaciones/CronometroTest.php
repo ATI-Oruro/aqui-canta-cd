@@ -139,4 +139,55 @@ class CronometroTest extends TestCase
 
         Event::assertDispatched(CronometroActualizado::class);
     }
+
+    #[Test]
+    public function peticion_ajax_iniciar_y_detener_retorna_json_con_timestamps_del_servidor(): void
+    {
+        $admin = Usuario::factory()->administrador()->create(['puede_controlar_tiempo' => true]);
+        $presentacion = $this->presentacionPreseleccion();
+        $presentacion->forceFill(['estado' => PresentacionEstadoEnum::EN_ESCENARIO])->save();
+
+        // Iniciar vía JSON
+        $respuestaIniciar = $this->actingAs($admin)
+            ->postJson(route('presentaciones.cronometro.iniciar', $presentacion))
+            ->assertOk()
+            ->assertJsonStructure([
+                'success',
+                'cronometro' => [
+                    'presentacion_id',
+                    'corriendo',
+                    'tiempo_maximo',
+                    'cronometro_iniciado_at',
+                    'cronometro_iniciado_at_ms',
+                    'server_now_ms',
+                    'segundos_restantes',
+                ],
+                'estado',
+                'estado_label',
+            ]);
+
+        $this->assertTrue($respuestaIniciar->json('cronometro.corriendo'));
+        $this->assertNotNull($respuestaIniciar->json('cronometro.server_now_ms'));
+        $this->assertNotNull($respuestaIniciar->json('cronometro.cronometro_iniciado_at_ms'));
+
+        $presentacion->refresh();
+
+        // Detener vía JSON
+        $respuestaDetener = $this->actingAs($admin)
+            ->postJson(route('presentaciones.cronometro.detener', $presentacion))
+            ->assertOk()
+            ->assertJsonStructure([
+                'success',
+                'cronometro' => [
+                    'presentacion_id',
+                    'corriendo',
+                    'cronometro_finalizado_at',
+                    'cronometro_finalizado_at_ms',
+                    'server_now_ms',
+                ],
+            ]);
+
+        $this->assertFalse($respuestaDetener->json('cronometro.corriendo'));
+        $this->assertNotNull($respuestaDetener->json('cronometro.cronometro_finalizado_at_ms'));
+    }
 }
