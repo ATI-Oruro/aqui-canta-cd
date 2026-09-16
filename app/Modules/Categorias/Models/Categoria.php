@@ -18,6 +18,7 @@ class Categoria extends Model
         'tiempo_presentacion',
         'jurado_secreto_usuario_id',
         'jurado_secreto_revelado',
+        'podio_revelado_hasta',
         'revelado_at',
         'finalizada',
         'finalizada_at',
@@ -29,6 +30,7 @@ class Categoria extends Model
         'tiempo_presentacion' => 'integer',
         'jurado_secreto_usuario_id' => 'integer',
         'jurado_secreto_revelado' => 'boolean',
+        'podio_revelado_hasta' => 'integer',
         'revelado_at' => 'datetime',
         'finalizada' => 'boolean',
         'finalizada_at' => 'datetime',
@@ -108,11 +110,51 @@ class Categoria extends Model
         return (bool) $this->jurado_secreto_revelado;
     }
 
-    public function marcarRevelada(): void
+    public function podioPasoActual(): ?int
+    {
+        if (! $this->estaRevelada()) {
+            return null;
+        }
+
+        // Si ya está revelada pero no tiene paso definido, se asume 1 (completamente revelado)
+        return $this->podio_revelado_hasta ?? 1;
+    }
+
+    public function esPodioLugarRevelado(int $posicion): bool
+    {
+        $paso = $this->podioPasoActual();
+        if ($paso === null) {
+            return false;
+        }
+
+        return match ($paso) {
+            1 => in_array($posicion, [1, 2, 3], true),
+            2 => in_array($posicion, [2, 3], true),
+            3 => $posicion === 3,
+            default => false, // paso 0 o inválido: todo tapado
+        };
+    }
+
+    public function debeMostrarListadoGeneral(): bool
+    {
+        return $this->estaRevelada() && $this->podioPasoActual() === 1;
+    }
+
+    public function marcarRevelada(?int $paso = 0): void
     {
         $this->update([
             'jurado_secreto_revelado' => true,
+            'podio_revelado_hasta' => $paso,
             'revelado_at' => now(),
+        ]);
+    }
+
+    public function revelarPasoPodio(int $paso): void
+    {
+        $this->update([
+            'jurado_secreto_revelado' => true,
+            'podio_revelado_hasta' => $paso,
+            'revelado_at' => $this->revelado_at ?? now(),
         ]);
     }
 
@@ -120,6 +162,7 @@ class Categoria extends Model
     {
         $this->update([
             'jurado_secreto_revelado' => false,
+            'podio_revelado_hasta' => null,
             'revelado_at' => null,
         ]);
     }
@@ -138,6 +181,7 @@ class Categoria extends Model
             'finalizada' => false,
             'finalizada_at' => null,
             'jurado_secreto_revelado' => false,
+            'podio_revelado_hasta' => null,
             'revelado_at' => null,
         ]);
     }

@@ -5,6 +5,7 @@ namespace App\Modules\Jurados\Services;
 use App\Modules\Categorias\Events\CategoriaFinalizada;
 use App\Modules\Categorias\Models\Categoria;
 use App\Modules\Jurados\Events\JuradoSecretoRevelado;
+use App\Modules\Jurados\Events\PodioPasoRevelado;
 use App\Modules\Jurados\Models\JuradoPresentacion;
 use App\Modules\Presentaciones\Models\Presentacion;
 use App\Modules\Rankings\Events\RankingActualizado;
@@ -38,45 +39,33 @@ class GestionarJuradoSecretoService
                 'jurado_secreto_usuario_id' => $jurado->id,
             ]);
 
-            $presentacionesFinal = Presentacion::whereHas('inscripcion', function ($query) use ($categoria) {
-                $query->where('id_categoria', $categoria->id)
-                    ->whereHas('fase', fn ($f) => $f->where('fase', FaseEnum::FINAL->value));
-            })->get();
+            $presentaciones = Presentacion::query()
+                ->whereHas('inscripcion', function ($q) use ($categoria) {
+                    $q->where('id_categoria', $categoria->id)
+                        ->whereHas('fase', fn ($f) => $f->where('fase', FaseEnum::FINAL->value));
+                })
+                ->get();
 
-            foreach ($presentacionesFinal as $presentacion) {
-                // Desmarcar otros jurados secretos en la presentación
-                JuradoPresentacion::where('id_presentacion', $presentacion->id)
-                    ->where('id_usuario', '!=', $jurado->id)
-                    ->update(['es_secreto' => false]);
+            foreach ($presentaciones as $pres) {
+                $juradosActuales = JuradoPresentacion::where('id_presentacion', $pres->id)->get();
 
-                $asignacion = JuradoPresentacion::where('id_presentacion', $presentacion->id)
-                    ->where('id_usuario', $jurado->id)
-                    ->first();
+                if ($juradosActuales->count() === 5) {
+                    JuradoPresentacion::where('id_presentacion', $pres->id)
+                        ->update(['es_secreto' => false]);
 
-                if ($asignacion) {
-                    $asignacion->update(['es_secreto' => true]);
-                } else {
-                    $totalAsignados = JuradoPresentacion::where('id_presentacion', $presentacion->id)->count();
-                    if ($totalAsignados < 5) {
-                        JuradoPresentacion::create([
-                            'id_presentacion' => $presentacion->id,
-                            'id_usuario' => $jurado->id,
-                            'es_secreto' => true,
-                            'es_controlador' => $jurado->puedeControlarTiempo(),
-                            'estado' => \App\Support\Enums\JuradoPresentacionEstadoEnum::ASIGNADO,
-                        ]);
+                    $jp = JuradoPresentacion::where('id_presentacion', $pres->id)
+                        ->where('id_usuario', $jurado->id)
+                        ->first();
+
+                    if ($jp) {
+                        $jp->update(['es_secreto' => true]);
                     } else {
-                        $aReemplazar = JuradoPresentacion::where('id_presentacion', $presentacion->id)
-                            ->where('es_controlador', false)
-                            ->first() ?? JuradoPresentacion::where('id_presentacion', $presentacion->id)->first();
-
-                        if ($aReemplazar) {
-                            $aReemplazar->delete();
-                            JuradoPresentacion::create([
-                                'id_presentacion' => $presentacion->id,
+                        $ultimoJurado = $juradosActuales->last();
+                        if ($ultimoJurado) {
+                            $ultimoJurado->update([
                                 'id_usuario' => $jurado->id,
                                 'es_secreto' => true,
-                                'es_controlador' => $jurado->puedeControlarTiempo(),
+                                'es_controlador' => false,
                                 'estado' => \App\Support\Enums\JuradoPresentacionEstadoEnum::ASIGNADO,
                             ]);
                         }
@@ -89,11 +78,13 @@ class GestionarJuradoSecretoService
     }
 
     /**
-     * Revela el jurado secreto de una categoría en la etapa final.
+     * Revela el jurado secreto e inicia el podio de una categoría en la etapa final.
+     * Por defecto inicia en paso 0 (modo misterio, cartas tapadas).
      */
-    public function revelarJuradoSecreto(Categoria $categoria): void
+    public function revelarJuradoSecreto(Categoria $categoria, ?int $paso = 0): void
     {
-        $categoria->marcarRevelada();
+        $pasoEfectivo = $paso ?? 0;
+        $categoria->marcarRevelada($pasoEfectivo);
 
         $juradoSecreto = $this->asignarJuradosService->juradoSecretoDeCategoria($categoria);
 
@@ -101,6 +92,40 @@ class GestionarJuradoSecretoService
         event(new JuradoSecretoRevelado($categoria, $juradoSecreto));
 
         $ranking = $this->calcularRankingService->rankingPorCategoria($categoria, null, true);
+        event(new PodioPasoRevelado($categoria, $pasoEfectivo));
+        event(new RankingActualizado($categoria, $ranking));
+    }
+
+    /**
+     * Avanza o cambia el paso de revelación del podio (0=todo tapado, 3=revelar 3°, 2=revelar 2°, 1=revelar 1° y general).
+     */
+    public function avanzarPasoPodio(Categoria $categoria, int $paso): void
+    {
+        $categoria->revelarPasoPodio($paso);
+
+        $ranking = $this->calcularRankingService->rankingPorCategoria($categoria, null, true);
+
+        $posicion = in_array($paso, [1, 2, 3], true) ? $paso : null;
+        $datosGanador = $posicion ? $ranking->firstWhere('posicion', $posicion) : null;
+
+        $ganadorData = null;
+        if ($datosGanador) {
+            $ganadorData = [
+                'id' => $datosGanador['id'] ?? null,
+                'nombre' => $datosGanador['nombre'] ?? null,
+                'departamento' => $datosGanador['departamento'] ?? null,
+                'nota_final' => $datosGanador['nota_final'] ?? null,
+                'foto_url' => $datosGanador['foto_url'] ?? null,
+            ];
+        }
+
+        event(new PodioPasoRevelado(
+            $categoria,
+            $paso,
+            $posicion,
+            $ganadorData
+        ));
+
         event(new RankingActualizado($categoria, $ranking));
     }
 

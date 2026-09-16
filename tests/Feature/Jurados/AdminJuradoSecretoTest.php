@@ -151,4 +151,40 @@ class AdminJuradoSecretoTest extends TestCase
         $responseReabrir->assertRedirect();
         $this->assertFalse($this->categoria->fresh()->estaFinalizada());
     }
+
+    public function test_admin_puede_controlar_pasos_progresivos_del_podio(): void
+    {
+        $this->categoria->marcarRevelada(0);
+        $this->assertSame(0, $this->categoria->fresh()->podioPasoActual());
+
+        // Revelar 3° lugar (paso 3)
+        $resp3 = $this->actingAs($this->admin)
+            ->post(route('admin.categorias.podio-paso', $this->categoria), ['paso' => 3]);
+        $resp3->assertRedirect();
+        $this->assertSame(3, $this->categoria->fresh()->podioPasoActual());
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(3));
+        $this->assertFalse($this->categoria->fresh()->esPodioLugarRevelado(2));
+        $this->assertFalse($this->categoria->fresh()->esPodioLugarRevelado(1));
+        $this->assertFalse($this->categoria->fresh()->debeMostrarListadoGeneral());
+
+        // Revelar 2° lugar (paso 2)
+        $resp2 = $this->actingAs($this->admin)
+            ->post(route('admin.categorias.podio-paso', $this->categoria), ['paso' => 2]);
+        $resp2->assertRedirect();
+        $this->assertSame(2, $this->categoria->fresh()->podioPasoActual());
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(3));
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(2));
+        $this->assertFalse($this->categoria->fresh()->esPodioLugarRevelado(1));
+        $this->assertFalse($this->categoria->fresh()->debeMostrarListadoGeneral());
+
+        // Revelar 1° lugar (paso 1)
+        $resp1 = $this->actingAs($this->admin)
+            ->post(route('admin.categorias.podio-paso', $this->categoria), ['paso' => 1]);
+        $resp1->assertRedirect();
+        $this->assertSame(1, $this->categoria->fresh()->podioPasoActual());
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(3));
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(2));
+        $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(1));
+        $this->assertTrue($this->categoria->fresh()->debeMostrarListadoGeneral());
+    }
 }

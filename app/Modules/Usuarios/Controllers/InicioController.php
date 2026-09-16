@@ -91,6 +91,11 @@ class InicioController extends Controller
         }
 
         $esPodio = (bool) ($categoriaSeleccionada?->estaRevelada() ?? false);
+        $podioPaso = $categoriaSeleccionada?->podioPasoActual();
+        $lugar1Revelado = $categoriaSeleccionada?->esPodioLugarRevelado(1) ?? false;
+        $lugar2Revelado = $categoriaSeleccionada?->esPodioLugarRevelado(2) ?? false;
+        $lugar3Revelado = $categoriaSeleccionada?->esPodioLugarRevelado(3) ?? false;
+        $mostrarGeneral = $categoriaSeleccionada?->debeMostrarListadoGeneral() ?? false;
 
         $primerLugar = null;
         $segundoLugar = null;
@@ -125,6 +130,11 @@ class InicioController extends Controller
             'categoriaSeleccionada' => $categoriaSeleccionada,
             'ranking' => $ranking,
             'esPodio' => $esPodio,
+            'podioPaso' => $podioPaso,
+            'lugar1Revelado' => $lugar1Revelado,
+            'lugar2Revelado' => $lugar2Revelado,
+            'lugar3Revelado' => $lugar3Revelado,
+            'mostrarGeneral' => $mostrarGeneral,
             'primerLugar' => $primerLugar,
             'segundoLugar' => $segundoLugar,
             'tercerLugar' => $tercerLugar,

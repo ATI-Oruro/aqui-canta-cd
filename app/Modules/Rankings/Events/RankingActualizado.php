@@ -40,12 +40,19 @@ class RankingActualizado implements ShouldBroadcastNow
      */
     public function broadcastWith(): array
     {
+        $items = $this->ranking instanceof Collection ? $this->ranking : collect($this->ranking);
+        $rankingSlim = $items->map(function ($item) {
+            $arr = is_array($item) ? $item : (array) $item;
+            unset($arr['jurados']);
+            return $arr;
+        })->values()->all();
+
         return [
             'categoria_id' => $this->categoria->id,
             'categoria_nombre' => $this->categoria->categoria,
             'jurado_secreto_revelado' => (bool) $this->categoria->jurado_secreto_revelado,
             'finalizada' => (bool) $this->categoria->finalizada,
-            'ranking' => $this->ranking instanceof Collection ? $this->ranking->toArray() : $this->ranking,
+            'ranking' => $rankingSlim,
         ];
     }
 }

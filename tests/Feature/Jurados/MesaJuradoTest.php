@@ -140,7 +140,7 @@ class MesaJuradoTest extends TestCase
         $response->assertSee('Ayllu Mayor');
         $response->assertSee('Llamar al Escenario');
         $response->assertSee('Cerrar Calificación');
-        $response->assertSee('Revelar Ganador');
+        $response->assertDontSee('Revelar Ganador');
     }
 
     public function test_categoria_con_calificaciones_cerradas_bloquea_registro_y_correccion(): void

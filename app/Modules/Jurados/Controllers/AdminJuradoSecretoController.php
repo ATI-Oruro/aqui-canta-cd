@@ -85,6 +85,27 @@ class AdminJuradoSecretoController extends Controller
         return back()->with('status', sprintf('Categoría "%s" FINALIZADA oficialmente. Jurado secreto revelado.', $categoria->categoria));
     }
 
+    public function podioPaso(Request $request, Categoria $categoria): RedirectResponse
+    {
+        Gate::authorize('asignarJurados');
+
+        $validados = $request->validate([
+            'paso' => ['required', 'integer', 'in:0,1,2,3'],
+        ]);
+
+        $paso = (int) $validados['paso'];
+        $this->juradoSecretoService->avanzarPasoPodio($categoria, $paso);
+
+        $mensajes = [
+            0 => 'Podio reiniciado en modo misterio (cartas tapadas).',
+            3 => '¡3° Lugar revelado en el podio!',
+            2 => '¡2° Lugar revelado en el podio!',
+            1 => '¡1° Lugar revelado y clasificación general desplegada!',
+        ];
+
+        return back()->with('status', $mensajes[$paso] ?? 'Paso de podio actualizado.');
+    }
+
     public function reabrir(Categoria $categoria): RedirectResponse
     {
         Gate::authorize('asignarJurados');

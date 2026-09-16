@@ -227,7 +227,16 @@ class PublicoRankingTest extends TestCase
         $categoria1 = $data['categoria1'];
         $juradoSecreto = $data['jurados'][4];
 
-        app(GestionarJuradoSecretoService::class)->revelarJuradoSecreto($categoria1);
+        // Paso 0: Modo misterio (todas tapadas con ?)
+        app(GestionarJuradoSecretoService::class)->revelarJuradoSecreto($categoria1, 0);
+
+        $responseMisterio = $this->get(route('inicio', ['categoria' => $categoria1->id]));
+        $responseMisterio->assertStatus(200);
+        $responseMisterio->assertSee('Ganadores de la Categoría');
+        $responseMisterio->assertSee('En Espera');
+
+        // Paso 1: Podio completamente revelado
+        app(GestionarJuradoSecretoService::class)->avanzarPasoPodio($categoria1, 1);
 
         $response = $this->get(route('inicio', ['categoria' => $categoria1->id]));
 

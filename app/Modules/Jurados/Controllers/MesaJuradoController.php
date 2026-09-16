@@ -51,9 +51,30 @@ class MesaJuradoController extends Controller
     {
         Gate::authorize('controlarMesa');
 
-        $this->juradoSecretoService->revelarJuradoSecreto($categoria);
+        $this->juradoSecretoService->revelarJuradoSecreto($categoria, 0);
 
-        return back()->with('status', sprintf('¡Ganador y jurado secreto de "%s" revelados! Podio F1 habilitado en la vista pública.', $categoria->categoria));
+        return back()->with('status', sprintf('¡Ganador y jurado secreto de "%s" revelados en Modo Misterio! Proceda a revelar el 3°, 2° y 1° lugar.', $categoria->categoria));
+    }
+
+    public function podioPaso(Request $request, Categoria $categoria): RedirectResponse
+    {
+        Gate::authorize('controlarMesa');
+
+        $validados = $request->validate([
+            'paso' => ['required', 'integer', 'in:0,1,2,3'],
+        ]);
+
+        $paso = (int) $validados['paso'];
+        $this->juradoSecretoService->avanzarPasoPodio($categoria, $paso);
+
+        $mensajes = [
+            0 => 'Podio reiniciado en modo misterio.',
+            3 => '¡3° Lugar revelado en vivo!',
+            2 => '¡2° Lugar revelado en vivo!',
+            1 => '¡1° Lugar revelado y podio completado!',
+        ];
+
+        return back()->with('status', $mensajes[$paso] ?? 'Paso de podio actualizado.');
     }
 
     public function transicion(Request $request, Presentacion $presentacion): RedirectResponse

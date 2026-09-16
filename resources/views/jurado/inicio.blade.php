@@ -169,33 +169,6 @@
                     @endif
                 @endif
 
-                <!-- Botón 2: Revelar Ganador -->
-                @if ($categoriaActiva)
-                    @if (! $categoriaActiva->estaRevelada())
-                        <form method="POST" action="{{ route('mesa.categorias.revelar', $categoriaActiva) }}" onsubmit="return confirm('¿Revelar el podio oficial y jurado secreto de {{ $categoriaActiva->categoria }}?')" class="flex-1 sm:flex-initial">
-                            @csrf
-                            <button type="submit"
-                                    class="-skew-x-12 transform px-5 py-2.5 bg-gradient-to-r from-[#320845] via-[#480c63] to-[#320845] hover:from-[#480c63] hover:via-[#5c107e] hover:to-[#480c63] border border-purple-500/60 hover:border-purple-400 text-purple-100 hover:text-white shadow-[0_0_15px_rgba(168,85,247,0.25)] hover:shadow-[0_0_22px_rgba(168,85,247,0.45)] transition-all rounded-sm group w-full">
-                                <div class="skew-x-12 flex items-center justify-center gap-2 whitespace-nowrap">
-                                    <span class="text-xs">🏆</span>
-                                    <span class="font-black text-xs uppercase tracking-wider text-purple-100 group-hover:text-white">
-                                        Revelar Ganador
-                                    </span>
-                                </div>
-                            </button>
-                        </form>
-                    @else
-                        <div class="-skew-x-12 transform px-5 py-2.5 bg-[#20082c] border border-purple-500/60 text-purple-200 shadow-inner rounded-sm flex-1 sm:flex-initial">
-                            <div class="skew-x-12 flex items-center justify-center gap-2 whitespace-nowrap">
-                                <span class="text-xs">🏆</span>
-                                <span class="font-black text-xs uppercase tracking-wider">
-                                    Ganador Revelado
-                                </span>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-
             </div>
         @endif
 

@@ -162,6 +162,84 @@
                         </div>
                     </div>
 
+                    <!-- Panel de Control Secuencial del Podio (Top 3) -->
+                    @if ($estaRevelado)
+                        <div class="p-3 bg-purple-50/80 border border-purple-200 rounded-2xl space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🏆</span> Revelación Controlada del Podio
+                                </span>
+                                @php
+                                    $pasoAct = $categoria->podioPasoActual();
+                                    $badgeTexto = match ($pasoAct) {
+                                        0 => '0/3 Tapado (Misterio)',
+                                        3 => '1/3 Revelado (3° Lugar)',
+                                        2 => '2/3 Revelados (3° y 2°)',
+                                        1 => '3/3 Completo (1°, 2°, 3° y General)',
+                                        default => 'Modo Podio',
+                                    };
+                                @endphp
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-200 text-purple-900 font-bold">
+                                    {{ $badgeTexto }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                                <!-- Botón Modo Misterio (Paso 0) -->
+                                <form method="POST" action="{{ route('admin.categorias.podio-paso', $categoria) }}">
+                                    @csrf
+                                    <input type="hidden" name="paso" value="0">
+                                    <button type="submit" @class([
+                                        'w-full py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1',
+                                        'bg-purple-900 text-white shadow-inner' => $pasoAct === 0,
+                                        'bg-white border border-purple-300 text-purple-800 hover:bg-purple-100' => $pasoAct !== 0,
+                                    ]) title="Voltear todas las cartas con signo ? y ocultar general">
+                                        <span>🎭</span> 0: Tapar Todo
+                                    </button>
+                                </form>
+
+                                <!-- Botón Revelar 3° Lugar (Paso 3) -->
+                                <form method="POST" action="{{ route('admin.categorias.podio-paso', $categoria) }}">
+                                    @csrf
+                                    <input type="hidden" name="paso" value="3">
+                                    <button type="submit" @class([
+                                        'w-full py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1',
+                                        'bg-amber-700 text-white shadow-md' => $pasoAct === 3,
+                                        'bg-white border border-amber-400 text-amber-900 hover:bg-amber-50' => $pasoAct !== 3,
+                                    ]) title="Girar carta del 3° Lugar">
+                                        <span>🥉</span> 1: Revelar 3°
+                                    </button>
+                                </form>
+
+                                <!-- Botón Revelar 2° Lugar (Paso 2) -->
+                                <form method="POST" action="{{ route('admin.categorias.podio-paso', $categoria) }}">
+                                    @csrf
+                                    <input type="hidden" name="paso" value="2">
+                                    <button type="submit" @class([
+                                        'w-full py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1',
+                                        'bg-slate-700 text-white shadow-md' => $pasoAct === 2,
+                                        'bg-white border border-slate-400 text-slate-900 hover:bg-slate-100' => $pasoAct !== 2,
+                                    ]) title="Girar carta del 2° Lugar">
+                                        <span>🥈</span> 2: Revelar 2°
+                                    </button>
+                                </form>
+
+                                <!-- Botón Revelar 1° Lugar y General (Paso 1) -->
+                                <form method="POST" action="{{ route('admin.categorias.podio-paso', $categoria) }}">
+                                    @csrf
+                                    <input type="hidden" name="paso" value="1">
+                                    <button type="submit" @class([
+                                        'w-full py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1',
+                                        'bg-yellow-500 text-slate-950 font-black shadow-md' => $pasoAct === 1,
+                                        'bg-white border border-yellow-500 text-yellow-900 hover:bg-yellow-50' => $pasoAct !== 1,
+                                    ]) title="Girar carta del 1° Lugar y mostrar tabla general">
+                                        <span>🥇</span> 3: Revelar 1°
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Botones de Acción -->
                     <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
                         @if (! $estaFinalizada)
@@ -170,7 +248,7 @@
                                       onsubmit="return confirm('¿Revelar la identidad y notas del Jurado Secreto para la categoría {{ $categoria->categoria }}? Se transmitirá en vivo.');">
                                     @csrf
                                     <button type="submit" class="w-full px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg shadow-sm transition">
-                                        🔓 Revelar Secreto
+                                        🔓 Iniciar Podio Misterio
                                     </button>
                                 </form>
                             @else
@@ -178,7 +256,7 @@
                                       onsubmit="return confirm('¿Volver a ocultar el Jurado Secreto?');">
                                     @csrf
                                     <button type="submit" class="w-full px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg transition">
-                                        🔒 Ocultar
+                                        🔒 Ocultar Podio
                                     </button>
                                 </form>
                             @endif

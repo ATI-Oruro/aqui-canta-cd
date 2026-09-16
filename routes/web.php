@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
 
     Route::prefix('categorias')->name('categorias.')->group(function () {
         Route::post('/{categoria}/revelar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'revelar'])->name('revelar');
+        Route::post('/{categoria}/podio-paso', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'podioPaso'])->name('podio-paso');
         Route::post('/{categoria}/ocultar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'ocultar'])->name('ocultar');
         Route::post('/{categoria}/finalizar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'finalizar'])->name('finalizar');
         Route::post('/{categoria}/reabrir', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'reabrir'])->name('reabrir');
@@ -116,6 +117,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('categorias.cerrar');
         Route::post('/categorias/{categoria}/revelar', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'revelarGanador'])
             ->name('categorias.revelar');
+        Route::post('/categorias/{categoria}/podio-paso', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'podioPaso'])
+            ->name('categorias.podio-paso');
         Route::post('/presentaciones/{presentacion}/transicion', [\App\Modules\Jurados\Controllers\MesaJuradoController::class, 'transicion'])
             ->name('presentaciones.transicion');
     });
