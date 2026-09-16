@@ -230,7 +230,13 @@
 
                             <!-- Fondo / Fotografía o Logo Oficial del Evento -->
                             <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050103]">
-                                @if ($pres->fotoUrl())
+                                @if ($pres->fotoSinFondoUrl())
+                                    <div class="w-full h-full flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.2),rgba(5,1,3,0.95)_75%)]">
+                                        <img src="{{ $pres->fotoSinFondoUrl() }}"
+                                             alt="{{ $pres->nombreMostrado() }}"
+                                             class="max-h-full max-w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition duration-700 group-hover:scale-105">
+                                    </div>
+                                @elseif ($pres->fotoUrl())
                                     <img src="{{ $pres->fotoUrl() }}"
                                          alt="{{ $pres->nombreMostrado() }}"
                                          class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
@@ -434,7 +440,13 @@
 
                             <!-- Fondo / Fotografía o Logo Oficial del Participante -->
                             <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050103]">
-                                @if ($pres->fotoUrl())
+                                @if ($pres->fotoSinFondoUrl())
+                                    <div class="w-full h-full flex items-center justify-center p-3 bg-[radial-gradient(ellipse_at_center,rgba(128,0,32,0.35),rgba(5,1,3,0.95)_75%)]">
+                                        <img src="{{ $pres->fotoSinFondoUrl() }}"
+                                             alt="{{ $pres->nombreMostrado() }}"
+                                             class="max-h-full max-w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)] transition duration-700 group-hover:scale-105">
+                                    </div>
+                                @elseif ($pres->fotoUrl())
                                     <img src="{{ $pres->fotoUrl() }}"
                                          alt="{{ $pres->nombreMostrado() }}"
                                          class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">

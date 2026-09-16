@@ -80,9 +80,18 @@
             <div class="lg:col-span-4 space-y-3">
                 <div class="bg-[#120409]/95 rounded-2xl border border-[#3b000b] p-3.5 sm:p-4 text-center space-y-3 shadow-xl">
                     
-                    <!-- Header / Foto o Logo Oficial -->
+                    <!-- Header / Foto del Participante o Logo Oficial -->
                     <div class="relative flex items-center justify-center pt-1">
-                        @if ($presentacion->fotoUrl())
+                        @if ($presentacion->fotoSinFondoUrl())
+                            <div class="relative group">
+                                <div class="absolute -inset-1.5 bg-gradient-to-r from-amber-500/20 via-rose-500/25 to-amber-500/20 rounded-2xl blur-sm opacity-70"></div>
+                                <div class="relative h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.15),rgba(18,4,9,0.95)_75%)] border border-amber-500/30 flex items-center justify-center p-1.5 shadow-xl overflow-hidden">
+                                    <img src="{{ $presentacion->fotoSinFondoUrl() }}"
+                                         alt="{{ $nombrePrincipal }}"
+                                         class="w-full h-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)]">
+                                </div>
+                            </div>
+                        @elseif ($presentacion->fotoUrl())
                             <img src="{{ $presentacion->fotoUrl() }}"
                                  alt="{{ $nombrePrincipal }}"
                                  class="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover object-top border border-[#4a0817] shadow-lg">

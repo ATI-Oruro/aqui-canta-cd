@@ -19,6 +19,7 @@ class Presentacion extends Model
         'id_inscripcion',
         'nombre_presentacion',
         'foto',
+        'foto_sin_fondo',
         'estado',
         'tiempo_maximo',
         'hora_inicio',
@@ -82,6 +83,22 @@ class Presentacion extends Model
         }
 
         return $this->inscripcion?->participantes->first()?->fotoUrl();
+    }
+
+    public function fotoSinFondoUrl(): ?string
+    {
+        if ($this->foto_sin_fondo) {
+            return str_starts_with($this->foto_sin_fondo, 'http')
+                ? $this->foto_sin_fondo
+                : asset('storage/'.$this->foto_sin_fondo);
+        }
+
+        return $this->inscripcion?->participantes->first()?->fotoSinFondoUrl();
+    }
+
+    public function fotoJuradoUrl(): ?string
+    {
+        return $this->fotoSinFondoUrl() ?: $this->fotoUrl();
     }
 
     public function esPreseleccion(): bool

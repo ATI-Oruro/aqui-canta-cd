@@ -76,11 +76,17 @@
                             <td class="py-2 pr-4 font-medium text-slate-800">
                                 @php
                                     $fotoThumb = $inscripcion->presentacion?->fotoUrl() ?? $inscripcion->participantes->first()?->fotoUrl();
+                                    $fotoSinFondoThumb = $inscripcion->presentacion?->fotoSinFondoUrl() ?? $inscripcion->participantes->first()?->fotoSinFondoUrl();
                                 @endphp
                                 <div class="flex items-center gap-2.5">
-                                    @if ($fotoThumb)
-                                        <img src="{{ $fotoThumb }}" alt="" class="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0">
-                                    @endif
+                                    <div class="relative flex -space-x-2 shrink-0">
+                                        @if ($fotoThumb)
+                                            <img src="{{ $fotoThumb }}" alt="Con fondo" title="Foto con fondo (Ranking)" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
+                                        @endif
+                                        @if ($fotoSinFondoThumb)
+                                            <img src="{{ $fotoSinFondoThumb }}" alt="Sin fondo" title="Imagen sin fondo PNG (Jurado)" class="w-8 h-8 rounded-full object-contain bg-slate-900 border-2 border-white shadow-sm p-0.5">
+                                        @endif
+                                    </div>
                                     <span>{{ $inscripcion->presentacion?->nombre_presentacion ?? '—' }}</span>
                                 </div>
                             </td>

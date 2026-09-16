@@ -310,4 +310,57 @@ class AdminInscripcionesCrudTest extends TestCase
         $this->assertSame(0, Presentacion::count());
         $this->assertSame(1, Participante::count());
     }
+
+    #[Test]
+    public function un_admin_puede_cargar_foto_con_fondo_y_sin_fondo_al_crear_inscripcion(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $admin = $this->admin();
+        $fotoConFondo = \Illuminate\Http\UploadedFile::fake()->image('fondo.jpg', 600, 600);
+        $fotoSinFondo = \Illuminate\Http\UploadedFile::fake()->image('jurado.png', 600, 600);
+
+        $datos = $this->datosInscripcion();
+        $datos['foto'] = $fotoConFondo;
+        $datos['foto_sin_fondo'] = $fotoSinFondo;
+
+        $this->actingAs($admin)->post(route('admin.inscripciones.store'), $datos)
+            ->assertRedirect(route('admin.inscripciones.index'));
+
+        $inscripcion = Inscripcion::firstOrFail();
+        $this->assertNotNull($inscripcion->presentacion->foto);
+        $this->assertNotNull($inscripcion->presentacion->foto_sin_fondo);
+        $this->assertSame($inscripcion->presentacion->fotoSinFondoUrl(), $inscripcion->presentacion->fotoJuradoUrl());
+
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($inscripcion->presentacion->foto);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($inscripcion->presentacion->foto_sin_fondo);
+    }
+
+    #[Test]
+    public function un_admin_puede_actualizar_y_eliminar_foto_sin_fondo_en_inscripcion(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('admin.inscripciones.store'), $this->datosInscripcion());
+        $inscripcion = Inscripcion::firstOrFail();
+
+        $fotoSinFondo = \Illuminate\Http\UploadedFile::fake()->image('jurado.png', 600, 600);
+        $this->actingAs($admin)->patch(route('admin.inscripciones.update', $inscripcion), [
+            ...$this->datosInscripcion(),
+            'foto_sin_fondo' => $fotoSinFondo,
+        ])->assertRedirect(route('admin.inscripciones.index'));
+
+        $inscripcion->refresh();
+        $this->assertNotNull($inscripcion->presentacion->foto_sin_fondo);
+
+        // Ahora eliminar foto sin fondo
+        $this->actingAs($admin)->patch(route('admin.inscripciones.update', $inscripcion), [
+            ...$this->datosInscripcion(),
+            'eliminar_foto_sin_fondo' => '1',
+        ])->assertRedirect(route('admin.inscripciones.index'));
+
+        $inscripcion->refresh();
+        $this->assertNull($inscripcion->presentacion->foto_sin_fondo);
+    }
 }

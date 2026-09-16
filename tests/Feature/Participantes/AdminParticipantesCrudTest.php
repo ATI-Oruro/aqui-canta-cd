@@ -188,4 +188,71 @@ class AdminParticipantesCrudTest extends TestCase
 
         $this->assertDatabaseHas('participantes', ['id' => $participante->id]);
     }
+
+    #[Test]
+    public function un_admin_puede_cargar_foto_con_fondo_y_foto_sin_fondo_para_jurado(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $fotoConFondo = \Illuminate\Http\UploadedFile::fake()->image('fondo.jpg', 600, 600);
+        $fotoSinFondo = \Illuminate\Http\UploadedFile::fake()->image('jurado.png', 600, 600);
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.participantes.store'), [
+                'nombre' => 'Rodrigo',
+                'paterno' => 'Paz',
+                'foto' => $fotoConFondo,
+                'foto_sin_fondo' => $fotoSinFondo,
+            ])
+            ->assertRedirect(route('admin.participantes.index'));
+
+        $participante = Participante::where('nombre', 'Rodrigo')->firstOrFail();
+        $this->assertNotNull($participante->foto);
+        $this->assertNotNull($participante->foto_sin_fondo);
+        $this->assertNotNull($participante->fotoUrl());
+        $this->assertNotNull($participante->fotoSinFondoUrl());
+        $this->assertSame($participante->fotoSinFondoUrl(), $participante->fotoJuradoUrl());
+
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($participante->foto);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($participante->foto_sin_fondo);
+    }
+
+    #[Test]
+    public function valida_que_foto_sin_fondo_deba_ser_png(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $archivoInvalido = \Illuminate\Http\UploadedFile::fake()->create('archivo.jpg', 100, 'image/jpeg');
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.participantes.store'), [
+                'nombre' => 'Rodrigo',
+                'paterno' => 'Paz',
+                'foto_sin_fondo' => $archivoInvalido,
+            ])
+            ->assertSessionHasErrors('foto_sin_fondo');
+    }
+
+    #[Test]
+    public function un_admin_puede_eliminar_foto_sin_fondo(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $path = \Illuminate\Http\UploadedFile::fake()->image('jurado.png')->store('participantes', 'public');
+        $participante = Participante::create([
+            'nombre' => 'Rodrigo',
+            'foto_sin_fondo' => $path,
+        ]);
+
+        $this->actingAs($this->admin())
+            ->patch(route('admin.participantes.update', $participante), [
+                'nombre' => 'Rodrigo',
+                'eliminar_foto_sin_fondo' => '1',
+            ])
+            ->assertRedirect(route('admin.participantes.index'));
+
+        $participante->refresh();
+        $this->assertNull($participante->foto_sin_fondo);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($path);
+    }
 }

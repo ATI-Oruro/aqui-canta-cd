@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Participante extends Model
 {
-    protected $fillable = ['nombre', 'paterno', 'materno', 'pseudonimo', 'foto'];
+    protected $fillable = ['nombre', 'paterno', 'materno', 'pseudonimo', 'foto', 'foto_sin_fondo'];
 
     public function inscripciones(): BelongsToMany
     {
@@ -38,5 +38,21 @@ class Participante extends Model
         return str_starts_with($this->foto, 'http')
             ? $this->foto
             : asset('storage/'.$this->foto);
+    }
+
+    public function fotoSinFondoUrl(): ?string
+    {
+        if (! $this->foto_sin_fondo) {
+            return null;
+        }
+
+        return str_starts_with($this->foto_sin_fondo, 'http')
+            ? $this->foto_sin_fondo
+            : asset('storage/'.$this->foto_sin_fondo);
+    }
+
+    public function fotoJuradoUrl(): ?string
+    {
+        return $this->fotoSinFondoUrl() ?: $this->fotoUrl();
     }
 }

@@ -61,6 +61,13 @@ class InscripcionController
 
     public function store(Request $request): RedirectResponse
     {
+        $request->validate([
+            'foto' => ['nullable', 'image', 'max:4096'],
+            'foto_sin_fondo' => ['nullable', 'image', 'mimes:png', 'max:4096'],
+        ], [
+            'foto_sin_fondo.mimes' => 'La imagen para el jurado debe ser una imagen sin fondo en formato PNG.',
+        ]);
+
         $datos = $this->datosFormulario($request);
 
         $this->comprobarValidos($datos);
@@ -71,6 +78,12 @@ class InscripcionController
             $fotoPath = $request->file('foto')->store('participantes', 'public');
             $inscripcion->presentacion?->forceFill(['foto' => $fotoPath])->save();
             $inscripcion->participantes->first()?->forceFill(['foto' => $fotoPath])->save();
+        }
+
+        if ($request->hasFile('foto_sin_fondo')) {
+            $fotoSinFondoPath = $request->file('foto_sin_fondo')->store('participantes', 'public');
+            $inscripcion->presentacion?->forceFill(['foto_sin_fondo' => $fotoSinFondoPath])->save();
+            $inscripcion->participantes->first()?->forceFill(['foto_sin_fondo' => $fotoSinFondoPath])->save();
         }
 
         return redirect()
@@ -91,6 +104,13 @@ class InscripcionController
     public function update(Request $request, Inscripcion $inscripcion): RedirectResponse
     {
         $this->comprobarEditable($inscripcion);
+
+        $request->validate([
+            'foto' => ['nullable', 'image', 'max:4096'],
+            'foto_sin_fondo' => ['nullable', 'image', 'mimes:png', 'max:4096'],
+        ], [
+            'foto_sin_fondo.mimes' => 'La imagen para el jurado debe ser una imagen sin fondo en formato PNG.',
+        ]);
 
         $datos = $this->datosFormulario($request);
 
@@ -115,6 +135,23 @@ class InscripcionController
             $inscripcion->participantes->first()?->forceFill(['foto' => $fotoPath])->save();
         }
 
+        if ($request->boolean('eliminar_foto_sin_fondo')) {
+            if ($inscripcion->presentacion?->foto_sin_fondo && ! str_starts_with($inscripcion->presentacion->foto_sin_fondo, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($inscripcion->presentacion->foto_sin_fondo);
+            }
+            $inscripcion->presentacion?->forceFill(['foto_sin_fondo' => null])->save();
+            foreach ($inscripcion->participantes as $p) {
+                if ($p->foto_sin_fondo && ! str_starts_with($p->foto_sin_fondo, 'http')) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($p->foto_sin_fondo);
+                }
+                $p->forceFill(['foto_sin_fondo' => null])->save();
+            }
+        } elseif ($request->hasFile('foto_sin_fondo')) {
+            $fotoSinFondoPath = $request->file('foto_sin_fondo')->store('participantes', 'public');
+            $inscripcion->presentacion?->forceFill(['foto_sin_fondo' => $fotoSinFondoPath])->save();
+            $inscripcion->participantes->first()?->forceFill(['foto_sin_fondo' => $fotoSinFondoPath])->save();
+        }
+
         return redirect()
             ->route('admin.inscripciones.index')
             ->with('status', 'Inscripción actualizada correctamente.');
@@ -123,6 +160,13 @@ class InscripcionController
     public function destroy(Inscripcion $inscripcion): RedirectResponse
     {
         $this->comprobarEditable($inscripcion);
+
+        if ($inscripcion->presentacion?->foto && ! str_starts_with($inscripcion->presentacion->foto, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($inscripcion->presentacion->foto);
+        }
+        if ($inscripcion->presentacion?->foto_sin_fondo && ! str_starts_with($inscripcion->presentacion->foto_sin_fondo, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($inscripcion->presentacion->foto_sin_fondo);
+        }
 
         $inscripcion->delete();
 

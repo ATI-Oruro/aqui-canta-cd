@@ -48,6 +48,10 @@ class ParticipanteController
             $datos['foto'] = $request->file('foto')->store('participantes', 'public');
         }
 
+        if ($request->hasFile('foto_sin_fondo')) {
+            $datos['foto_sin_fondo'] = $request->file('foto_sin_fondo')->store('participantes', 'public');
+        }
+
         Participante::create($datos);
 
         return redirect()
@@ -80,6 +84,18 @@ class ParticipanteController
             $datos['foto'] = $request->file('foto')->store('participantes', 'public');
         }
 
+        if ($request->boolean('eliminar_foto_sin_fondo')) {
+            if ($participante->foto_sin_fondo && ! str_starts_with($participante->foto_sin_fondo, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto_sin_fondo);
+            }
+            $datos['foto_sin_fondo'] = null;
+        } elseif ($request->hasFile('foto_sin_fondo')) {
+            if ($participante->foto_sin_fondo && ! str_starts_with($participante->foto_sin_fondo, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto_sin_fondo);
+            }
+            $datos['foto_sin_fondo'] = $request->file('foto_sin_fondo')->store('participantes', 'public');
+        }
+
         $participante->fill($datos)->save();
 
         return redirect()
@@ -93,6 +109,10 @@ class ParticipanteController
 
         if ($participante->foto && ! str_starts_with($participante->foto, 'http')) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto);
+        }
+
+        if ($participante->foto_sin_fondo && ! str_starts_with($participante->foto_sin_fondo, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto_sin_fondo);
         }
 
         $participante->delete();
@@ -113,6 +133,9 @@ class ParticipanteController
             'materno' => ['nullable', 'string', 'max:255'],
             'pseudonimo' => ['nullable', 'string', 'max:255'],
             'foto' => ['nullable', 'image', 'max:4096'],
+            'foto_sin_fondo' => ['nullable', 'image', 'mimes:png', 'max:4096'],
+        ], [
+            'foto_sin_fondo.mimes' => 'La imagen para el jurado debe ser una imagen sin fondo en formato PNG.',
         ]);
     }
 

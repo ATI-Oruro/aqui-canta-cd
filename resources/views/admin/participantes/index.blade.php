@@ -47,13 +47,19 @@
                         <tr class="border-b border-slate-100">
                             <td class="py-2 pr-4 font-medium text-slate-800">
                                 <div class="flex items-center gap-2.5">
-                                    @if ($participante->fotoUrl())
-                                        <img src="{{ $participante->fotoUrl() }}" alt="{{ $participante->nombre }}" class="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0">
-                                    @else
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0">
-                                            {{ mb_substr($participante->nombre, 0, 1) }}
-                                        </div>
-                                    @endif
+                                    <div class="relative flex -space-x-2 shrink-0">
+                                        @if ($participante->fotoUrl())
+                                            <img src="{{ $participante->fotoUrl() }}" alt="Con fondo" title="Foto con fondo (Ranking)" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
+                                        @endif
+                                        @if ($participante->fotoSinFondoUrl())
+                                            <img src="{{ $participante->fotoSinFondoUrl() }}" alt="Sin fondo" title="Imagen sin fondo PNG (Jurado)" class="w-8 h-8 rounded-full object-contain bg-slate-900 border-2 border-white shadow-sm p-0.5">
+                                        @endif
+                                        @if (! $participante->fotoUrl() && ! $participante->fotoSinFondoUrl())
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-bold">
+                                                {{ mb_substr($participante->nombre, 0, 1) }}
+                                            </div>
+                                        @endif
+                                    </div>
                                     <span>{{ $participante->nombre }}</span>
                                 </div>
                             </td>

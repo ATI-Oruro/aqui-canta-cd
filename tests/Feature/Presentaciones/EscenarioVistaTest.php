@@ -161,4 +161,29 @@ class EscenarioVistaTest extends TestCase
             ->assertOk()
             ->assertSee('participantes/foto_test.jpg');
     }
+
+    #[Test]
+    public function muestra_imagen_sin_fondo_para_jurado_en_calificar(): void
+    {
+        $jurado = Usuario::factory()->create(['rol' => RolEnum::JURADO]);
+        $presentacion = $this->presentacionPreseleccion();
+        $participante = \App\Modules\Participantes\Models\Participante::create([
+            'nombre' => 'María',
+            'paterno' => 'Flores',
+            'foto' => 'participantes/con_fondo.jpg',
+            'foto_sin_fondo' => 'participantes/sin_fondo_jurado.png',
+        ]);
+        $presentacion->inscripcion->participantes()->attach($participante->id);
+        $presentacion->forceFill(['estado' => PresentacionEstadoEnum::PARTICIPANDO])->save();
+
+        \App\Modules\Jurados\Models\JuradoPresentacion::create([
+            'id_presentacion' => $presentacion->id,
+            'id_usuario' => $jurado->id,
+        ]);
+
+        $this->actingAs($jurado)
+            ->get(route('jurado.calificaciones.evaluar', $presentacion))
+            ->assertOk()
+            ->assertSee('participantes/sin_fondo_jurado.png');
+    }
 }
