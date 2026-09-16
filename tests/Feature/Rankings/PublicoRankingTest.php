@@ -232,7 +232,7 @@ class PublicoRankingTest extends TestCase
         $response = $this->get(route('inicio', ['categoria' => $categoria1->id]));
 
         $response->assertStatus(200);
-        $response->assertSee('Podio de Ganadores');
+        $response->assertSee('Ganadores');
         $response->assertSee('Primer Lugar');
         $response->assertSee('Segundo Lugar');
         $response->assertSee('Tercer Lugar');

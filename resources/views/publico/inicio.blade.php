@@ -36,13 +36,10 @@
                     <div class="corner-bracket-bl"></div>
                     <div class="corner-bracket-br"></div>
 
-                    <!-- Título de Podio Oficial -->
+                    <!-- Título de Ganadores Oficial -->
                     <div class="text-center mb-6 border-b border-[#3b000b] pb-4">
-                        <span class="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] font-cinzel block">
-                            Cuadro de Honor Oficial
-                        </span>
                         <h2 class="text-xl sm:text-2xl font-black gold-gradient-text font-cinzel tracking-wider uppercase">
-                            Podio de Ganadores · {{ $categoriaSeleccionada?->categoria }}
+                            Ganadores de la Categoría
                         </h2>
                     </div>
 
@@ -54,7 +51,7 @@
                         <!-- ========================= -->
                         @if ($segundoLugar)
                             <div class="order-2 sm:order-1 flex flex-col items-center cursor-pointer" data-card-id="{{ $segundoLugar['id'] }}" onclick="abrirModalDesglose({{ $segundoLugar['id'] }})">
-                                <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1e0813] via-[#10030a] to-[#070104] rounded-2xl border-2 border-slate-400/50 hover:border-slate-300 shadow-2xl overflow-hidden group transition-all duration-300 transform hover:-translate-y-1">
+                                <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1e0813] via-[#10030a] to-[#070104] rounded-2xl border-2 border-slate-400/50 shadow-2xl overflow-hidden">
                                     
                                     <!-- Insignia Número 2 -->
                                     <div class="bg-gradient-to-r from-slate-700 to-slate-900 border-b border-slate-500/40 py-2 px-3 flex items-center justify-between">
@@ -65,10 +62,10 @@
                                     <!-- Imagen del Participante -->
                                     <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
                                         @if ($segundoLugar['foto_url'])
-                                            <img src="{{ $segundoLugar['foto_url'] }}" alt="{{ $segundoLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
+                                            <img src="{{ $segundoLugar['foto_url'] }}" alt="{{ $segundoLugar['nombre'] }}" class="w-full h-full object-cover object-top">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(100,116,139,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#070104] via-transparent to-transparent pointer-events-none"></div>
@@ -110,7 +107,7 @@
                         <!-- ========================= -->
                         @if ($primerLugar)
                             <div class="order-1 sm:order-2 flex flex-col items-center sm:-translate-y-4 cursor-pointer" data-card-id="{{ $primerLugar['id'] }}" onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
-                                <div class="w-full max-w-[280px] bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)] hover:shadow-[0_0_40px_rgba(212,175,55,0.4)] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 relative">
+                                <div class="w-full max-w-[280px] bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)] overflow-hidden relative">
                                     
                                     <!-- Corona / Insignia Número 1 -->
                                     <div class="bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-3 flex items-center justify-between text-slate-950">
@@ -124,10 +121,10 @@
                                     <!-- Imagen del Participante -->
                                     <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
                                         @if ($primerLugar['foto_url'])
-                                            <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
+                                            <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.4),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-24 w-24 object-contain opacity-90 group-hover:opacity-100 transition drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-24 w-24 object-contain opacity-90 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#090105] via-transparent to-transparent pointer-events-none"></div>
@@ -135,7 +132,7 @@
 
                                     <!-- Nombre y Puntaje Final -->
                                     <div class="p-4 text-center space-y-2 bg-[#090105]">
-                                        <h3 class="text-base sm:text-lg font-black text-[#fef9c3] font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.75rem] flex items-center justify-center group-hover:text-[#d4af37] transition" title="{{ $primerLugar['nombre'] }}">
+                                        <h3 class="text-base sm:text-lg font-black text-[#fef9c3] font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.75rem] flex items-center justify-center" title="{{ $primerLugar['nombre'] }}">
                                             {{ $primerLugar['nombre'] }}
                                         </h3>
 
@@ -167,7 +164,7 @@
                         <!-- ========================= -->
                         @if ($tercerLugar)
                             <div class="order-3 flex flex-col items-center cursor-pointer" data-card-id="{{ $tercerLugar['id'] }}" onclick="abrirModalDesglose({{ $tercerLugar['id'] }})">
-                                <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1a080f] via-[#0e0308] to-[#050103] rounded-2xl border-2 border-amber-700/60 hover:border-amber-600 shadow-2xl overflow-hidden group transition-all duration-300 transform hover:-translate-y-1">
+                                <div class="w-full max-w-[260px] bg-gradient-to-b from-[#1a080f] via-[#0e0308] to-[#050103] rounded-2xl border-2 border-amber-700/60 shadow-2xl overflow-hidden">
                                     
                                     <!-- Insignia Número 3 -->
                                     <div class="bg-gradient-to-r from-[#78350f] to-[#451a03] border-b border-amber-800/40 py-2 px-3 flex items-center justify-between">
@@ -178,10 +175,10 @@
                                     <!-- Imagen del Participante -->
                                     <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
                                         @if ($tercerLugar['foto_url'])
-                                            <img src="{{ $tercerLugar['foto_url'] }}" alt="{{ $tercerLugar['nombre'] }}" class="w-full h-full object-cover object-top transition duration-500 group-hover:scale-105">
+                                            <img src="{{ $tercerLugar['foto_url'] }}" alt="{{ $tercerLugar['nombre'] }}" class="w-full h-full object-cover object-top">
                                         @else
                                             <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(180,83,9,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80 group-hover:opacity-100 transition">
+                                                <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80">
                                             </div>
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-transparent to-transparent pointer-events-none"></div>
