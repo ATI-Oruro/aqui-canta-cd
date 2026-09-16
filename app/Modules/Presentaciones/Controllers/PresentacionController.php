@@ -67,7 +67,30 @@ class PresentacionController
      */
     public function escenario(Request $request): View
     {
-        [$actual, $siguiente] = $this->presentacionEnCurso();
+        $presentacionId = $request->integer('presentacion_id') ?: $request->integer('p');
+        $actual = null;
+        $siguiente = null;
+
+        if ($presentacionId) {
+            $actual = Presentacion::query()
+                ->with(['inscripcion.categoria', 'inscripcion.participantes', 'jurados.usuario'])
+                ->find($presentacionId);
+        }
+
+        if ($actual === null) {
+            [$actual, $siguiente] = $this->presentacionEnCurso();
+        } else {
+            $siguiente = Presentacion::query()
+                ->select('presentaciones.*')
+                ->join('inscripciones', 'presentaciones.id_inscripcion', '=', 'inscripciones.id')
+                ->with(['inscripcion.categoria', 'inscripcion.participantes'])
+                ->where('presentaciones.estado', PresentacionEstadoEnum::POR_PARTICIPAR->value)
+                ->where('presentaciones.id', '!=', $actual->id)
+                ->orderBy('inscripciones.fecha_presentacion')
+                ->orderBy('inscripciones.hora_presentacion')
+                ->orderBy('presentaciones.id')
+                ->first();
+        }
 
         $usuario = $request->user();
         $juradoPresentacion = null;

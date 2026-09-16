@@ -331,42 +331,11 @@
                                                 🔒 Calificaciones Cerradas
                                             </div>
                                         @else
-                                            <a href="{{ route('jurado.calificaciones.evaluar', $pres) }}"
+                                            <a href="{{ route('jurado.presentaciones.actual') }}"
                                                class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
                                                 <span>⭐</span>
                                                 <span>{{ $yaCalifique ? 'Modificar mi Nota' : 'Calificar en Vivo' }}</span>
                                             </a>
-                                        @endif
-
-                                        @if ($esDelegadoMesa ?? false)
-                                            <div class="flex items-center gap-1.5 pt-1">
-                                                @if ($enEscenario)
-                                                    <form method="POST" action="{{ route('presentaciones.cronometro.iniciar', $pres) }}" class="flex-1">
-                                                        @csrf
-                                                        <button type="submit" class="w-full py-1.5 px-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-bold transition shadow flex items-center justify-center gap-1">
-                                                            <span>▶</span>
-                                                            <span>Iniciar Cronómetro</span>
-                                                        </button>
-                                                    </form>
-                                                @elseif ($participando)
-                                                    <form method="POST" action="{{ route('presentaciones.cronometro.detener', $pres) }}" class="flex-1">
-                                                        @csrf
-                                                        <button type="submit" class="w-full py-1.5 px-2.5 rounded-lg bg-rose-700 hover:bg-rose-600 text-white text-[11px] font-bold transition shadow flex items-center justify-center gap-1">
-                                                            <span>⏹</span>
-                                                            <span>Detener Cronómetro</span>
-                                                        </button>
-                                                    </form>
-
-                                                    <form method="POST" action="{{ route('mesa.presentaciones.transicion', $pres) }}" class="flex-1" onsubmit="return confirm('¿Concluir la presentación y pasar a estado Finalizado?')">
-                                                        @csrf
-                                                        <input type="hidden" name="estado" value="{{ \App\Support\Enums\PresentacionEstadoEnum::FINALIZADO->value }}">
-                                                        <button type="submit" class="w-full py-1.5 px-2.5 rounded-lg bg-[#240610] hover:bg-[#38091a] text-slate-200 hover:text-white border border-[#6b0015] font-bold text-[11px] uppercase tracking-wider transition flex items-center justify-center gap-1">
-                                                            <span>✓</span>
-                                                            <span>Concluir</span>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
                                         @endif
 
                                     @elseif ($finalizado)
@@ -383,7 +352,7 @@
                                                 <span>Corregir Nota ({{ number_format($miCalificacion->nota_total, 2) }} pts)</span>
                                             </a>
                                         @else
-                                            <a href="{{ route('jurado.calificaciones.evaluar', $pres) }}"
+                                            <a href="{{ route('jurado.presentaciones.actual', ['presentacion_id' => $pres->id]) }}"
                                                class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs text-center transition shadow flex items-center justify-center gap-1.5">
                                                 <span>⭐</span>
                                                 <span>Calificar Participante</span>
