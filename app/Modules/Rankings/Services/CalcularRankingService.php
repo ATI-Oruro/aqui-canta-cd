@@ -260,6 +260,20 @@ class CalcularRankingService
             $finalizadas = $presentaciones->where('estado', \App\Support\Enums\PresentacionEstadoEnum::FINALIZADO)->count();
             $conNotaFinal = $presentaciones->whereNotNull('nota_final')->count();
 
+            $top3 = [];
+            if ($total > 0 && ($cat->estaRevelada() || $cat->estaFinalizada() || $finalizadas > 0)) {
+                $rankingCol = $this->rankingPorCategoria($cat, null, true);
+                $top3 = $rankingCol->take(3)->values()->map(function ($item) {
+                    return [
+                        'id' => $item['id'] ?? null,
+                        'posicion' => $item['posicion'] ?? null,
+                        'nombre' => $item['nombre'] ?? '',
+                        'departamento' => $item['departamento'] ?? '',
+                        'nota_final' => $item['nota_final'] ?? null,
+                    ];
+                })->all();
+            }
+
             return [
                 'categoria' => $cat,
                 'id' => $cat->id,
@@ -273,6 +287,7 @@ class CalcularRankingService
                 'presentaciones_finalizadas' => $finalizadas,
                 'presentaciones_con_nota' => $conNotaFinal,
                 'todas_evaluadas' => $total > 0 && $finalizadas === $total,
+                'top3' => $top3,
             ];
         });
     }

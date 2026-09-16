@@ -187,4 +187,20 @@ class AdminJuradoSecretoTest extends TestCase
         $this->assertTrue($this->categoria->fresh()->esPodioLugarRevelado(1));
         $this->assertTrue($this->categoria->fresh()->debeMostrarListadoGeneral());
     }
+
+    public function test_admin_puede_preparar_podio_modo_misterio(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.categorias.preparar-podio', $this->categoria));
+
+        $response->assertRedirect();
+        $this->categoria->refresh();
+        $this->assertTrue($this->categoria->estaRevelada());
+        $this->assertSame(0, $this->categoria->podioPasoActual());
+        $this->assertTrue($this->categoria->esActiva());
+        $this->assertFalse($this->categoria->esPodioLugarRevelado(3));
+        $this->assertFalse($this->categoria->esPodioLugarRevelado(2));
+        $this->assertFalse($this->categoria->esPodioLugarRevelado(1));
+        $this->assertFalse($this->categoria->debeMostrarListadoGeneral());
+    }
 }

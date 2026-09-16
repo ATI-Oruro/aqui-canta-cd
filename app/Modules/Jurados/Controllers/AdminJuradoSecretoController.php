@@ -54,13 +54,18 @@ class AdminJuradoSecretoController extends Controller
         return back()->with('status', sprintf('Jurado secreto para "%s" asignado a %s %s.', $categoria->categoria, $jurado->nombre, $jurado->paterno));
     }
 
-    public function revelar(Categoria $categoria): RedirectResponse
+    public function prepararPodio(Categoria $categoria): RedirectResponse
     {
         Gate::authorize('asignarJurados');
 
-        $this->juradoSecretoService->revelarJuradoSecreto($categoria);
+        $this->juradoSecretoService->prepararPodio($categoria);
 
-        return back()->with('status', sprintf('¡Jurado secreto de la categoría "%s" revelado con éxito!', $categoria->categoria));
+        return back()->with('status', sprintf('¡Podio preparado para "%s"! La pantalla pública está en Modo Misterio con cartas tapadas. Ya puede revelar del 3° al 1° lugar.', $categoria->categoria));
+    }
+
+    public function revelar(Categoria $categoria): RedirectResponse
+    {
+        return $this->prepararPodio($categoria);
     }
 
     public function ocultar(Categoria $categoria): RedirectResponse

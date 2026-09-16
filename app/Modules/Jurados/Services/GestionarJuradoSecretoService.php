@@ -2,6 +2,7 @@
 
 namespace App\Modules\Jurados\Services;
 
+use App\Modules\Categorias\Events\CategoriaActivaCambiada;
 use App\Modules\Categorias\Events\CategoriaFinalizada;
 use App\Modules\Categorias\Models\Categoria;
 use App\Modules\Jurados\Events\JuradoSecretoRevelado;
@@ -78,6 +79,17 @@ class GestionarJuradoSecretoService
     }
 
     /**
+     * Prepara el terreno del podio para una categoría:
+     * - Calcula las notas finales incluyendo jurado secreto
+     * - Marca la categoría como activa y revela en Modo Misterio (paso 0)
+     * - Emite eventos para sincronizar pantallas en vivo
+     */
+    public function prepararPodio(Categoria $categoria): void
+    {
+        $this->revelarJuradoSecreto($categoria, 0);
+    }
+
+    /**
      * Revela el jurado secreto e inicia el podio de una categoría en la etapa final.
      * Por defecto inicia en paso 0 (modo misterio, cartas tapadas).
      */
@@ -85,6 +97,9 @@ class GestionarJuradoSecretoService
     {
         $pasoEfectivo = $paso ?? 0;
         $categoria->marcarRevelada($pasoEfectivo);
+        $categoria->marcarActiva();
+
+        event(new CategoriaActivaCambiada($categoria));
 
         $juradoSecreto = $this->asignarJuradosService->juradoSecretoDeCategoria($categoria);
 

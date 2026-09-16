@@ -186,6 +186,11 @@ class Categoria extends Model
         ]);
     }
 
+    public function esActiva(): bool
+    {
+        return (bool) ($this->es_activa ?? false);
+    }
+
     public function marcarActiva(): void
     {
         if (\Illuminate\Support\Facades\Schema::hasColumn('categorias', 'es_activa')) {

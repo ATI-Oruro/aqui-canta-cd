@@ -62,6 +62,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', sprintf(
     });
 
     Route::prefix('categorias')->name('categorias.')->group(function () {
+        Route::post('/{categoria}/preparar-podio', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'prepararPodio'])->name('preparar-podio');
         Route::post('/{categoria}/revelar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'revelar'])->name('revelar');
         Route::post('/{categoria}/podio-paso', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'podioPaso'])->name('podio-paso');
         Route::post('/{categoria}/ocultar', [\App\Modules\Jurados\Controllers\AdminJuradoSecretoController::class, 'ocultar'])->name('ocultar');
