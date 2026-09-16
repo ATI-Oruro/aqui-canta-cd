@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full overflow-hidden">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -11,11 +11,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
             html, body {
-                height: 100vh !important;
-                height: 100dvh !important;
-                max-height: 100vh !important;
-                max-height: 100dvh !important;
-                overflow: hidden !important;
+                min-height: 100vh;
+                min-height: 100dvh;
             }
             .font-cinzel { font-family: 'Cinzel', serif !important; }
             .font-orbitron { font-family: 'Orbitron', monospace !important; }
@@ -35,9 +32,25 @@
                 background: rgba(217, 119, 6, 0.4);
                 border-radius: 4px;
             }
+            input[type=range].festival-slider {
+                height: 11px !important;
+                background: linear-gradient(90deg, #dc2626 0%, #eab308 50%, #16a34a 100%) !important;
+            }
+            input[type=range].festival-slider::-moz-range-track {
+                height: 11px !important;
+                background: linear-gradient(90deg, #dc2626 0%, #eab308 50%, #16a34a 100%) !important;
+            }
+            input[type=range].festival-slider::-webkit-slider-thumb {
+                width: 25px !important;
+                height: 25px !important;
+            }
+            input[type=range].festival-slider::-moz-range-thumb {
+                width: 25px !important;
+                height: 25px !important;
+            }
         </style>
     </head>
-    <body class="font-sans antialiased h-full h-screen max-h-screen bg-[#030712] text-white flex flex-col justify-between select-none overflow-hidden"
+    <body class="font-sans antialiased min-h-screen bg-[#030712] text-white flex flex-col justify-between select-none"
           data-escenario-raiz
           data-escenario-id="{{ $presentacion->id ?? '' }}"
           data-estado-actual="{{ $presentacion?->estado?->value ?? '' }}"
@@ -84,12 +97,12 @@
             </div>
         </header>
 
-        <!-- Contenedor Principal (2 Columnas sin scroll forzado) -->
-        <main class="flex-1 flex flex-col justify-start px-4 sm:px-6 pt-5 pb-1 overflow-hidden min-h-0">
+        <!-- Contenedor Principal (2 Columnas) -->
+        <main class="flex-1 flex flex-col justify-start px-4 sm:px-6 pt-4 pb-3 overflow-y-auto min-h-0 custom-scrollbar">
             
             {{-- Presentación Activa --}}
-            <div data-escenario-activo class="{{ $presentacion !== null ? 'w-full max-w-7xl mx-auto h-full flex flex-col justify-start min-h-0' : 'hidden w-full max-w-7xl mx-auto h-full flex flex-col justify-start min-h-0' }}">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start h-full min-h-0">
+            <div data-escenario-activo class="{{ $presentacion !== null ? 'w-full max-w-7xl mx-auto flex flex-col justify-start min-h-0' : 'hidden w-full max-w-7xl mx-auto flex flex-col justify-start min-h-0' }}">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start min-h-0">
                     
                     <!-- ========================================== -->
                     <!-- COLUMNA IZQUIERDA: INFORMACIÓN Y CRONÓMETRO -->
@@ -152,24 +165,15 @@
                             @endif
                         </div>
 
-                        <!-- Tags / Pills Informativos -->
-                        <div class="flex items-center justify-center flex-wrap gap-2 my-1 shrink-0">
-
-                            <!-- Tag 2: Número de orden y En Vivo -->
-                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0d1424]/90 border border-slate-800 text-slate-300 shadow-sm text-[11px] font-semibold">
-                                <span class="text-emerald-400 font-mono font-bold">N° {{ str_pad($presentacion?->id ?? 1, 2, '0', STR_PAD_LEFT) }}</span>
-                                <span class="text-slate-600">·</span>
-                                <span>{{ ($presentacion?->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'Finalizado' : 'En Vivo' }}</span>
-                            </div>
-
-                            <!-- Tag 3: Departamento con Punto Rojo -->
-                            @if ($presentacion?->inscripcion?->departamento)
+                        <!-- Tag Informativo de Departamento (si aplica) -->
+                        @if ($presentacion?->inscripcion?->departamento)
+                            <div class="flex items-center justify-center flex-wrap gap-2 my-1 shrink-0">
                                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0d1424]/90 border border-slate-800 text-slate-300 shadow-sm text-[11px] font-semibold">
                                     <span class="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
                                     <span>{{ $presentacion->inscripcion->departamento->nombre }}</span>
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
 
                         <!-- Cronómetro Digital Neón y Controles de Acción -->
                         <div class="mt-2 flex items-center justify-start sm:justify-center gap-4 sm:gap-6 flex-wrap shrink-0">
@@ -225,7 +229,7 @@
                     <!-- ========================================== -->
                     <!-- COLUMNA DERECHA: PARÁMETROS DE CALIFICACIÓN -->
                     <!-- ========================================== -->
-                    <div class="lg:col-span-6 flex flex-col justify-center">
+                    <div class="lg:col-span-6 flex flex-col justify-start">
                         
                         @if (auth()->check() && auth()->user()->esJurado())
                             
@@ -234,34 +238,34 @@
 
                                 @if ($calificacion && $calificacion->esEmitida())
                                     <!-- Caso: Calificación ya emitida -->
-                                    <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-xl">
+                                    <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 sm:p-6 space-y-4 shadow-xl">
                                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-emerald-400 font-bold">✓</span>
-                                                <h3 class="text-sm font-bold text-white">Calificación Registrada</h3>
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="text-emerald-400 font-bold text-xl">✓</span>
+                                                <h3 class="text-[19px] sm:text-[20px] font-bold text-white">Calificación Registrada</h3>
                                             </div>
-                                            <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold rounded-full">
+                                            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[15px] font-bold rounded-full">
                                                 Emitida
                                             </span>
                                         </div>
 
-                                        <div class="bg-slate-950 rounded-xl p-3.5 text-center flex items-center justify-around">
-                                            <span class="text-xs text-slate-400 uppercase font-semibold">Su Nota Total:</span>
-                                            <span class="text-3xl font-black text-emerald-400 font-mono tabular-nums">
+                                        <div class="bg-slate-950 rounded-xl p-4 text-center flex items-center justify-around">
+                                            <span class="text-[17px] text-slate-300 uppercase font-bold tracking-wider">CALIFICACIÓN TOTAL:</span>
+                                            <span class="text-4xl sm:text-5xl font-black text-emerald-400 font-mono tabular-nums">
                                                 {{ number_format($calificacion->nota_total, 2) }}
-                                                <span class="text-xs text-slate-500 font-normal">/ 100 pts</span>
+                                                <span class="text-[17px] text-slate-400 font-normal">/ 100 pts</span>
                                             </span>
                                         </div>
 
-                                        <div class="space-y-1.5">
+                                        <div class="space-y-2">
                                             @foreach ($calificacion->detalles as $det)
                                                 @php
                                                     $cp = $categoriaParametros->firstWhere('id_parametro', $det->id_parametro);
                                                     $maxVal = $cp?->valor_maximo ?? 100;
                                                 @endphp
-                                                <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
-                                                    <span class="text-slate-300 truncate mr-2">{{ $det->parametro?->parametro ?? "Parámetro #{$det->id_parametro}" }}</span>
-                                                    <span class="font-mono font-bold text-amber-300 shrink-0">
+                                                <div class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                                    <span class="text-slate-200 font-medium text-[17px] truncate mr-2">{{ $det->parametro?->parametro ?? "Parámetro #{$det->id_parametro}" }}</span>
+                                                    <span class="font-mono font-bold text-amber-300 shrink-0 text-[17px]">
                                                         {{ number_format($det->valor, 1) }} / {{ number_format($maxVal, 0) }}
                                                     </span>
                                                 </div>
@@ -270,15 +274,15 @@
 
                                         @if ($presentacion->inscripcion?->categoria?->estaFinalizada())
                                             <div class="pt-1">
-                                                <div class="py-2 px-3 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                                                <div class="py-2.5 px-3 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400 text-sm font-semibold text-center flex items-center justify-center gap-2">
                                                     <span>🔒</span>
                                                     <span>Calificaciones cerradas para esta categoría</span>
                                                 </div>
                                             </div>
                                         @else
-                                            <div data-contenedor-corregir class="{{ ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'pt-1' : 'hidden pt-1' }}">
+                                            <div data-contenedor-corregir class="{{ ($presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'pt-2' : 'hidden pt-2' }}">
                                                 <a href="{{ route('jurado.calificaciones.corregir.form', $presentacion) }}"
-                                                   class="block text-center py-2 px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
+                                                   class="block text-center py-3 px-4 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-bold text-[17px] transition">
                                                     ✏️ Corregir calificación
                                                 </a>
                                             </div>
@@ -298,29 +302,29 @@
                                     </div>
 
                                 @else
-                                    <!-- Caso: Formulario de Calificación Activo (Compacto, ajustado a pantalla) -->
-                                    <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3.5 sm:p-4 shadow-xl max-h-[82vh] flex flex-col justify-between">
+                                    <!-- Caso: Formulario de Calificación Activo (Desfijado, tamaño natural) -->
+                                    <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl space-y-3">
                                         
                                         <!-- Header de Calificación -->
-                                        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 shrink-0">
-                                            <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
-                                                <span>⭐</span>
+                                        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-2 shrink-0">
+                                            <h3 class="text-[15px] sm:text-[17px] font-bold text-white flex items-center gap-2">
+                                                <span class="text-amber-400 text-base">⭐</span>
                                                 <span>Calificar Participante</span>
                                             </h3>
 
-                                            <div class="flex items-center gap-1.5 bg-slate-950 border border-amber-500/30 px-2.5 py-0.5 rounded-xl">
-                                                <span class="text-[10px] uppercase font-bold text-slate-400">Total:</span>
-                                                <span id="displayTotalTop" class="text-sm sm:text-base font-black text-amber-400 font-mono tabular-nums">0.00</span>
-                                                <span class="text-[10px] text-slate-500">/ 100</span>
+                                            <div class="flex items-center gap-2 bg-slate-950 border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner">
+                                                <span class="text-[13px] uppercase font-bold text-slate-400 tracking-wider">Total:</span>
+                                                <span id="displayTotalTop" class="text-[17px] sm:text-[19px] font-black text-amber-400 font-mono tabular-nums leading-none">0.00</span>
+                                                <span class="text-[13px] text-slate-400 font-semibold">/ 100</span>
                                             </div>
                                         </div>
 
-                                        <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="flex-1 flex flex-col justify-between min-h-0 space-y-2">
+                                        <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="space-y-3">
                                             @csrf
                                             <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
 
-                                            <!-- Lista de Parámetros con Scroll Interno Limpio si fuese necesario -->
-                                            <div class="space-y-2 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto pr-1 custom-scrollbar">
+                                            <!-- Lista de Parámetros con tamaño natural -->
+                                            <div class="space-y-2.5">
                                                 @foreach ($categoriaParametros as $cp)
                                                     @php
                                                         $idParam = $cp->id_parametro;
@@ -333,17 +337,14 @@
                                                     <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2 transition hover:border-slate-700"
                                                          data-param-container="{{ $idParam }}">
                                                         
-                                                        <div class="flex items-center justify-between text-xs mb-1">
-                                                            <span class="font-semibold text-slate-200 truncate mr-2">{{ $nombreParam }}</span>
-                                                            <div class="flex items-center gap-2 shrink-0">
-                                                                <span class="text-[10px] text-slate-500 font-mono">Máx: {{ number_format($maxVal, 0) }}</span>
-                                                                <span class="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-mono">
-                                                                    <span id="badge_nota_{{ $idParam }}">{{ number_format($valorPrevio, 1) }}</span>
-                                                                </span>
+                                                        <div class="flex items-center justify-between mb-1.5">
+                                                            <span class="font-bold text-[16px] sm:text-[17px] text-slate-100 truncate mr-2">{{ $nombreParam }}</span>
+                                                            <div class="flex items-center shrink-0">
+                                                                <span class="text-[14px] sm:text-[15px] text-slate-400 font-mono font-semibold">Máx: {{ number_format($maxVal, 0) }}</span>
                                                             </div>
                                                         </div>
 
-                                                        <div class="flex items-center gap-2">
+                                                        <div class="flex items-center gap-3">
                                                             <input type="range"
                                                                    id="slider_{{ $idParam }}"
                                                                    min="{{ $minVal }}"
@@ -361,7 +362,7 @@
                                                                    step="0.5"
                                                                    value="{{ $valorPrevio }}"
                                                                    required
-                                                                   class="w-14 py-0.5 px-1 text-center text-xs font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
+                                                                   class="w-[66px] h-9 py-1 px-1.5 text-center text-base font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
                                                                    oninput="sincronizarDesdeInput({{ $idParam }})"
                                                                    onblur="validarLimiteBlur(this)">
                                                         </div>
@@ -381,8 +382,8 @@
                                                         id="btnConfirmarCalificacion"
                                                         onclick="abrirModalConfirmacion()"
                                                         @disabled(! $puedeCalificarAhora)
-                                                        class="w-full py-2 px-4 rounded-xl {{ $puedeCalificarAhora ? 'bg-gradient-to-r from-[#5c0618] to-rose-700 hover:from-[#720a20] hover:to-rose-600 text-white cursor-pointer shadow-lg' : 'bg-slate-800 border border-slate-700 text-slate-400 cursor-not-allowed opacity-60' }} font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5">
-                                                    <span>{{ $puedeCalificarAhora ? '✓' : '⏳' }}</span>
+                                                        class="w-full py-2.5 sm:py-3 px-5 rounded-xl {{ $puedeCalificarAhora ? 'bg-gradient-to-r from-[#5c0618] to-rose-700 hover:from-[#720a20] hover:to-rose-600 text-white cursor-pointer shadow-lg hover:shadow-rose-950/50' : 'bg-slate-800 border border-slate-700 text-slate-400 cursor-not-allowed opacity-60' }} font-bold text-[14px] sm:text-[15px] uppercase tracking-wider transition flex items-center justify-center gap-2">
+                                                    <span class="text-base">{{ $puedeCalificarAhora ? '✓' : '⏳' }}</span>
                                                     <span id="btnCalificarTexto">{{ $puedeCalificarAhora ? 'Registrar calificación oficial' : 'Esperando inicio de presentación para calificar' }}</span>
                                                 </button>
                                             </div>
