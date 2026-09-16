@@ -1,13 +1,43 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full overflow-hidden">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ config('app.name', 'ACB Canta Bolivia') }} — Escenario</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            html, body {
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-height: 100vh !important;
+                max-height: 100dvh !important;
+                overflow: hidden !important;
+            }
+            .font-cinzel { font-family: 'Cinzel', serif !important; }
+            .font-orbitron { font-family: 'Orbitron', monospace !important; }
+            .gold-gradient-text {
+                background: linear-gradient(135deg, #FFF8DC 0%, #F5D061 40%, #D4AF37 75%, #AA7C11 100%) !important;
+                -webkit-background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
+            }
+            /* Scrollbar estilizada y no invasiva para secciones internas si fuera necesario */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: rgba(15, 23, 42, 0.4);
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(217, 119, 6, 0.4);
+                border-radius: 4px;
+            }
+        </style>
     </head>
-    <body class="font-sans antialiased h-full min-h-screen bg-slate-950 text-white flex flex-col justify-between select-none overflow-x-hidden"
+    <body class="font-sans antialiased h-full h-screen max-h-screen bg-[#030712] text-white flex flex-col justify-between select-none overflow-hidden"
           data-escenario-raiz
           data-escenario-id="{{ $presentacion->id ?? '' }}"
           data-estado-actual="{{ $presentacion?->estado?->value ?? '' }}"
@@ -20,132 +50,175 @@
           data-segundos-restantes="{{ $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60) }}"
           data-tiempo-maximo="{{ $presentacion->tiempo_maximo ?? 10 }}">
 
-        <!-- Barra Superior Compacta -->
-        <header class="px-4 py-2 border-b border-slate-800/80 bg-slate-900/40 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold tracking-wider uppercase text-amber-400">Aquí Canta Bolivia</span>
-                <span class="text-slate-600">|</span>
-                <span class="text-xs text-slate-400">XXXIII Festival Nacional</span>
+        <!-- Barra Superior Gala -->
+        <header class="px-4 py-2 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="font-cinzel text-xs sm:text-sm font-bold tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500">
+                    Aquí Canta Bolivia
+                </span>
+                <span class="text-slate-700 font-light">|</span>
+                <span class="text-[11px] sm:text-xs tracking-widest text-slate-400 font-semibold uppercase hidden xs:inline">
+                    XXXIII Festival Nacional
+                </span>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
                 @auth
-                    <span class="text-xs text-slate-400">
+                    <span class="text-xs text-slate-400 hidden md:inline">
                         {{ auth()->user()->nombre }} <span class="text-slate-600">({{ auth()->user()->rol->value }})</span>
                     </span>
                     <a href="{{ auth()->user()->esJurado() ? route('jurado.inicio') : route('admin.inicio') }}"
-                       class="text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700 transition">
+                       class="text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-900 px-2.5 py-1 rounded-md border border-slate-700/80 transition shadow-sm">
                         Panel
                     </a>
                 @endauth
+                <!-- Botón Volver atrás -->
+                <a href="javascript:history.back()"
+                   onclick="if (window.history.length > 1) { window.history.back(); return false; } else { window.location.href='{{ auth()->check() && auth()->user()->esJurado() ? route('jurado.inicio') : route('admin.inicio') }}'; return false; }"
+                   class="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 bg-slate-900/90 hover:bg-slate-800 px-2.5 sm:px-3 py-1 rounded-lg border border-amber-500/40 hover:border-amber-400 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>Volver atrás</span>
+                </a>
             </div>
         </header>
 
         <!-- Contenedor Principal (2 Columnas sin scroll forzado) -->
-        <main class="flex-1 flex flex-col justify-center px-4 sm:px-6 py-2">
+        <main class="flex-1 flex flex-col justify-start px-4 sm:px-6 pt-5 pb-1 overflow-hidden min-h-0">
             
             {{-- Presentación Activa --}}
-            <div data-escenario-activo class="{{ $presentacion !== null ? 'w-full max-w-7xl mx-auto' : 'hidden w-full max-w-7xl mx-auto' }}">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div data-escenario-activo class="{{ $presentacion !== null ? 'w-full max-w-7xl mx-auto h-full flex flex-col justify-start min-h-0' : 'hidden w-full max-w-7xl mx-auto h-full flex flex-col justify-start min-h-0' }}">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start h-full min-h-0">
                     
                     <!-- ========================================== -->
                     <!-- COLUMNA IZQUIERDA: INFORMACIÓN Y CRONÓMETRO -->
                     <!-- ========================================== -->
-                    <div class="lg:col-span-6 flex flex-col items-center justify-center text-center py-2 px-2">
+                    <div class="lg:col-span-6 flex flex-col justify-start pt-0 px-2 min-h-0">
                         
-                        <!-- Badge de Estado -->
-                        <span data-estado class="inline-block px-4 py-1 rounded-full text-xs sm:text-sm font-semibold tracking-wide uppercase {{ ($presentacion?->estado?->value === App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value) ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : (($presentacion?->estado?->value === App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value) ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-500/20 text-slate-300 border border-slate-600') }}">
-                            {{ $presentacion?->estado?->label() ?? 'En escenario' }}
-                        </span>
+                        <!-- Header info del participante (Nombre + Badge debajo) -->
+                        <div class="flex flex-col items-start w-full shrink-0">
+                            <!-- Nombre del Participante (Dos tonos: blanco + dorado festival) -->
+                            @php
+                                $nombreCompleto = $presentacion?->nombreMostrado() ?? '';
+                                $palabras = preg_split('/\s+/', trim($nombreCompleto));
+                                $primerPalabra = array_shift($palabras) ?? '';
+                                $restoPalabras = implode(' ', $palabras);
+                            @endphp
+                            <h1 data-nombre class="text-3xl sm:text-4xl xl:text-5xl font-extrabold uppercase tracking-tight font-cinzel leading-none m-0 p-0">
+                                <span class="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{{ $primerPalabra }}</span>
+                                @if ($restoPalabras !== '')
+                                    <span class="gold-gradient-text drop-shadow-[0_0_20px_rgba(229,192,91,0.5)] font-black">{{ $restoPalabras }}</span>
+                                @endif
+                            </h1>
 
-                        <!-- Categoría y Fase -->
-                        <p data-categoria-fase class="mt-4 text-xs sm:text-sm uppercase tracking-[0.25em] text-slate-400 font-medium">
-                            {{ $presentacion?->inscripcion?->categoria?->categoria ?? '' }} · {{ $presentacion?->inscripcion?->fase?->fase?->label() ?? '' }}
-                            @if ($presentacion?->inscripcion?->departamento)
-                                <span class="inline-flex items-center gap-1.5 align-middle">
-                                    <span>·</span>
-                                    @if ($presentacion->inscripcion->departamento->bandera_url)
-                                        <img src="{{ $presentacion->inscripcion->departamento->bandera_url }}" alt="{{ $presentacion->inscripcion->departamento->nombre }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm inline-block">
-                                    @endif
-                                    <span>{{ $presentacion->inscripcion->departamento->nombre }}</span>
-                                </span>
-                            @endif
-                        </p>
-
-                        <!-- Fotografía / Imagen Opcional del Participante -->
-                        @if ($presentacion?->fotoUrl())
-                            <div class="mt-2 mb-1 flex justify-center">
-                                <img src="{{ $presentacion->fotoUrl() }}" alt="{{ $presentacion->nombreMostrado() }}"
-                                     class="h-24 w-24 sm:h-28 sm:w-28 object-cover rounded-2xl border-2 border-amber-400/50 shadow-2xl">
+                            <!-- Badge de Estado (Ubicado DEBAJO del nombre) -->
+                            <div data-estado class="mt-2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase {{ ($presentacion?->estado?->value === App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value) ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]' : (($presentacion?->estado?->value === App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value) ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]' : 'bg-slate-900/80 text-slate-300 border border-slate-700') }}">
+                                <span data-estado-dot class="w-2 h-2 rounded-full {{ ($presentacion?->estado?->value === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO->value) ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24]' : 'bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse' }}"></span>
+                                <span data-estado-texto>{{ $presentacion?->estado?->label() ?? 'En escenario' }}</span>
                             </div>
-                        @endif
-
-                        <!-- Nombre del Participante -->
-                        <h1 data-nombre class="mt-2 text-3xl sm:text-4xl xl:text-5xl font-extrabold leading-tight text-white tracking-tight">
-                            {{ $presentacion?->nombreMostrado() ?? '' }}
-                        </h1>
-
-                        <!-- Cronómetro Principal Gigante -->
-                        <div class="mt-4 flex items-center justify-center gap-3">
-                            <span class="text-5xl sm:text-6xl xl:text-7xl font-black tabular-nums tracking-tight font-mono text-white" data-cronometro-display>
-                                {{ gmdate('i:s', $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60)) }}
-                            </span>
-                            <span class="text-2xl sm:text-3xl font-semibold text-slate-500 tabular-nums font-mono" data-tiempo-max-display>
-                                / {{ $presentacion->tiempo_maximo ?? 10 }}:00
-                            </span>
                         </div>
 
-                        <p class="mt-2 text-xs text-slate-400" data-tiempo-max-texto>
+                        <!-- Fotografía / Imagen Hero del Artista (Agrandada dramáticamente al liberar espacio) -->
+                        @php
+                            $fotoHero = $presentacion?->fotoJuradoUrl() ?: $presentacion?->fotoUrl();
+                        @endphp
+                        <div class="relative my-1 sm:my-2 flex justify-center items-center w-full min-h-[240px] max-h-[48vh] sm:max-h-[52vh] lg:max-h-[56vh] shrink">
+                            <!-- Resplandor sutil de fondo de escenario -->
+                            <div class="absolute inset-0 max-w-md mx-auto rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+
+                            @if ($fotoHero)
+                                <img src="{{ $fotoHero }}"
+                                     alt="{{ $presentacion?->nombreMostrado() }}"
+                                     class="relative z-10 max-h-[46vh] sm:max-h-[50vh] lg:max-h-[54vh] w-auto max-w-full object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)] transition-transform duration-300">
+                            @else
+                                <!-- Silueta o símbolo musical elegante si no hay foto cargada -->
+                                <div class="relative z-10 flex flex-col items-center justify-center p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-2xl backdrop-blur-sm">
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500/20 to-slate-800/50 flex items-center justify-center border border-amber-500/30 text-amber-300 shadow-inner">
+                                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="mt-2.5 text-xs font-bold text-amber-300/80 uppercase tracking-widest font-cinzel">Aquí Canta Bolivia</span>
+                                </div>
+                            @endif
+
+                            @if ($presentacion?->inscripcion?->participantes->first()?->pseudonimo)
+                                <div class="absolute bottom-1 right-4 z-20">
+                                    <span class="text-[11px] text-white/80 font-medium italic drop-shadow">
+                                        "{{ $presentacion->inscripcion->participantes->first()->pseudonimo }}"
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Tags / Pills Informativos -->
+                        <div class="flex items-center justify-center flex-wrap gap-2 my-1 shrink-0">
+
+                            <!-- Tag 2: Número de orden y En Vivo -->
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0d1424]/90 border border-slate-800 text-slate-300 shadow-sm text-[11px] font-semibold">
+                                <span class="text-emerald-400 font-mono font-bold">N° {{ str_pad($presentacion?->id ?? 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="text-slate-600">·</span>
+                                <span>{{ ($presentacion?->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO) ? 'Finalizado' : 'En Vivo' }}</span>
+                            </div>
+
+                            <!-- Tag 3: Departamento con Punto Rojo -->
+                            @if ($presentacion?->inscripcion?->departamento)
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0d1424]/90 border border-slate-800 text-slate-300 shadow-sm text-[11px] font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
+                                    <span>{{ $presentacion->inscripcion->departamento->nombre }}</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Cronómetro Digital Neón y Controles de Acción -->
+                        <div class="mt-2 flex items-center justify-start sm:justify-center gap-4 sm:gap-6 flex-wrap shrink-0">
+                            <!-- Dígitos LED Neón Verde -->
+                            <div class="flex items-center">
+                                <span data-cronometro-display
+                                      class="font-orbitron text-3xl sm:text-4xl lg:text-5xl font-black tabular-nums tracking-widest text-[#00ff88] drop-shadow-[0_0_20px_rgba(0,255,136,0.65)] select-none">
+                                    {{ gmdate('i:s', $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60)) }}
+                                </span>
+                                <!-- Elemento oculto para compatibilidad con Echo -->
+                                <span class="sr-only" data-tiempo-max-display>/ {{ $presentacion->tiempo_maximo ?? 10 }}:00</span>
+                            </div>
+
+                            <!-- Controles de Cronómetro para Jurado Controlador / Admin -->
+                            @if (($puedeControlar ?? false) && $presentacion !== null)
+                                <div data-control-tiempo-caja
+                                     data-url-iniciar="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}"
+                                     data-url-detener="{{ route('presentaciones.cronometro.detener', $presentacion) }}"
+                                     class="flex items-center">
+                                    @if ($presentacion->cronometroCorriendo())
+                                        <form method="POST" action="{{ route('presentaciones.cronometro.detener', $presentacion) }}">
+                                            @csrf
+                                            <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-rose-950/40 border border-rose-400/30 transition flex items-center gap-2 cursor-pointer">
+                                                <span>⏹</span>
+                                                <span>Detener cronómetro</span>
+                                            </button>
+                                        </form>
+                                    @elseif ($presentacion->cronometro_iniciado_at === null)
+                                        <form method="POST" action="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}">
+                                            @csrf
+                                            <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition flex items-center gap-2 cursor-pointer">
+                                                <span>▶</span>
+                                                <span>Iniciar cronómetro</span>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span data-control-estado-texto class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Elementos ocultos accesibles para WebSocket y compatibilidad -->
+                        <p class="sr-only" data-categoria-fase>
+                            {{ $presentacion?->inscripcion?->categoria?->categoria ?? '' }} · {{ $presentacion?->inscripcion?->fase?->fase?->label() ?? '' }}
+                        </p>
+                        <p class="sr-only" data-tiempo-max-texto>
                             Tiempo máximo de presentación: {{ $presentacion->tiempo_maximo ?? 10 }} minuto(s)
                         </p>
-
-                        <!-- Controles de Cronómetro para Jurado Controlador / Admin -->
-                        @if (($puedeControlar ?? false) && $presentacion !== null)
-                            <div data-control-tiempo-caja
-                                 data-url-iniciar="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}"
-                                 data-url-detener="{{ route('presentaciones.cronometro.detener', $presentacion) }}"
-                                 class="mt-4 p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/40 shadow-lg flex flex-col sm:flex-row items-center gap-2.5">
-                                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    Control de Tiempo:
-                                </span>
-                                @if ($presentacion->cronometroCorriendo())
-                                    <form method="POST" action="{{ route('presentaciones.cronometro.detener', $presentacion) }}">
-                                        @csrf
-                                        <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-rose-600/30 transition flex items-center gap-1.5">
-                                            <span>⏹</span>
-                                            <span>Detener cronómetro</span>
-                                        </button>
-                                    </form>
-                                @elseif ($presentacion->cronometro_iniciado_at === null)
-                                    <form method="POST" action="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}">
-                                        @csrf
-                                        <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-emerald-600/30 transition flex items-center gap-1.5">
-                                            <span>▶</span>
-                                            <span>Iniciar cronómetro</span>
-                                        </button>
-                                    </form>
-                                @else
-                                    <span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>
-                                @endif
-                            </div>
-                        @endif
-
-                        <!-- Aviso Informativo cuando la presentación está Finalizada -->
-                        @php
-                            $esFinalizado = ($presentacion?->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO || $presentacion?->cronometro_finalizado_at !== null);
-                        @endphp
-
-                        <div data-aviso-finalizado
-                             class="{{ $esFinalizado ? 'block' : 'hidden' }} mt-4 w-full max-w-md p-3 rounded-xl bg-slate-900/90 border border-amber-500/40 shadow-lg text-center space-y-1">
-                            <div class="flex items-center justify-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-                                <span>Presentación Finalizada</span>
-                            </div>
-                            <p class="text-[11px] text-slate-300">
-                                Los jurados pueden registrar o verificar sus calificaciones hasta que el administrador llame al siguiente participante.
-                            </p>
-                        </div>
 
                     </div>
 
@@ -225,29 +298,29 @@
                                     </div>
 
                                 @else
-                                    <!-- Caso: Formulario de Calificación Activo (Compacto, sin scroll) -->
-                                    <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl">
+                                    <!-- Caso: Formulario de Calificación Activo (Compacto, ajustado a pantalla) -->
+                                    <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3.5 sm:p-4 shadow-xl max-h-[82vh] flex flex-col justify-between">
                                         
                                         <!-- Header de Calificación -->
-                                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
-                                            <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+                                        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 shrink-0">
+                                            <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
                                                 <span>⭐</span>
                                                 <span>Calificar Participante</span>
                                             </h3>
 
-                                            <div class="flex items-center gap-1.5 bg-slate-950 border border-amber-500/30 px-3 py-1 rounded-xl">
+                                            <div class="flex items-center gap-1.5 bg-slate-950 border border-amber-500/30 px-2.5 py-0.5 rounded-xl">
                                                 <span class="text-[10px] uppercase font-bold text-slate-400">Total:</span>
-                                                <span id="displayTotalTop" class="text-base font-black text-amber-400 font-mono tabular-nums">0.00</span>
+                                                <span id="displayTotalTop" class="text-sm sm:text-base font-black text-amber-400 font-mono tabular-nums">0.00</span>
                                                 <span class="text-[10px] text-slate-500">/ 100</span>
                                             </div>
                                         </div>
 
-                                        <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="space-y-3">
+                                        <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="flex-1 flex flex-col justify-between min-h-0 space-y-2">
                                             @csrf
                                             <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
 
-                                            <!-- Lista de Parámetros (Ajustada compacta) -->
-                                            <div class="space-y-2.5">
+                                            <!-- Lista de Parámetros con Scroll Interno Limpio si fuese necesario -->
+                                            <div class="space-y-2 max-h-[48vh] sm:max-h-[52vh] overflow-y-auto pr-1 custom-scrollbar">
                                                 @foreach ($categoriaParametros as $cp)
                                                     @php
                                                         $idParam = $cp->id_parametro;
@@ -257,20 +330,20 @@
                                                         $valorPrevio = old("valores.{$idParam}", $minVal);
                                                     @endphp
 
-                                                    <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2.5 transition hover:border-slate-700"
+                                                    <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2 transition hover:border-slate-700"
                                                          data-param-container="{{ $idParam }}">
                                                         
                                                         <div class="flex items-center justify-between text-xs mb-1">
                                                             <span class="font-semibold text-slate-200 truncate mr-2">{{ $nombreParam }}</span>
                                                             <div class="flex items-center gap-2 shrink-0">
                                                                 <span class="text-[10px] text-slate-500 font-mono">Máx: {{ number_format($maxVal, 0) }}</span>
-                                                                <span class="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.2 rounded font-mono">
+                                                                <span class="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-mono">
                                                                     <span id="badge_nota_{{ $idParam }}">{{ number_format($valorPrevio, 1) }}</span>
                                                                 </span>
                                                             </div>
                                                         </div>
 
-                                                        <div class="flex items-center gap-2.5">
+                                                        <div class="flex items-center gap-2">
                                                             <input type="range"
                                                                    id="slider_{{ $idParam }}"
                                                                    min="{{ $minVal }}"
@@ -288,7 +361,7 @@
                                                                    step="0.5"
                                                                    value="{{ $valorPrevio }}"
                                                                    required
-                                                                   class="w-16 py-1 px-1.5 text-center text-xs font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
+                                                                   class="w-14 py-0.5 px-1 text-center text-xs font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
                                                                    oninput="sincronizarDesdeInput({{ $idParam }})"
                                                                    onblur="validarLimiteBlur(this)">
                                                         </div>
@@ -300,7 +373,7 @@
                                                 @endforeach
                                             </div>
 
-                                            <div class="pt-2">
+                                            <div class="pt-1 shrink-0">
                                                 @php
                                                     $puedeCalificarAhora = ($presentacion !== null) && ($presentacion->cronometroCorriendo() || $presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO || $presentacion->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO || $presentacion->cronometro_iniciado_at !== null);
                                                 @endphp
@@ -308,7 +381,7 @@
                                                         id="btnConfirmarCalificacion"
                                                         onclick="abrirModalConfirmacion()"
                                                         @disabled(! $puedeCalificarAhora)
-                                                        class="w-full py-2.5 px-4 rounded-xl {{ $puedeCalificarAhora ? 'bg-gradient-to-r from-[#5c0618] to-rose-700 hover:from-[#720a20] hover:to-rose-600 text-white cursor-pointer shadow-lg' : 'bg-slate-800 border border-slate-700 text-slate-400 cursor-not-allowed opacity-60' }} font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5">
+                                                        class="w-full py-2 px-4 rounded-xl {{ $puedeCalificarAhora ? 'bg-gradient-to-r from-[#5c0618] to-rose-700 hover:from-[#720a20] hover:to-rose-600 text-white cursor-pointer shadow-lg' : 'bg-slate-800 border border-slate-700 text-slate-400 cursor-not-allowed opacity-60' }} font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5">
                                                     <span>{{ $puedeCalificarAhora ? '✓' : '⏳' }}</span>
                                                     <span id="btnCalificarTexto">{{ $puedeCalificarAhora ? 'Registrar calificación oficial' : 'Esperando inicio de presentación para calificar' }}</span>
                                                 </button>
@@ -366,14 +439,20 @@
 
         </main>
 
-        <!-- Barra Inferior: Siguiente Presentación (Compacta y Fija) -->
+        <!-- Barra Inferior: Siguiente Presentación (Estilo Gala Festival) -->
         @if ($siguiente !== null)
-            <footer data-siguiente-contenedor class="px-4 py-2 border-t border-slate-800/80 bg-slate-900/60 flex items-center justify-between gap-4 max-w-7xl w-full mx-auto shrink-0 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Siguiente</span>
-                    <span data-siguiente-nombre class="font-semibold truncate text-slate-200">{{ $siguiente->nombreMostrado() }}</span>
+            <footer data-siguiente-contenedor class="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-md w-full shrink-0">
+                <div class="max-w-7xl mx-auto flex items-center flex-wrap gap-2 text-xs">
+                    <span class="text-amber-400 font-extrabold tracking-widest text-[11px] uppercase">SIGUIENTE:</span>
+                    <span data-siguiente-nombre class="text-amber-200 font-cinzel font-extrabold uppercase tracking-wider text-xs sm:text-sm">{{ $siguiente->nombreMostrado() }}</span>
+                    <span class="text-slate-700 font-light mx-1">|</span>
+                    <span data-siguiente-categoria class="text-slate-400 font-medium">
+                        {{ $siguiente->inscripcion?->categoria?->categoria ?? '—' }}
+                        @if ($siguiente->inscripcion?->departamento)
+                            · {{ $siguiente->inscripcion->departamento->nombre }}
+                        @endif
+                    </span>
                 </div>
-                <span data-siguiente-categoria class="text-slate-400">{{ $siguiente->inscripcion?->categoria?->categoria ?? '—' }}</span>
             </footer>
         @endif
 
@@ -392,6 +471,33 @@
                         Confirmar
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Notificación Toast: Presentación Finalizada (Flotante inferior derecha descartable) -->
+        @php
+            $esFinalizado = ($presentacion?->estado === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO || $presentacion?->cronometro_finalizado_at !== null);
+        @endphp
+        <div data-aviso-finalizado
+             class="{{ $esFinalizado ? 'flex' : 'hidden' }} fixed bottom-14 right-4 sm:right-6 z-50 max-w-sm bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl p-4 shadow-2xl backdrop-blur-md items-start gap-3 transition-all duration-300">
+            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            </div>
+            <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between gap-3">
+                    <h4 class="text-xs font-black uppercase tracking-wider text-amber-400 font-cinzel">
+                        Presentación Finalizada
+                    </h4>
+                    <button type="button"
+                            onclick="this.closest('[data-aviso-finalizado]').classList.add('hidden'); this.closest('[data-aviso-finalizado]').classList.remove('flex');"
+                            class="text-slate-400 hover:text-white text-base font-bold px-1.5 py-0.5 leading-none rounded hover:bg-slate-800 transition cursor-pointer"
+                            title="Cerrar notificación">
+                        ✕
+                    </button>
+                </div>
+                <p class="text-xs text-slate-200 leading-relaxed">
+                    La presentación ha finalizado, puedes registrar o modificar tu calificación hasta que el administrador llame al siguiente participante.
+                </p>
             </div>
         </div>
 

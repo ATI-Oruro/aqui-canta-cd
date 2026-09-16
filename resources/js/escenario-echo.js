@@ -92,8 +92,13 @@ export function inicializarEscenario() {
     function renderizar() {
         if (displayEl) {
             displayEl.textContent = formatear(segundosRestantes);
-            displayEl.classList.toggle('text-rose-400', corriendo && segundosRestantes <= 30);
-            displayEl.classList.toggle('text-white', !corriendo || segundosRestantes > 30);
+            if (corriendo && segundosRestantes <= 30) {
+                displayEl.classList.remove('text-[#00ff88]');
+                displayEl.classList.add('text-rose-400');
+            } else {
+                displayEl.classList.remove('text-rose-400');
+                displayEl.classList.add('text-[#00ff88]');
+            }
         }
 
         if (progressEl) {
@@ -106,21 +111,20 @@ export function inicializarEscenario() {
     function actualizarEstilosEstado(estado) {
         if (!estadoEl) return;
         
-        estadoEl.classList.remove(
-            'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30',
-            'bg-amber-500/20', 'text-amber-300', 'border-amber-500/30',
-            'bg-slate-500/20', 'text-slate-300', 'border-slate-600',
-            'bg-rose-500/20', 'text-rose-300', 'border-rose-500/30'
-        );
+        const dot = estadoEl.querySelector('[data-estado-dot]');
 
         if (estado === 'PARTICIPANDO') {
-            estadoEl.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-500/30');
+            estadoEl.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-950/70 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]';
+            if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse';
         } else if (estado === 'EN_ESCENARIO') {
-            estadoEl.classList.add('bg-amber-500/20', 'text-amber-300', 'border', 'border-amber-500/30');
+            estadoEl.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-950/70 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]';
+            if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse';
         } else if (estado === 'FINALIZADO') {
-            estadoEl.classList.add('bg-slate-500/20', 'text-slate-300', 'border', 'border-slate-600');
+            estadoEl.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-slate-300 border border-slate-700 shadow-sm';
+            if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]';
         } else {
-            estadoEl.classList.add('bg-slate-500/20', 'text-slate-300', 'border', 'border-slate-600');
+            estadoEl.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-900/80 text-slate-300 border border-slate-700 shadow-sm';
+            if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-400';
         }
     }
 
@@ -166,38 +170,43 @@ export function inicializarEscenario() {
             targetElement.outerHTML = `
                 <form method="POST" action="${urlDetener}">
                     <input type="hidden" name="_token" value="${csrfToken}">
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-rose-600/30 transition flex items-center gap-1.5">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-rose-950/40 border border-rose-400/30 transition flex items-center gap-2 cursor-pointer">
                         <span>⏹</span>
                         <span>Detener cronómetro</span>
                     </button>
                 </form>
             `;
         } else if (finalizadoAt || (estadoEl && estadoEl.textContent.toLowerCase().includes('finaliz'))) {
-            targetElement.outerHTML = '<span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+            targetElement.outerHTML = '<span data-control-estado-texto class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
         } else if (!iniciadoAt) {
             targetElement.outerHTML = `
                 <form method="POST" action="${urlIniciar}">
                     <input type="hidden" name="_token" value="${csrfToken}">
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-emerald-600/30 transition flex items-center gap-1.5">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition flex items-center gap-2 cursor-pointer">
                         <span>▶</span>
                         <span>Iniciar cronómetro</span>
                     </button>
                 </form>
             `;
         } else {
-            targetElement.outerHTML = '<span data-control-estado-texto class="text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+            targetElement.outerHTML = '<span data-control-estado-texto class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
         }
     }
 
     function mostrarModoFinalizado(estadoLabel) {
         corriendo = false;
         if (estadoEl) {
-            estadoEl.textContent = estadoLabel || 'Finalizado';
+            const text = estadoEl.querySelector('[data-estado-texto]');
+            if (text) {
+                text.textContent = estadoLabel || 'Finalizado';
+            } else {
+                estadoEl.textContent = estadoLabel || 'Finalizado';
+            }
             actualizarEstilosEstado('FINALIZADO');
         }
         if (avisoFinalizadoEl) {
             avisoFinalizadoEl.classList.remove('hidden');
-            avisoFinalizadoEl.classList.add('block');
+            avisoFinalizadoEl.classList.add('flex');
         }
         habilitarBotonCalificar();
 
@@ -226,7 +235,7 @@ export function inicializarEscenario() {
                 habilitarBotonCalificar();
                 if (avisoFinalizadoEl) {
                     avisoFinalizadoEl.classList.add('hidden');
-                    avisoFinalizadoEl.classList.remove('block');
+                    avisoFinalizadoEl.classList.remove('flex', 'block');
                 }
             }
         }
@@ -329,12 +338,24 @@ export function inicializarEscenario() {
         }
 
         if (estadoEl) {
-            estadoEl.textContent = datos.estado_label ?? datos.estado ?? '';
+            const text = estadoEl.querySelector('[data-estado-texto]');
+            if (text) {
+                text.textContent = datos.estado_label ?? datos.estado ?? '';
+            } else {
+                estadoEl.textContent = datos.estado_label ?? datos.estado ?? '';
+            }
             actualizarEstilosEstado(datos.estado);
         }
 
         if (nombreEl && datos.nombre_presentacion) {
-            nombreEl.textContent = datos.nombre_presentacion;
+            const partes = datos.nombre_presentacion.trim().split(/\s+/);
+            const primero = partes.shift() || '';
+            const resto = partes.join(' ');
+            if (resto) {
+                nombreEl.innerHTML = `<span class="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">${primero}</span> <span class="gold-gradient-text drop-shadow-[0_0_20px_rgba(229,192,91,0.5)] font-black">${resto}</span>`;
+            } else {
+                nombreEl.innerHTML = `<span class="gold-gradient-text drop-shadow-[0_0_20px_rgba(229,192,91,0.5)] font-black">${primero}</span>`;
+            }
         }
 
         if (categoriaFaseEl) {
@@ -383,7 +404,7 @@ export function inicializarEscenario() {
             corriendo = true;
             if (avisoFinalizadoEl) {
                 avisoFinalizadoEl.classList.add('hidden');
-                avisoFinalizadoEl.classList.remove('block');
+                avisoFinalizadoEl.classList.remove('flex', 'block');
             }
             const contenedoresCorregir = document.querySelectorAll('[data-contenedor-corregir]');
             contenedoresCorregir.forEach(el => el.classList.add('hidden'));
@@ -393,7 +414,7 @@ export function inicializarEscenario() {
             segundosRestantes = tiempoMaximo * 60;
             if (avisoFinalizadoEl) {
                 avisoFinalizadoEl.classList.add('hidden');
-                avisoFinalizadoEl.classList.remove('block');
+                avisoFinalizadoEl.classList.remove('flex', 'block');
             }
             const contenedoresCorregir = document.querySelectorAll('[data-contenedor-corregir]');
             contenedoresCorregir.forEach(el => el.classList.add('hidden'));
