@@ -16,3 +16,6 @@ npm run dev -- --host=0.0.0.0
 # URLs de Acceso desde la Red Local:
 # - Panel Web: http://192.168.200.232:8000
 # - WebSocket Reverb: ws://192.168.200.232:6080
+
+
+php artisan festival:reset-presentaciones
