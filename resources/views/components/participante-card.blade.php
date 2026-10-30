@@ -33,7 +33,7 @@
     <div class="corner-bracket corner-br"></div>
 
     <!-- Fotografía del Participante / Fondo de Gala -->
-    <img class="absolute inset-0 w-full h-full object-cover z-0"
+    <img class="card-foto absolute inset-0 w-full h-full object-cover z-0"
          src="{{ $foto }}"
          alt="{{ $nombre }}"
          onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">

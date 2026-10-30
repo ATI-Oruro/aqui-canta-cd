@@ -35,9 +35,13 @@ class Participante extends Model
             return null;
         }
 
-        return str_starts_with($this->foto, 'http')
-            ? $this->foto
-            : asset('storage/'.$this->foto);
+        if (str_starts_with($this->foto, 'http')) {
+            return $this->foto;
+        }
+
+        $ruta = preg_replace('#^(?:public/|storage/)+#', '', ltrim($this->foto, '/'));
+
+        return asset('storage/'.$ruta);
     }
 
     public function fotoSinFondoUrl(): ?string
@@ -46,9 +50,13 @@ class Participante extends Model
             return null;
         }
 
-        return str_starts_with($this->foto_sin_fondo, 'http')
-            ? $this->foto_sin_fondo
-            : asset('storage/'.$this->foto_sin_fondo);
+        if (str_starts_with($this->foto_sin_fondo, 'http')) {
+            return $this->foto_sin_fondo;
+        }
+
+        $ruta = preg_replace('#^(?:public/|storage/)+#', '', ltrim($this->foto_sin_fondo, '/'));
+
+        return asset('storage/'.$ruta);
     }
 
     public function fotoJuradoUrl(): ?string

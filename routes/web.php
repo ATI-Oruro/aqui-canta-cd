@@ -18,6 +18,13 @@ use Illuminate\Support\Facades\Route;
 // Página pública
 Route::get('/', [InicioController::class, 'publico'])->name('inicio');
 
+// Respaldo para servir archivos públicos de storage si el enlace simbólico public/storage no está disponible
+Route::get('/storage/{path}', function (string $path) {
+    abort_unless(\Illuminate\Support\Facades\Storage::disk('public')->exists($path), 404);
+
+    return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+})->where('path', '.*')->name('storage.public');
+
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

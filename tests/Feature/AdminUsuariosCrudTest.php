@@ -175,4 +175,72 @@ class AdminUsuariosCrudTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['id' => $adminB->id]);
     }
+
+    #[Test]
+    public function un_admin_puede_crear_usuario_con_nombre_completo_y_sin_confirmacion_de_contrasena(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.usuarios.create'))
+            ->assertOk()
+            ->assertSee('Nombre completo')
+            ->assertSee('Generar contraseña');
+
+        $this->actingAs($admin)->post(route('admin.usuarios.store'), [
+            'nombre_completo' => 'pedro marcelo arispe quelca',
+            'email' => 'pedro@acb.local',
+            'rol' => RolEnum::JURADO->value,
+            'puede_controlar_tiempo' => 1,
+            'password' => 'ClaveGen2026',
+        ])->assertRedirect(route('admin.usuarios.index'))
+            ->assertSessionHas('credenciales_generadas');
+
+        $this->assertDatabaseHas('users', [
+            'nombre' => 'pedro marcelo',
+            'paterno' => 'arispe',
+            'materno' => 'quelca',
+            'email' => 'pedro@acb.local',
+            'ci' => null,
+            'username' => null,
+            'rol' => RolEnum::JURADO->value,
+            'puede_controlar_tiempo' => 1,
+        ]);
+    }
+
+    #[Test]
+    public function separa_correctamente_nombres_completos_de_una_dos_o_tres_palabras(): void
+    {
+        $admin = $this->crearAdmin();
+
+        // 2 palabras: nombre + paterno
+        $this->actingAs($admin)->post(route('admin.usuarios.store'), [
+            'nombre_completo' => 'Ana Gómez',
+            'email' => 'ana@acb.local',
+            'rol' => RolEnum::JURADO->value,
+            'password' => 'ClaveGen2026',
+        ])->assertRedirect(route('admin.usuarios.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'ana@acb.local',
+            'nombre' => 'Ana',
+            'paterno' => 'Gómez',
+            'materno' => null,
+        ]);
+
+        // 1 palabra: solo nombre
+        $this->actingAs($admin)->post(route('admin.usuarios.store'), [
+            'nombre_completo' => 'Coordinador',
+            'email' => 'coord@acb.local',
+            'rol' => RolEnum::ADMIN->value,
+            'password' => 'ClaveGen2026',
+        ])->assertRedirect(route('admin.usuarios.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'coord@acb.local',
+            'nombre' => 'Coordinador',
+            'paterno' => null,
+            'materno' => null,
+        ]);
+    }
 }

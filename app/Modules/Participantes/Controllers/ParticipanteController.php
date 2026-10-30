@@ -72,6 +72,9 @@ class ParticipanteController
 
         $this->comprobarDuplicado($datos, $participante->id);
 
+        $fotoAnterior = $participante->foto;
+        $fotoSinFondoAnterior = $participante->foto_sin_fondo;
+
         if ($request->boolean('eliminar_foto')) {
             if ($participante->foto && ! str_starts_with($participante->foto, 'http')) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($participante->foto);
@@ -97,6 +100,25 @@ class ParticipanteController
         }
 
         $participante->fill($datos)->save();
+
+        // Sincronizar con presentaciones vinculadas que usaban la foto anterior o no tenían foto
+        if (array_key_exists('foto', $datos)) {
+            foreach ($participante->inscripciones()->with('presentacion')->get() as $inscripcion) {
+                $presentacion = $inscripcion->presentacion;
+                if ($presentacion && ($presentacion->foto === null || $presentacion->foto === $fotoAnterior)) {
+                    $presentacion->forceFill(['foto' => $datos['foto']])->save();
+                }
+            }
+        }
+
+        if (array_key_exists('foto_sin_fondo', $datos)) {
+            foreach ($participante->inscripciones()->with('presentacion')->get() as $inscripcion) {
+                $presentacion = $inscripcion->presentacion;
+                if ($presentacion && ($presentacion->foto_sin_fondo === null || $presentacion->foto_sin_fondo === $fotoSinFondoAnterior)) {
+                    $presentacion->forceFill(['foto_sin_fondo' => $datos['foto_sin_fondo']])->save();
+                }
+            }
+        }
 
         return redirect()
             ->route('admin.participantes.index')

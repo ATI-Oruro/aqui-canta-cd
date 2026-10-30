@@ -800,6 +800,14 @@
                             numEl.textContent = 'N° ' + pos;
                         }
 
+                        // Actualizar fotografía si cambió
+                        if (item.foto_url) {
+                            const imgEl = card.querySelector('.card-foto');
+                            if (imgEl && imgEl.getAttribute('src') !== item.foto_url) {
+                                imgEl.src = item.foto_url;
+                            }
+                        }
+
                         // Reordenar nodo DOM en el contenedor
                         gridContainer.appendChild(card);
                     }
@@ -861,6 +869,12 @@
                                         const newNum = newCard.querySelector('.card-numero-value');
                                         if (oldNum && newNum) {
                                             oldNum.textContent = newNum.textContent.trim();
+                                        }
+
+                                        const oldImg = existingCard.querySelector('.card-foto');
+                                        const newImg = newCard.querySelector('.card-foto');
+                                        if (oldImg && newImg && oldImg.getAttribute('src') !== newImg.getAttribute('src')) {
+                                            oldImg.src = newImg.getAttribute('src');
                                         }
 
                                         gridActual.appendChild(existingCard);
@@ -945,6 +959,12 @@
                         if (scoreEl) {
                             const nf = parseFloat(data.ganador.nota_final);
                             scoreEl.innerHTML = (isNaN(nf) ? '0.00' : nf.toFixed(2)) + ' <span class="text-[10px] text-amber-300">pts</span>';
+                        }
+                        if (data.ganador.foto_url) {
+                            const fotoEl = front.querySelector('.card-foto');
+                            if (fotoEl) {
+                                fotoEl.src = data.ganador.foto_url;
+                            }
                         }
                     }
                 }

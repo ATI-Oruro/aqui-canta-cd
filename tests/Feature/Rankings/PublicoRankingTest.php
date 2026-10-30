@@ -343,4 +343,24 @@ class PublicoRankingTest extends TestCase
         $response->assertSee('Clasificación General');
         $response->assertSee('Camila Torres');
     }
+
+    public function test_vista_publica_enlaza_y_sirve_imagenes_cargadas_sin_error_403(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $data = $this->setupEscenarioPublico();
+        $pres1 = $data['pres1'];
+
+        $archivo = \Illuminate\Http\UploadedFile::fake()->image('retrato.png', 300, 300);
+        $rutaGuardada = $archivo->store('participantes', 'public');
+
+        $pres1->update(['foto' => $rutaGuardada]);
+
+        $response = $this->get(route('inicio'));
+        $response->assertStatus(200);
+        $response->assertSee('/storage/' . $rutaGuardada, false);
+
+        $imgResponse = $this->get('/storage/' . $rutaGuardada);
+        $imgResponse->assertStatus(200);
+    }
 }
