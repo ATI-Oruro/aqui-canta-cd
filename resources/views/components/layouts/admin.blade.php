@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'ACB Canta Bolivia') }} — Administración</title>
+        <title>{{ config('app.name', 'Aquí Canta Bolivia') }} — Administración</title>
 
         <link rel="icon" type="image/png" href="/images/logo-oficial.png">
         <link rel="shortcut icon" href="/images/favicon.ico">
@@ -17,33 +17,33 @@
     </head>
     <body class="font-sans antialiased min-h-screen bg-slate-100">
         <div class="flex min-h-screen">
-            <!-- Sidebar -->
-            <aside class="w-64 shrink-0 bg-slate-900 text-slate-200 flex flex-col">
-                <div class="px-6 py-5 flex items-center gap-3 border-b border-slate-800">
-                    <img src="/images/logo-oficial.png" alt="ACB" class="h-10 w-10 object-contain">
+            <!-- Sidebar fijo y estático en tamaño (100vh) con color vino tinto oscuro -->
+            <aside style="background: linear-gradient(180deg, #36040e 0%, #240209 100%);" class="fixed inset-y-0 left-0 z-30 w-64 h-screen shrink-0 bg-[#2d030c] text-white flex flex-col shadow-xl select-none print:hidden">
+                <div class="px-6 py-4 flex items-center gap-3 border-b border-white/10 shrink-0">
+                    <img src="/images/logo-oficial.png" alt="ACB" class="h-10 w-10 object-contain drop-shadow">
                     <div>
-                        <p class="font-bold text-white leading-tight">ACB Canta Bolivia</p>
-                        <p class="text-xs text-slate-400">Administración</p>
+                        <p class="font-bold text-white leading-tight">Aquí Canta Bolivia</p>
+                        <p class="text-xs text-rose-200/70">Administración</p>
                     </div>
                 </div>
 
-                <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+                <nav class="flex-1 px-3 py-3 space-y-1.5 text-sm overflow-hidden">
                     {{ $sidebar }}
                 </nav>
 
-                <div class="px-6 py-4 border-t border-slate-800">
+                <div class="px-6 py-4 border-t border-white/10 bg-black/20 shrink-0">
                     <div class="flex items-center gap-3">
-                        <div class="h-9 w-9 rounded-full bg-slate-700 flex items-center justify-center uppercase text-white font-bold">
+                        <div class="h-9 w-9 rounded-full bg-white/10 ring-1 ring-white/20 flex items-center justify-center uppercase text-white font-bold shrink-0">
                             {{ substr(auth()->user()->nombre ?? 'U', 0, 1) }}
                         </div>
                         <div class="min-w-0">
-                            <p class="truncate font-semibold text-slate-100">{{ auth()->user()->nombre }} {{ auth()->user()->paterno }}</p>
-                            <p class="text-xs text-slate-400">Admin</p>
+                            <p class="truncate font-semibold text-white text-sm">{{ auth()->user()->nombre }} {{ auth()->user()->paterno }}</p>
+                            <p class="text-xs text-rose-200/70">Admin</p>
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" class="mt-3">
+                    <form method="POST" action="{{ route('logout') }}" class="mt-2.5">
                         @csrf
-                        <button type="submit" class="w-full text-left text-xs text-slate-400 hover:text-white py-1">
+                        <button type="submit" class="w-full text-left text-xs text-rose-200/70 hover:text-white py-1 transition-colors">
                             Cerrar sesión →
                         </button>
                     </form>
@@ -51,7 +51,7 @@
             </aside>
 
             <!-- Main -->
-            <div class="flex-1 flex flex-col min-w-0">
+            <div class="flex-1 flex flex-col min-w-0 ml-64 print:ml-0">
                 @isset($header)
                     <header class="bg-white shadow-sm border-b border-slate-200">
                         <div class="px-8 py-5">
