@@ -145,3 +145,42 @@ input[type=range].festival-slider::-moz-range-track {
     background-image: radial-gradient(#d4af37 1px, transparent 1px) !important;
     background-size: 16px 16px !important;
 }
+
+/* Acordeón fluido de Sidebar (60/120fps con Grid 0fr -> 1fr) */
+.sidebar-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        margin-top 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    margin-top: 0;
+    pointer-events: none;
+}
+
+.sidebar-collapse.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-top: 0.25rem;
+    pointer-events: auto;
+}
+
+.sidebar-collapse-inner {
+    overflow: hidden;
+    min-height: 0;
+    transform: translateY(-4px);
+    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-collapse.is-open .sidebar-collapse-inner {
+    transform: translateY(0);
+}
+
+.sidebar-chevron {
+    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-chevron.is-open {
+    transform: rotate(180deg);
+}
