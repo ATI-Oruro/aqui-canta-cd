@@ -9,7 +9,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h2 class="text-xl font-bold text-slate-900">Panel de Administración</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Resumen operativo en tiempo real del XXXIII Festival Nacional «Aquí… Canta Bolivia»</p>
+                <p class="text-xs text-slate-500 mt-0.5">Panel administrativo del XXXIII Festival Nacional «Aquí… Canta Bolivia»</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('admin.presentaciones.escenario') }}" target="_blank"
