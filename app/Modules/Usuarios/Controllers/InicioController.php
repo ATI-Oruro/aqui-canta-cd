@@ -17,7 +17,110 @@ class InicioController extends Controller
 
     public function admin(): View
     {
-        return view('admin.inicio');
+        $totalCategorias = Schema::hasTable('categorias') ? Categoria::count() : 0;
+        $categoriasFinalizadas = Schema::hasTable('categorias') ? Categoria::where('finalizada', true)->count() : 0;
+        $categoriasReveladas = Schema::hasTable('categorias') ? Categoria::where('jurado_secreto_revelado', true)->count() : 0;
+        $categoriaActiva = Schema::hasTable('categorias') ? Categoria::categoriaActiva() : null;
+
+        $totalUsuarios = Schema::hasTable('users') ? \App\Modules\Usuarios\Models\Usuario::count() : 0;
+        $totalJurados = Schema::hasTable('users')
+            ? \App\Modules\Usuarios\Models\Usuario::where('rol', \App\Support\Enums\RolEnum::JURADO->value)->count()
+            : 0;
+        $juradosControladores = Schema::hasTable('users')
+            ? \App\Modules\Usuarios\Models\Usuario::where('rol', \App\Support\Enums\RolEnum::JURADO->value)
+                ->where('puede_controlar_tiempo', true)
+                ->count()
+            : 0;
+
+        $totalParticipantes = Schema::hasTable('participantes')
+            ? \App\Modules\Participantes\Models\Participante::count()
+            : 0;
+        $totalInscripciones = Schema::hasTable('inscripciones')
+            ? \App\Modules\Inscripciones\Models\Inscripcion::count()
+            : 0;
+
+        $totalPresentaciones = 0;
+        $presentacionesPorParticipar = 0;
+        $presentacionesEnCurso = 0;
+        $presentacionesFinalizadas = 0;
+        $presentacionEnVivo = null;
+        $ultimasEvaluadas = collect();
+
+        if (Schema::hasTable('presentaciones')) {
+            $totalPresentaciones = \App\Modules\Presentaciones\Models\Presentacion::count();
+            $presentacionesPorParticipar = \App\Modules\Presentaciones\Models\Presentacion::where(
+                'estado',
+                \App\Support\Enums\PresentacionEstadoEnum::POR_PARTICIPAR->value
+            )->count();
+            $presentacionesEnCurso = \App\Modules\Presentaciones\Models\Presentacion::whereIn('estado', [
+                \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value,
+                \App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
+            ])->count();
+            $presentacionesFinalizadas = \App\Modules\Presentaciones\Models\Presentacion::where(
+                'estado',
+                \App\Support\Enums\PresentacionEstadoEnum::FINALIZADO->value
+            )->count();
+
+            $presentacionEnVivo = \App\Modules\Presentaciones\Models\Presentacion::query()
+                ->with(['inscripcion.categoria', 'inscripcion.departamento', 'inscripcion.fase', 'jurados.calificacion'])
+                ->whereIn('estado', [
+                    \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value,
+                    \App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
+                ])
+                ->first();
+
+            $ultimasEvaluadas = \App\Modules\Presentaciones\Models\Presentacion::query()
+                ->with(['inscripcion.categoria', 'inscripcion.departamento'])
+                ->whereNotNull('nota_final')
+                ->orderByDesc('updated_at')
+                ->limit(5)
+                ->get();
+        }
+
+        $totalCalificacionesEmitidas = Schema::hasTable('calificaciones')
+            ? \App\Modules\Calificaciones\Models\Calificacion::whereIn('estado', [
+                \App\Support\Enums\CalificacionEstadoEnum::EMITIDO->value,
+                \App\Support\Enums\CalificacionEstadoEnum::CORREGIDO->value,
+            ])->count()
+            : 0;
+
+        $totalCorrecciones = Schema::hasTable('calificacion_historial')
+            ? \App\Modules\Calificaciones\Models\CalificacionHistorial::count()
+            : 0;
+
+        $ultimasCorrecciones = Schema::hasTable('calificacion_historial')
+            ? \App\Modules\Calificaciones\Models\CalificacionHistorial::query()
+                ->with(['usuario', 'calificacion.juradoPresentacion.presentacion.inscripcion.categoria'])
+                ->orderByDesc('fecha')
+                ->limit(4)
+                ->get()
+            : collect();
+
+        $resumenCategorias = Schema::hasTable('categorias')
+            ? $this->rankingService->resumenCategoriasEtapaFinal()
+            : collect();
+
+        return view('admin.inicio', [
+            'totalCategorias' => $totalCategorias,
+            'categoriasFinalizadas' => $categoriasFinalizadas,
+            'categoriasReveladas' => $categoriasReveladas,
+            'categoriaActiva' => $categoriaActiva,
+            'totalUsuarios' => $totalUsuarios,
+            'totalJurados' => $totalJurados,
+            'juradosControladores' => $juradosControladores,
+            'totalParticipantes' => $totalParticipantes,
+            'totalInscripciones' => $totalInscripciones,
+            'totalPresentaciones' => $totalPresentaciones,
+            'presentacionesPorParticipar' => $presentacionesPorParticipar,
+            'presentacionesEnCurso' => $presentacionesEnCurso,
+            'presentacionesFinalizadas' => $presentacionesFinalizadas,
+            'presentacionEnVivo' => $presentacionEnVivo,
+            'ultimasEvaluadas' => $ultimasEvaluadas,
+            'totalCalificacionesEmitidas' => $totalCalificacionesEmitidas,
+            'totalCorrecciones' => $totalCorrecciones,
+            'ultimasCorrecciones' => $ultimasCorrecciones,
+            'resumenCategorias' => $resumenCategorias,
+        ]);
     }
 
     public function jurado(Request $request): View
