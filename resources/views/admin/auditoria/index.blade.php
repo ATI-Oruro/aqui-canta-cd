@@ -3,11 +3,11 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h2 class="text-xl font-bold text-slate-900">Auditoría y Trazabilidad de Calificaciones</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Historial oficial e inmutable de correcciones, motivos y snapshots de evaluación</p>
+                <p class="text-xs text-slate-500 mt-0.5">Historial oficial e inmutable de correcciones, motivos y capturas de evaluación</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-300">
-                    🛡️ Registro Notarial & Auditoría
+                    Registro Notarial & Auditoría
                 </span>
             </div>
         </div>
@@ -18,24 +18,6 @@
     </x-slot:sidebar>
 
     <div class="space-y-6">
-
-        <!-- Banner Informativo -->
-        <div class="bg-gradient-to-r from-[#5c0618] to-[#8b1528] text-white rounded-2xl p-6 shadow-md border border-amber-500/30">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="space-y-1">
-                    <span class="text-xs font-bold tracking-widest uppercase text-amber-300">XXXIII Festival Nacional de la Canción Boliviana</span>
-                    <h3 class="text-lg font-black text-white">Libro Digital de Actas & Modificaciones</h3>
-                    <p class="text-xs text-amber-100 max-w-2xl">
-                        Cada ajuste de nota realizado por jurados o administradores genera un registro fotográfico (snapshot) inmutable del antes y después, con marca temporal y justificación obligatoria.
-                    </p>
-                </div>
-                <div class="bg-black/30 backdrop-blur-sm rounded-xl p-3 px-5 border border-white/10 text-center shrink-0">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-amber-300 block">Total Correcciones</span>
-                    <span class="text-2xl font-black text-white tabular-nums">{{ $historiales->total() }}</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Filtros de Búsqueda -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
             <form method="GET" action="{{ route('admin.auditoria.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
@@ -230,8 +212,7 @@
                                 <!-- Acción -->
                                 <td class="py-3.5 px-4 text-right whitespace-nowrap">
                                     <a href="{{ route('admin.auditoria.show', $item) }}"
-                                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#5c0618] hover:text-white text-slate-700 font-bold text-xs transition">
-                                        <span>🔍</span>
+                                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-[#5c0618] hover:text-white text-[#5c0618] border border-rose-200 font-bold text-xs transition">
                                         <span>Ver Detalle</span>
                                     </a>
                                 </td>
@@ -239,7 +220,6 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-12 text-center text-slate-400">
-                                    <div class="text-3xl mb-2">📜</div>
                                     <p class="font-bold text-slate-600 text-sm">No se encontraron registros de auditoría</p>
                                     <p class="text-xs text-slate-400 mt-1">Todas las calificaciones se mantienen en su estado original sin correcciones.</p>
                                 </td>

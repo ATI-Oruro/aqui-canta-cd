@@ -11,7 +11,7 @@
                 <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full border border-amber-300">
                     {{ $presentacion->inscripcion?->fase?->fase?->label() ?? 'Etapa' }}
                 </span>
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-300">
+                <span class="px-3 py-1 bg-rose-100 text-[#5c0618] text-xs font-semibold rounded-full border border-rose-200">
                     {{ $presentacion->inscripcion?->categoria?->categoria ?? 'Categoría' }}
                 </span>
             </div>
@@ -85,13 +85,13 @@
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-1">
                                         @if ($jurado->es_secreto)
-                                            <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-semibold rounded border border-purple-200">
-                                                🔒 Jurado Secreto
+                                            <span class="px-2 py-0.5 bg-rose-100 text-[#5c0618] text-xs font-semibold rounded border border-rose-200">
+                                                Jurado Secreto
                                             </span>
                                         @endif
                                         @if ($jurado->es_controlador)
-                                            <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded border border-blue-200">
-                                                ⏱ Controlador
+                                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-semibold rounded border border-amber-200">
+                                                Controlador
                                             </span>
                                         @endif
                                         @if (!$jurado->es_secreto && !$jurado->es_controlador)
@@ -143,8 +143,8 @@
                                 <td class="px-5 py-4 text-center">
                                     @if ($calificacion && $calificacion->historiales->isNotEmpty())
                                         <a href="{{ route('admin.calificaciones.historial', $calificacion) }}"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-200 transition">
-                                            📋 Ver Historial ({{ $calificacion->historiales->count() }})
+                                           class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#5c0618] text-xs font-semibold rounded-lg border border-rose-200 transition">
+                                            Ver Historial ({{ $calificacion->historiales->count() }})
                                         </a>
                                     @else
                                         <span class="text-xs text-slate-400">Sin cambios</span>

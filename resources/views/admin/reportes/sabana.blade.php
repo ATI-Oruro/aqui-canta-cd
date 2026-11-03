@@ -14,8 +14,7 @@
 
             <div class="flex items-center gap-2">
                 <a href="{{ route('admin.reportes.exportar.sabana', ['fase_id' => $sabana['fase']->id, 'categoria_id' => $sabana['categoria']->id, 'departamento_id' => $sabana['departamento']?->id]) }}"
-                   class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow transition">
-                    <span>📥</span>
+                   class="px-4 py-2 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition">
                     <span>Descargar Sábana en CSV</span>
                 </a>
             </div>
@@ -104,7 +103,7 @@
                                         <td class="py-3 px-4 whitespace-nowrap">
                                             <span class="font-bold text-slate-800">{{ $jur['jurado_nombre'] }}</span>
                                             @if ($jur['es_secreto'])
-                                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 font-bold ml-1">🔒 Secreto</span>
+                                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 font-bold ml-1">Secreto</span>
                                             @endif
                                         </td>
 

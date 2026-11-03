@@ -3,13 +3,13 @@
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-xl font-semibold text-slate-800">Asignación de jurados</h2>
             <div class="flex items-center gap-2">
-                <a href="{{ route('admin.jurados.secreto') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg shadow">
-                    🔒 Panel Jurado Secreto
+                <a href="{{ route('admin.jurados.secreto') }}" class="inline-flex items-center px-4 py-2 bg-rose-50 hover:bg-rose-100 text-[#5c0618] border border-rose-200 text-sm font-semibold rounded-lg shadow-sm transition">
+                    Panel Jurado Secreto
                 </a>
                 <form method="POST" action="{{ route('admin.jurados.auto-asignar') }}" class="inline"
                       onsubmit="return confirm('¿Autoasignar jurados a todas las presentaciones pendientes?');">
                     @csrf
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-[#5c0618] hover:bg-[#7a0920] text-white text-sm font-semibold rounded-lg shadow-sm transition">
                         Autoasignar pendientes
                     </button>
                 </form>
@@ -40,7 +40,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <form method="GET" action="{{ route('admin.jurados.index') }}" class="mb-4 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] items-end">
             <div>
-                <select name="categoria" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="categoria" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Todas las categorías</option>
                     @foreach ($categorias as $categoria)
                         <option value="{{ $categoria->categoria }}" @selected($categoriaSeleccionada === $categoria->categoria)>
@@ -50,7 +50,7 @@
                 </select>
             </div>
             <div>
-                <select name="fase" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="fase" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Todas las fases</option>
                     <option value="{{ App\Support\Enums\FaseEnum::PRESELECCION->value }}" @selected($faseSeleccionada === App\Support\Enums\FaseEnum::PRESELECCION->value)>
                         {{ App\Support\Enums\FaseEnum::PRESELECCION->label() }}
@@ -61,7 +61,7 @@
                 </select>
             </div>
             <div>
-                <select name="departamento" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="departamento" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Todos los deptos.</option>
                     @foreach ($departamentos as $departamento)
                         <option value="{{ $departamento->nombre }}" @selected($departamentoSeleccionado === $departamento->nombre)>
@@ -72,10 +72,10 @@
             </div>
             <div class="flex items-end gap-2">
                 <label class="inline-flex items-center text-sm text-slate-600 gap-2 mb-2">
-                    <input type="checkbox" name="sin_completar" value="1" @checked($sinCompletar) class="rounded border-gray-300">
+                    <input type="checkbox" name="sin_completar" value="1" @checked($sinCompletar) class="rounded border-gray-300 text-[#5c0618] focus:ring-[#5c0618]">
                     Solo incompletas
                 </label>
-                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg">
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition">
                     Filtrar
                 </button>
             </div>
@@ -115,16 +115,16 @@
                                 @forelse ($presentacion->jurados as $jurado)
                                     <span @class([
                                         'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mb-1',
-                                        'bg-purple-100 text-purple-800 border border-purple-200' => $jurado->es_secreto,
-                                        'bg-sky-100 text-sky-700' => $jurado->es_controlador && ! $jurado->es_secreto,
+                                        'bg-rose-100 text-[#5c0618] border border-rose-200' => $jurado->es_secreto,
+                                        'bg-amber-100 text-amber-800' => $jurado->es_controlador && ! $jurado->es_secreto,
                                         'bg-slate-100 text-slate-700' => ! $jurado->es_controlador && ! $jurado->es_secreto,
                                     ])>
-                                        @if ($jurado->es_secreto)
-                                            <span title="Jurado Secreto">🔒</span>
-                                        @endif
                                         {{ $jurado->usuario?->nombre }} {{ $jurado->usuario?->paterno }}
+                                        @if ($jurado->es_secreto)
+                                            <span class="text-[10px] font-bold uppercase">(Secreto)</span>
+                                        @endif
                                         @if ($jurado->es_controlador)
-                                            <span title="Controlador de cronómetro">⏱</span>
+                                            <span class="text-[10px] font-bold uppercase">(Cronómetro)</span>
                                         @endif
                                     </span>
                                 @empty
@@ -138,7 +138,7 @@
                             </td>
                             <td class="py-2">
                                 <details>
-                                    <summary class="cursor-pointer text-indigo-600 hover:text-indigo-800 text-sm">Asignar…</summary>
+                                    <summary class="cursor-pointer text-[#5c0618] hover:text-[#8b1528] font-medium text-sm">Asignar…</summary>
                                     <form method="POST" action="{{ route('admin.jurados.asignar') }}" class="mt-2 grid gap-2 max-w-md bg-slate-50 p-3 rounded-xl border border-slate-200">
                                         @csrf
                                         <input type="hidden" name="presentacion_id" value="{{ $presentacion->id }}">
@@ -147,10 +147,10 @@
                                                 <label class="flex items-center gap-2 text-sm text-slate-700">
                                                     <input type="checkbox" name="usuario_ids[]" value="{{ $jurado->id }}"
                                                            @checked(in_array($jurado->id, $asignados, true))
-                                                           class="rounded border-gray-300">
+                                                           class="rounded border-gray-300 text-[#5c0618] focus:ring-[#5c0618]">
                                                     {{ $jurado->nombre }} {{ $jurado->paterno }}
                                                     @if ($jurado->puedeControlarTiempo())
-                                                        <span class="text-xs text-sky-600">(cronómetro)</span>
+                                                        <span class="text-xs text-slate-500">(cronómetro)</span>
                                                     @endif
                                                 </label>
                                             @endforeach
@@ -159,7 +159,7 @@
                                         @if (! $presentacion->esPreseleccion())
                                             <div class="mt-1">
                                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Designar Jurado Secreto (1 de los 5):</label>
-                                                <select name="secreto_usuario_id" class="w-full text-xs rounded-lg border-slate-300 focus:border-purple-500 focus:ring-purple-500">
+                                                <select name="secreto_usuario_id" class="w-full text-xs rounded-lg border-slate-300 focus:border-[#5c0618] focus:ring-[#5c0618]">
                                                     <option value="">Automático / Según Categoría</option>
                                                     @foreach ($jurados as $jurado)
                                                         <option value="{{ $jurado->id }}" @selected($secretoAsignado === $jurado->id)>
@@ -170,7 +170,7 @@
                                             </div>
                                         @endif
 
-                                        <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg w-fit">
+                                        <button type="submit" class="px-3 py-1.5 bg-[#5c0618] hover:bg-[#7a0920] text-white text-xs font-semibold rounded-lg w-fit transition">
                                             Guardar ({{ $requeridos }} jurados)
                                         </button>
                                     </form>

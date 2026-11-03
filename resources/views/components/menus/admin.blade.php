@@ -108,7 +108,7 @@
                     'bg-white/15 text-white font-semibold shadow-sm ring-1 ring-white/20' => request()->routeIs('admin.jurados.secreto'),
                     'text-rose-100/85 hover:bg-white/10 hover:text-white hover:translate-x-0.5' => ! request()->routeIs('admin.jurados.secreto'),
                 ])>
-                    🔒 Jurado Secreto
+                    Jurado Secreto
                 </a>
             </div>
         </div>
@@ -130,7 +130,6 @@
             <div class="space-y-1 pl-2 border-l border-white/15 ml-4 py-0.5">
                 <a href="{{ route('inicio') }}" target="_blank" class="px-3 py-1.5 rounded-lg text-sm text-rose-100/85 hover:bg-white/10 hover:text-white hover:translate-x-0.5 flex items-center justify-between transition-all duration-150">
                     <span>Ranking Público</span>
-                    <span class="text-[10px] text-amber-300">↗</span>
                 </a>
                 <a href="{{ route('admin.reportes.index') }}" @class([
                     'block px-3 py-1.5 rounded-lg transition-all duration-150 text-sm',

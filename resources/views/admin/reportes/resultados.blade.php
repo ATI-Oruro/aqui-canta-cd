@@ -15,13 +15,11 @@
             <div class="flex items-center gap-2">
                 <a href="{{ route('admin.reportes.acta', ['fase_id' => $reporte['fase']->id, 'categoria_id' => $reporte['categoria']->id, 'departamento_id' => $reporte['departamento']?->id]) }}"
                    target="_blank"
-                   class="px-4 py-2 rounded-xl bg-[#5c0618] hover:bg-[#3d040f] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow transition">
-                    <span>📜</span>
+                   class="px-4 py-2 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition">
                     <span>Acta Notarial</span>
                 </a>
                 <a href="{{ route('admin.reportes.exportar.resultados', ['fase_id' => $reporte['fase']->id, 'categoria_id' => $reporte['categoria']->id, 'departamento_id' => $reporte['departamento']?->id]) }}"
-                   class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow transition">
-                    <span>📥</span>
+                   class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition">
                     <span>Descargar CSV</span>
                 </a>
             </div>
@@ -48,7 +46,7 @@
                         <div class="bg-gradient-to-b from-[#3d040f] to-[#5c0618] text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 text-center space-y-4 relative overflow-hidden">
                             <div class="h-2 w-full bg-amber-400 absolute top-0 left-0"></div>
                             <div class="h-16 w-16 rounded-full bg-amber-400 text-[#3d040f] font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-amber-300/30">
-                                👑 1°
+                                1°
                             </div>
                             <div>
                                 <span class="text-xs font-black uppercase tracking-widest text-amber-300 block">★ {{ $reporte['categoria']->etiquetaGanador() }} ★</span>
@@ -95,7 +93,7 @@
                         <div class="bg-gradient-to-b from-[#3d040f] to-[#5c0618] text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 text-center space-y-4 relative overflow-hidden order-1 md:order-2 transform md:-translate-y-2">
                             <div class="h-2 w-full bg-amber-400 absolute top-0 left-0"></div>
                             <div class="h-16 w-16 rounded-full bg-amber-400 text-[#3d040f] font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-amber-300/30">
-                                👑 1°
+                                1°
                             </div>
                             <div>
                                 <span class="text-xs font-black uppercase tracking-widest text-amber-300 block">★ Ganador Oficial ★</span>

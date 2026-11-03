@@ -8,7 +8,7 @@
                 <h2 class="text-xl font-bold text-slate-800">Historial de Correcciones y Auditoría</h2>
             </div>
             <div class="flex items-center gap-2">
-                <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full border border-purple-200">
+                <span class="px-3 py-1 bg-rose-100 text-[#5c0618] text-xs font-semibold rounded-full border border-rose-200">
                     Registro de Auditoría
                 </span>
             </div>

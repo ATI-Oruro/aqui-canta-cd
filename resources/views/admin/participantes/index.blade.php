@@ -2,7 +2,7 @@
     <x-slot:header>
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-xl font-semibold text-slate-800">Participantes</h2>
-            <a href="{{ route('admin.participantes.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow">
+            <a href="{{ route('admin.participantes.create') }}" class="inline-flex items-center px-4 py-2 bg-[#5c0618] hover:bg-[#7a0920] text-white text-sm font-semibold rounded-lg shadow-sm transition">
                 + Registrar participante
             </a>
         </div>
@@ -21,8 +21,8 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <form method="GET" action="{{ route('admin.participantes.index') }}" class="mb-4 flex gap-2 max-w-md">
             <input type="text" name="busqueda" value="{{ $busqueda }}" placeholder="Buscar por nombre o pseudónimo…"
-                class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg">
+                class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition">
                 Buscar
             </button>
             @if ($busqueda !== '')
@@ -72,7 +72,7 @@
                                 </span>
                             </td>
                             <td class="py-2 text-right whitespace-nowrap">
-                                <a href="{{ route('admin.participantes.edit', $participante) }}" class="text-indigo-600 hover:text-indigo-800 ml-2">Editar</a>
+                                <a href="{{ route('admin.participantes.edit', $participante) }}" class="text-[#5c0618] hover:text-[#8b1528] font-medium ml-2">Editar</a>
                                 <form method="POST" action="{{ route('admin.participantes.destroy', $participante) }}" class="inline ml-2"
                                     onsubmit="return confirm('¿Eliminar a {{ addslashes($participante->nombreCompleto()) }}?');">
                                     @csrf

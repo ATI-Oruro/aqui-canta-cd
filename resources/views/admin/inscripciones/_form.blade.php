@@ -189,7 +189,7 @@
         <div class="flex items-center justify-between">
             <x-input-label :value="__('Integrantes')" />
             <button type="button" id="agregar-integrante"
-                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100">
+                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-[#5c0618] bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition">
                 + Agregar integrante
             </button>
         </div>

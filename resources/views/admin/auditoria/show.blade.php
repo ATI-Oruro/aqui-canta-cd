@@ -101,7 +101,7 @@
         <!-- Motivo Oficial Justificado -->
         <div class="bg-amber-50/80 border-2 border-amber-300/80 rounded-2xl p-5 shadow-sm space-y-2">
             <div class="flex items-center gap-2">
-                <span class="text-amber-700 font-bold text-xs uppercase tracking-wider">⚖️ Justificación Oficial del Cambio</span>
+                <span class="text-amber-700 font-bold text-xs uppercase tracking-wider">Justificación Oficial del Cambio</span>
                 <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">Campo Obligatorio Registrado</span>
             </div>
             <p class="text-slate-900 text-sm font-medium italic bg-white/70 p-3 rounded-xl border border-amber-200">
@@ -186,7 +186,7 @@
         <!-- Metadatos de Snapshot JSON (Para Inspección Forense) -->
         <details class="bg-slate-50 rounded-2xl border border-slate-200 p-4 text-xs">
             <summary class="font-bold text-slate-700 cursor-pointer hover:text-slate-900 select-none">
-                ⚙️ Ver volcado forense crudo (Payload JSON de Auditoría)
+                Ver volcado forense crudo (Payload JSON de Auditoría)
             </summary>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                 <div>

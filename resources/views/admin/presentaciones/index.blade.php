@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-xl font-semibold text-slate-800">Presentaciones</h2>
             <a href="{{ route('admin.presentaciones.escenario') }}" target="_blank"
-               class="inline-flex items-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg shadow">
+               class="inline-flex items-center px-4 py-2 bg-[#5c0618] hover:bg-[#7a0920] text-white text-sm font-semibold rounded-lg shadow-sm transition">
                 Ver escenario
             </a>
         </div>
@@ -116,7 +116,7 @@
                                     'inline-flex px-2 py-0.5 rounded-full text-xs font-semibold',
                                     'bg-slate-100 text-slate-700' => $presentacion->estado?->value === App\Support\Enums\PresentacionEstadoEnum::POR_PARTICIPAR->value,
                                     'bg-amber-100 text-amber-700' => $presentacion->estado?->value === App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value,
-                                    'bg-indigo-100 text-indigo-700' => $presentacion->estado?->value === App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
+                                    'bg-rose-100 text-[#5c0618]' => $presentacion->estado?->value === App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value,
                                     'bg-emerald-100 text-emerald-700' => $presentacion->estado?->value === App\Support\Enums\PresentacionEstadoEnum::FINALIZADO->value,
                                 ])>
                                     {{ $presentacion->estado?->label() ?? '—' }}
@@ -133,7 +133,7 @@
                                     <form method="POST" action="{{ route('admin.presentaciones.transicion', $presentacion) }}" class="inline">
                                         @csrf
                                         <input type="hidden" name="estado" value="{{ App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value }}">
-                                        <button type="submit" class="text-amber-600 hover:text-amber-800 ml-2">Al escenario</button>
+                                        <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium ml-2">Al escenario</button>
                                     </form>
                                 @endif
 
@@ -141,7 +141,7 @@
                                     <form method="POST" action="{{ route('admin.presentaciones.transicion', $presentacion) }}" class="inline">
                                         @csrf
                                         <input type="hidden" name="estado" value="{{ App\Support\Enums\PresentacionEstadoEnum::PARTICIPANDO->value }}">
-                                        <button type="submit" class="text-indigo-600 hover:text-indigo-800 ml-2">Iniciar</button>
+                                        <button type="submit" class="text-[#5c0618] hover:text-[#8b1528] font-medium ml-2">Iniciar</button>
                                     </form>
                                 @endif
 

@@ -48,7 +48,7 @@
             <x-input-label for="rol" :value="__('Rol')" />
             @if ($editableRol)
                 <select id="rol" name="rol" required
-                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    class="mt-1 block w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm">
                     <option value="{{ App\Support\Enums\RolEnum::JURADO->value }}" @selected(old('rol', $usuario?->rol?->value ?? App\Support\Enums\RolEnum::JURADO->value) === App\Support\Enums\RolEnum::JURADO->value)>
                         {{ App\Support\Enums\RolEnum::JURADO->label() }}
                     </option>
@@ -69,7 +69,7 @@
                 <label class="inline-flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="puede_controlar_tiempo" value="1"
                         @checked(old('puede_controlar_tiempo', $usuario?->puedeControlarTiempo() ?? false))
-                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        class="rounded border-gray-300 text-[#5c0618] focus:ring-[#5c0618]">
                     <span class="text-sm text-slate-700 font-medium">Puede controlar el cronómetro</span>
                 </label>
                 <x-input-error :messages="$errors->get('puede_controlar_tiempo')" class="mt-2" />
@@ -83,10 +83,10 @@
                     <input id="password" type="text" name="password"
                         {{ isset($usuario) ? '' : 'required' }} autocomplete="off"
                         placeholder="{{ isset($usuario) ? 'Dejar en blanco para mantener la actual o clic en Generar' : 'Haz clic en Generar contraseña o escribe una' }}"
-                        class="block w-full font-mono text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm pr-20">
+                        class="block w-full font-mono text-sm border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm pr-20">
                 </div>
                 <button type="button" id="btn_generar_password"
-                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap">
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-[#5c0618] border border-rose-200 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                     </svg>

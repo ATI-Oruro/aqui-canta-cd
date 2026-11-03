@@ -7,7 +7,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-300">
-                    🏛️ Fase 7 — Reportes & Auditoría
+                    Fase 7 — Reportes & Auditoría
                 </span>
             </div>
         </div>
@@ -94,8 +94,7 @@
                     <div class="pt-2">
                         <a href="{{ route('admin.reportes.acta', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
                            target="_blank"
-                           class="w-full py-3 px-4 rounded-xl bg-white hover:bg-amber-100 text-[#5c0618] font-black text-xs text-center inline-flex items-center justify-center gap-2 shadow-lg transition transform hover:-translate-y-0.5">
-                            <span>🖨️</span>
+                           class="w-full py-3 px-4 rounded-xl bg-white hover:bg-amber-100 text-[#5c0618] font-black text-xs text-center inline-flex items-center justify-center gap-2 shadow-lg transition">
                             <span>Abrir e Imprimir Acta Notarial</span>
                         </a>
                     </div>
@@ -106,7 +105,7 @@
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold tracking-widest uppercase text-slate-400">Matriz Técnica</span>
-                            <span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Parámetros</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-[#5c0618] font-bold text-[10px]">Parámetros</span>
                         </div>
                         <h3 class="text-lg font-black text-slate-900 leading-snug">Sábana Completa de Evaluación</h3>
                         <p class="text-xs text-slate-500">
@@ -116,13 +115,12 @@
                     <div class="pt-2 flex flex-col sm:flex-row gap-2">
                         <a href="{{ route('admin.reportes.sabana', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
                            class="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center inline-flex items-center justify-center gap-1.5 transition">
-                            <span>📐</span>
                             <span>Ver Sábana</span>
                         </a>
                         <a href="{{ route('admin.reportes.exportar.sabana', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
-                           class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center justify-center gap-1 transition shadow"
+                           class="py-3 px-4 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs inline-flex items-center justify-center gap-1 transition shadow-sm"
                            title="Descargar CSV Sábana">
-                            <span>📥 CSV</span>
+                            <span>Exportar CSV</span>
                         </a>
                     </div>
                 </div>
@@ -148,8 +146,7 @@
                     </div>
                     <div class="pt-2">
                         <a href="{{ route('admin.reportes.exportar.resultados', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
-                           class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs text-center inline-flex items-center justify-center gap-2 shadow transition">
-                            <span>📥</span>
+                           class="w-full py-3 px-4 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs text-center inline-flex items-center justify-center gap-2 shadow-sm transition">
                             <span>Descargar CSV Resultados Oficiales</span>
                         </a>
                     </div>
@@ -171,7 +168,6 @@
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.reportes.resultados', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
                            class="px-3.5 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs inline-flex items-center gap-1.5 transition">
-                            <span>🔍</span>
                             <span>Vista Completa de Resultados</span>
                         </a>
                     </div>
@@ -246,7 +242,7 @@
                                             @if ($v && $v['nota_total'] !== null)
                                                 <span class="font-bold text-slate-800">{{ number_format($v['nota_total'], 2) }}</span>
                                                 @if ($v['es_secreto'])
-                                                    <span class="text-[9px] text-amber-600 block">🔒 Secreto</span>
+                                                    <span class="text-[9px] text-amber-600 block">Secreto</span>
                                                 @endif
                                             @else
                                                 <span class="text-slate-300">-</span>

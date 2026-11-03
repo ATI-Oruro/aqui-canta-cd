@@ -2,7 +2,7 @@
     <x-slot:header>
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-xl font-semibold text-slate-800">Inscripciones</h2>
-            <a href="{{ route('admin.inscripciones.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow">
+            <a href="{{ route('admin.inscripciones.create') }}" class="inline-flex items-center px-4 py-2 bg-[#5c0618] hover:bg-[#7a0920] text-white text-sm font-semibold rounded-lg shadow-sm transition">
                 + Registrar inscripción
             </a>
         </div>
@@ -22,10 +22,10 @@
         <form method="GET" action="{{ route('admin.inscripciones.index') }}" class="mb-4 grid gap-3 md:grid-cols-[1fr_12rem_12rem_auto] items-end">
             <div>
                 <input type="text" name="busqueda" value="{{ $busqueda }}" placeholder="Buscar por presentación o integrante…"
-                    class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                    class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
             </div>
             <div>
-                <select name="categoria" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="categoria" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Todas las categorías</option>
                     @foreach ($categorias as $categoria)
                         <option value="{{ $categoria->categoria }}" @selected($categoriaSeleccionada === $categoria->categoria)>
@@ -35,7 +35,7 @@
                 </select>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <select name="fase" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="fase" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Fase</option>
                     <option value="{{ App\Support\Enums\FaseEnum::PRESELECCION->value }}" @selected($faseSeleccionada === App\Support\Enums\FaseEnum::PRESELECCION->value)>
                         {{ App\Support\Enums\FaseEnum::PRESELECCION->label() }}
@@ -44,7 +44,7 @@
                         {{ App\Support\Enums\FaseEnum::FINAL->label() }}
                     </option>
                 </select>
-                <select name="departamento" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
+                <select name="departamento" class="w-full border-gray-300 focus:border-[#5c0618] focus:ring-[#5c0618] rounded-md shadow-sm text-sm">
                     <option value="">Depto.</option>
                     @foreach ($departamentos as $departamento)
                         <option value="{{ $departamento->nombre }}" @selected($departamentoSeleccionado === $departamento->nombre)>
@@ -53,7 +53,7 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg">
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition">
                 Filtrar
             </button>
         </form>
@@ -109,7 +109,7 @@
                             </td>
                             <td class="py-2 text-right whitespace-nowrap">
                                 @if ($inscripcion->puedeAdministrarse())
-                                    <a href="{{ route('admin.inscripciones.edit', $inscripcion) }}" class="text-indigo-600 hover:text-indigo-800 ml-2">Editar</a>
+                                    <a href="{{ route('admin.inscripciones.edit', $inscripcion) }}" class="text-[#5c0618] hover:text-[#8b1528] font-medium ml-2">Editar</a>
                                     <form method="POST" action="{{ route('admin.inscripciones.destroy', $inscripcion) }}" class="inline ml-2"
                                         onsubmit="return confirm('¿Eliminar esta inscripción y su presentación?');">
                                         @csrf

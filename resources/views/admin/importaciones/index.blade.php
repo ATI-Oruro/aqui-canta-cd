@@ -83,7 +83,7 @@
                         persiste nada.
                     </p>
                 </div>
-                <a href="{{ route('admin.importaciones.plantilla') }}" class="shrink-0 inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100">
+                <a href="{{ route('admin.importaciones.plantilla') }}" class="shrink-0 inline-flex items-center px-4 py-2 text-sm font-medium text-[#5c0618] bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition">
                     Descargar plantilla CSV
                 </a>
             </div>
@@ -94,7 +94,7 @@
                 <div class="w-full sm:max-w-sm">
                     <x-input-label for="archivo" value="Archivo de importación" />
                     <input id="archivo" type="file" name="archivo" accept=".csv,.json,.xlsx"
-                        class="mt-1 block w-full text-sm text-slate-700 border border-slate-300 rounded-lg p-2 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-1.5 file:text-white file:text-xs file:font-semibold hover:file:bg-indigo-700" />
+                        class="mt-1 block w-full text-sm text-slate-700 border border-slate-300 rounded-lg p-2 file:mr-3 file:rounded-lg file:border-0 file:bg-[#5c0618] file:px-3 file:py-1.5 file:text-white file:text-xs file:font-semibold hover:file:bg-[#7a0920]" />
                     <x-input-error :messages="$errors->get('archivo')" class="mt-2" />
                 </div>
 
