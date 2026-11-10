@@ -255,43 +255,10 @@
                                         <span class="card-numero-value text-[12px] tracking-[0.15em] uppercase font-bold drop-shadow-md shrink-0" style="color: #fbbf24;">
                                             N° {{ $loop->iteration }}
                                         </span>
-                                        
-                                        @if ($enEscenario)
-                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
-                                                Escenario
-                                            </span>
-                                        @elseif ($participando)
-                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white border border-emerald-400 shadow flex items-center gap-1">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                                                En Vivo
-                                            </span>
-                                        @elseif ($finalizado)
-                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#1a050d]/90 text-emerald-300 border border-emerald-500/40">
-                                                ✓ Fin
-                                            </span>
-                                        @else
-                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-black/80 text-slate-300 border border-slate-700">
-                                                Espera
-                                            </span>
-                                        @endif
                                     </div>
 
                                     <!-- Esquina Superior Derecha: Cronómetro si está En Vivo / Bandera y Categoría -->
                                     <div class="flex items-center gap-1.5 shrink-0">
-                                        @if ($esEnVivo)
-                                            <div class="inline-flex items-baseline gap-1 px-2 py-0.5 rounded-lg bg-black/90 border border-amber-400/80 shadow-[0_0_12px_rgba(251,191,36,0.5)]">
-                                                <span class="text-xs font-black font-mono tracking-tight text-amber-300" data-cronometro-display>
-                                                    {{ gmdate('i:s', $segundosRestantes) }}
-                                                </span>
-                                                <span class="text-[9px] font-bold font-mono text-slate-400">
-                                                    /{{ $tiempoMaximo }}:00
-                                                </span>
-                                            </div>
-                                        @else
-                                            <span class="text-[9px] font-bold uppercase tracking-[0.12em] text-[#d4af37]/90 font-cinzel truncate max-w-[90px]" title="{{ $categoriaActiva?->categoria }}">
-                                                {{ $categoriaActiva?->categoria }}
-                                            </span>
-                                        @endif
                                         @if ($departamentoBandera)
                                             <img class="w-3.5 h-3.5 object-cover shrink-0" src="{{ $departamentoBandera }}" alt="Bandera de {{ $departamentoNombre }}">
                                         @endif
@@ -331,7 +298,7 @@
                                     @if ($esEnVivo)
                                         @if ($catEstaCerrada)
                                             <div class="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 font-bold text-xs uppercase tracking-wider text-center cursor-not-allowed">
-                                                🔒 Calificaciones Cerradas
+                                                Calificaciones Cerradas
                                             </div>
                                         @else
                                             <a href="{{ route('jurado.presentaciones.actual') }}"
@@ -349,7 +316,6 @@
                                         @elseif ($yaCalifique)
                                             <a href="{{ route('jurado.calificaciones.corregir.form', $pres) }}"
                                                class="w-full py-2 px-3 rounded-xl bg-[#260a15]/90 hover:bg-[#3d0f22] text-amber-300 font-bold text-xs border border-amber-500/40 text-center transition shadow flex items-center justify-center gap-1.5">
-                                                <span>✏️</span>
                                                 <span>Corregir Nota ({{ number_format($miCalificacion->nota_total, 2) }} pts)</span>
                                             </a>
                                         @else
@@ -455,30 +421,9 @@
                                         <span class="card-numero-value text-[12px] tracking-[0.15em] uppercase font-bold drop-shadow-md shrink-0" style="color: #fbbf24;">
                                             N° {{ $idx + 1 }}
                                         </span>
-
-                                        @if ($enEscenario)
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
-                                                Escenario
-                                            </span>
-                                        @elseif ($participando)
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-600 text-white border border-emerald-400 shadow">
-                                                En Vivo
-                                            </span>
-                                        @elseif ($finalizado)
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1a050d]/90 text-emerald-300 border border-emerald-500/40">
-                                                ✓ Fin
-                                            </span>
-                                        @else
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-black/70 text-slate-300 border border-slate-700">
-                                                Espera
-                                            </span>
-                                        @endif
                                     </div>
 
                                     <div class="flex items-center gap-1.5 min-w-0">
-                                        <span class="text-[9px] font-bold uppercase tracking-[0.12em] text-[#d4af37]/90 font-cinzel truncate max-w-[95px]" title="{{ $categoriaActiva?->categoria }}">
-                                            {{ $categoriaActiva?->categoria }}
-                                        </span>
                                         @if ($departamentoBandera)
                                             <img class="w-3.5 h-3.5 object-cover shrink-0" src="{{ $departamentoBandera }}" alt="Bandera de {{ $departamentoNombre }}">
                                         @endif

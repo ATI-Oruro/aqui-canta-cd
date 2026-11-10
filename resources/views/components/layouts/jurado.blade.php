@@ -166,7 +166,7 @@
                 <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-10 py-2 sm:py-2.5 flex items-center justify-between gap-4">
                     
                     <!-- Identidad / Logo del Festival -->
-                    <div class="jurado-brand-mark flex items-center gap-3 cursor-pointer rounded-full border border-[#6b0015]/60 bg-[#12040a]/80 px-2.5 py-1" onclick="window.location.href='{{ route('jurado.inicio') }}'">
+                    <div class="flex items-center gap-3 cursor-pointer px-2.5 py-1" onclick="window.location.href='{{ route('jurado.inicio') }}'">
                         <img src="/images/logo-oficial.png" alt="Aquí Canta Bolivia" class="h-8 w-8 object-contain drop-shadow-[0_0_12px_rgba(212,175,55,0.5)]" onerror="this.src='/images/logo-oficial.png'">
                         <div>
                             <div class="flex items-center gap-2">
@@ -187,7 +187,6 @@
                         <nav class="hidden md:flex items-center gap-1.5">
                             <a href="{{ route('jurado.inicio') }}"
                                class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 {{ request()->routeIs('jurado.inicio') ? 'bg-[#3b000b] text-amber-300 border border-amber-500/40 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-[#1a050d] border border-transparent' }}">
-                                <span>📋</span>
                                 <span>Inicio</span>
                             </a>
                             <a href="{{ route('jurado.presentaciones.actual') }}"
@@ -197,7 +196,6 @@
                             </a>
                             <a href="{{ route('inicio') }}" target="_blank"
                                 class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-amber-200 hover:bg-[#1a050d] transition flex items-center gap-1.5 border border-transparent">
-                                <span>🌐</span>
                                 <span>Vista Pública</span>
                             </a>
                         </nav>

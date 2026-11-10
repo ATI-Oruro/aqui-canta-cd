@@ -504,7 +504,7 @@
                                             @endphp
                                             <span class="text-[9px] text-slate-400 uppercase tracking-wider flex items-center gap-1 mt-0.5">
                                                 @if ($banderaP)
-                                                    <img src="{{ $banderaP }}" alt="{{ $p['departamento'] }}" class="h-2.5 w-auto object-cover rounded-[1px] inline-block">
+                                                    <img src="{{ $banderaP }}" alt="{{ $p['departamento'] }}" class="h-5 w-auto object-cover rounded-[1px] inline-block">
                                                 @endif
                                                 <span>{{ $p['departamento'] ?? 'Bolivia' }}</span>
                                             </span>
