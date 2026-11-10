@@ -150,7 +150,6 @@
                             <button type="submit"
                                     class="-skew-x-12 transform px-5 py-2.5 bg-gradient-to-r from-[#4a0817] via-[#630b20] to-[#4a0817] hover:from-[#630b20] hover:via-[#7e0d29] hover:to-[#630b20] border border-rose-500/60 hover:border-rose-400 text-rose-100 hover:text-white shadow-[0_0_15px_rgba(225,29,72,0.25)] hover:shadow-[0_0_22px_rgba(225,29,72,0.45)] transition-all rounded-sm group w-full">
                                 <div class="skew-x-12 flex items-center justify-center gap-2 whitespace-nowrap">
-                                    <span class="text-xs">🔒</span>
                                     <span class="font-black text-xs uppercase tracking-wider text-white">
                                         Cerrar Calificación
                                     </span>
@@ -207,11 +206,11 @@
                         $departamentoNombre = $pres->inscripcion?->departamento?->nombre ?? 'Bolivia';
                     @endphp
 
-                    <!-- Card Superior Central con Proporciones Exactas de Gala -->
+                    <!-- Card Superior Central con Proporciones y Estilo de Gala Público -->
                     <div x-show="selectedId === {{ $pres->id }}"
                          x-cloak
                          id="moduloCentroEnVivo-{{ $pres->id }}"
-                         class="w-[280px] sm:w-[300px] shrink-0 transition-all duration-300"
+                         class="w-[270px] sm:w-[285px] shrink-0 transition-all duration-300"
                          data-presentacion-id="{{ $pres->id }}"
                          data-cronometro-corriendo="{{ $corriendo ? '1' : '0' }}"
                          data-cronometro-iniciado-at="{{ $cronometro['cronometro_iniciado_at'] ?? $pres->cronometro_iniciado_at?->toIso8601String() ?? '' }}"
@@ -219,117 +218,115 @@
                          data-segundos-restantes="{{ $segundosRestantes }}"
                          data-tiempo-maximo="{{ $tiempoMaximo }}">
 
-                        <!-- Contenedor con Aspect Ratio 3/4 y Bordes Finos de Gala -->
-                        <div class="relative w-full aspect-[3/4] bg-gradient-to-b from-[#18050e] via-[#0b0207] to-[#050103] rounded-2xl border-2 {{ $esEnVivo ? 'border-amber-400 shadow-[0_0_35px_rgba(212,175,55,0.45)]' : ($finalizado ? 'border-emerald-500/60 shadow-xl' : 'border-[#6b0015]/60 hover:border-amber-400/80 shadow-2xl') }} p-4 sm:p-5 flex flex-col justify-between overflow-hidden relative group">
+                        @php
+                            $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
+                            $fotoCentral = $pres->fotoUrl() ?: asset('images/fondo.png');
+                            $notaTextoCentral = $yaCalifique ? number_format((float) $miCalificacion->nota_total, 1) : 'N/C';
+                        @endphp
+
+                        <!-- Contenedor con Aspect Ratio 3/4.6 y Estilo de Gala Público -->
+                        <article class="musician-card relative w-full aspect-[3/4.6] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black border {{ $esEnVivo ? 'border-amber-400 shadow-[0_0_35px_rgba(212,175,55,0.45)]' : ($finalizado ? 'border-emerald-500/60 shadow-xl' : 'border-amber-500/30') }} transition-all duration-300 flex flex-col justify-between p-3 group"
+                                 style="aspect-ratio: 3 / 4.6; min-height: 395px;">
                             
-                            <!-- Esquineros Dorados Finos -->
-                            <div class="corner-bracket-tl"></div>
-                            <div class="corner-bracket-tr"></div>
-                            <div class="corner-bracket-bl"></div>
-                            <div class="corner-bracket-br"></div>
+                            <!-- Remates angulares dorados -->
+                            <div class="corner-bracket corner-tl"></div>
+                            <div class="corner-bracket corner-tr"></div>
+                            <div class="corner-bracket corner-bl"></div>
+                            <div class="corner-bracket corner-br"></div>
 
-                            <!-- Fondo / Fotografía o Logo Oficial del Evento -->
-                            <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050103]">
-                                @if ($pres->fotoSinFondoUrl())
-                                    <div class="w-full h-full flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.2),rgba(5,1,3,0.95)_75%)]">
-                                        <img src="{{ $pres->fotoSinFondoUrl() }}"
-                                             alt="{{ $pres->nombreMostrado() }}"
-                                             class="max-h-full max-w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition duration-700 group-hover:scale-105">
-                                    </div>
-                                @elseif ($pres->fotoUrl())
-                                    <img src="{{ $pres->fotoUrl() }}"
-                                         alt="{{ $pres->nombreMostrado() }}"
-                                         class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
-                                @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(180,83,9,0.35),rgba(5,1,3,0.95)_70%)] p-6">
-                                        <img src="/images/logo-oficial.png"
-                                             alt="Aquí Canta Bolivia"
-                                             class="h-24 w-24 object-contain opacity-90 group-hover:opacity-100 transition duration-500 drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]"
-                                             onerror="this.src='/images/logo-oficial.png'">
-                                        <span class="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]/80 font-cinzel font-bold mt-2.5">Festival 2026</span>
-                                    </div>
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-[#050103]/80 to-transparent pointer-events-none"></div>
-                            </div>
+                            <!-- Fotografía del Participante / Fondo de Gala -->
+                            <img class="card-foto absolute inset-0 w-full h-full object-cover z-0 transition duration-700 group-hover:scale-105"
+                                 src="{{ $fotoCentral }}"
+                                 alt="{{ $pres->nombreMostrado() }}"
+                                 onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
+                            @if (! $pres->fotoUrl() && $pres->fotoSinFondoUrl())
+                                <img class="absolute inset-0 w-full h-full object-contain p-3 z-[1] drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition duration-700 group-hover:scale-105"
+                                     src="{{ $pres->fotoSinFondoUrl() }}"
+                                     alt="{{ $pres->nombreMostrado() }}">
+                            @endif
 
-                            <!-- Header Superior del Card Central con Cronómetro en la Esquina Superior -->
-                            <div class="relative z-10 flex items-center justify-between gap-2 border-b border-[#3b000b]/80 pb-2">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[10px] font-semibold text-slate-400 font-mono">
-                                        #{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
-                                    </span>
-                                    
-                                    @if ($enEscenario)
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
-                                            Escenario
-                                        </span>
-                                    @elseif ($participando)
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white border border-emerald-400 shadow flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                                            En Vivo
-                                        </span>
-                                    @elseif ($finalizado)
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#1a050d] text-emerald-300 border border-emerald-500/40">
-                                            ✓ Fin
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-black/80 text-slate-400 border border-slate-700">
-                                            Espera
-                                        </span>
-                                    @endif
-                                </div>
+                            <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-b from-stone-900/55 via-[#15120e]/55 to-black/95 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.55), rgba(21, 18, 14, 0.55), rgba(0, 0, 0, 0.95));"></div>
+                            <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
 
-                                <!-- Esquina Superior Derecha: Cronómetro si está En Vivo / Categoría si no -->
-                                <div>
-                                    @if ($esEnVivo)
-                                        <div class="inline-flex items-baseline gap-1 px-2.5 py-0.5 rounded-lg bg-black/90 border border-amber-400/80 shadow-[0_0_12px_rgba(251,191,36,0.5)]">
-                                            <span class="text-sm font-black font-mono tracking-tight text-amber-300" data-cronometro-display>
-                                                {{ gmdate('i:s', $segundosRestantes) }}
+                            <!-- Header Superior con Número, Estado y Bandera/Cronómetro -->
+                            <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                <div class="flex items-center justify-between gap-1.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="card-numero-value text-[12px] tracking-[0.15em] uppercase font-bold drop-shadow-md shrink-0" style="color: #fbbf24;">
+                                            N° {{ $loop->iteration }}
+                                        </span>
+                                        
+                                        @if ($enEscenario)
+                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
+                                                Escenario
                                             </span>
-                                            <span class="text-[10px] font-bold font-mono text-slate-400">
-                                                / {{ $tiempoMaximo }}:00
+                                        @elseif ($participando)
+                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white border border-emerald-400 shadow flex items-center gap-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                                                En Vivo
                                             </span>
-                                        </div>
-                                    @else
-                                        <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] text-[#d4af37]/90 font-cinzel truncate max-w-[110px]" title="{{ $categoriaActiva?->categoria }}">
-                                            {{ $categoriaActiva?->categoria }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Información Inferior y Acciones de Calificación -->
-                            <div class="relative z-10 space-y-2 text-center pt-6">
-                                
-                                <div class="w-8 h-[1.5px] bg-[#d4af37]/60 mx-auto"></div>
-
-                                <div class="space-y-0.5">
-                                    <h3 class="text-base sm:text-lg font-bold text-[#fef9c3] tracking-[0.08em] uppercase font-cinzel group-hover:text-[#d4af37] transition line-clamp-1"
-                                        title="{{ $pres->nombreMostrado() }}">
-                                        {{ $pres->nombreMostrado() }}
-                                    </h3>
-                                    
-                                    @php
-                                        $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
-                                    @endphp
-                                    <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        @if ($departamentoBandera)
-                                            <img src="{{ $departamentoBandera }}" alt="{{ $departamentoNombre }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
+                                        @elseif ($finalizado)
+                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#1a050d]/90 text-emerald-300 border border-emerald-500/40">
+                                                ✓ Fin
+                                            </span>
                                         @else
-                                            <span>🇧🇴</span>
+                                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-black/80 text-slate-300 border border-slate-700">
+                                                Espera
+                                            </span>
                                         @endif
-                                        <span>{{ $departamentoNombre }}</span>
                                     </div>
 
-                                    @if ($pres->cancion_tema)
-                                        <p class="text-[10px] text-amber-300/90 italic truncate" title="{{ $pres->cancion_tema }}">
-                                            Tema: "{{ $pres->cancion_tema }}"
-                                        </p>
-                                    @endif
+                                    <!-- Esquina Superior Derecha: Cronómetro si está En Vivo / Bandera y Categoría -->
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        @if ($esEnVivo)
+                                            <div class="inline-flex items-baseline gap-1 px-2 py-0.5 rounded-lg bg-black/90 border border-amber-400/80 shadow-[0_0_12px_rgba(251,191,36,0.5)]">
+                                                <span class="text-xs font-black font-mono tracking-tight text-amber-300" data-cronometro-display>
+                                                    {{ gmdate('i:s', $segundosRestantes) }}
+                                                </span>
+                                                <span class="text-[9px] font-bold font-mono text-slate-400">
+                                                    /{{ $tiempoMaximo }}:00
+                                                </span>
+                                            </div>
+                                        @else
+                                            <span class="text-[9px] font-bold uppercase tracking-[0.12em] text-[#d4af37]/90 font-cinzel truncate max-w-[90px]" title="{{ $categoriaActiva?->categoria }}">
+                                                {{ $categoriaActiva?->categoria }}
+                                            </span>
+                                        @endif
+                                        @if ($departamentoBandera)
+                                            <img class="w-3.5 h-3.5 object-cover shrink-0" src="{{ $departamentoBandera }}" alt="Bandera de {{ $departamentoNombre }}">
+                                        @endif
+                                    </div>
                                 </div>
+                                <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                            </header>
+
+                            <!-- Parte baja: Calificación sobre el Nombre, Departamento y Botón de Acción -->
+                            <div class="relative z-10 px-3 pb-3 mt-auto flex flex-col items-center text-center">
+                                <div class="flex items-baseline gap-1 mb-1">
+                                    <span class="card-score-value font-cinzel text-3xl sm:text-4xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                        {{ $notaTextoCentral }}
+                                    </span>
+                                    <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                </div>
+                                <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+
+                                <h3 class="font-cinzel text-lg sm:text-xl font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-1"
+                                    title="{{ $pres->nombreMostrado() }}">
+                                    {{ $pres->nombreMostrado() }}
+                                </h3>
+                                
+                                <span class="flex items-center justify-center gap-1.5 text-xs text-stone-300 font-sans mt-0.5">
+                                    <span>{{ $departamentoNombre }}</span>
+                                </span>
+
+                                @if ($pres->cancion_tema)
+                                    <p class="text-[10px] text-amber-300/90 italic truncate max-w-full mt-0.5" title="{{ $pres->cancion_tema }}">
+                                        Tema: "{{ $pres->cancion_tema }}"
+                                    </p>
+                                @endif
 
                                 <!-- Botón Principal de Acción -->
-                                <div class="pt-2 border-t border-[#3b000b]/80 space-y-1.5">
+                                <div class="w-full pt-2 mt-2 border-t border-amber-500/20 space-y-1.5">
                                     
                                     @if ($esEnVivo)
                                         @if ($catEstaCerrada)
@@ -338,8 +335,7 @@
                                             </div>
                                         @else
                                             <a href="{{ route('jurado.presentaciones.actual') }}"
-                                               class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
-                                                <span>⭐</span>
+                                               class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5">
                                                 <span>{{ $yaCalifique ? 'Modificar mi Nota' : 'Calificar en Vivo' }}</span>
                                             </a>
                                         @endif
@@ -348,19 +344,17 @@
                                         
                                         @if ($catEstaCerrada)
                                             <div class="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 font-semibold text-xs text-center flex items-center justify-center gap-1 cursor-not-allowed">
-                                                <span>🔒</span>
                                                 <span>Calificaciones Cerradas</span>
                                             </div>
                                         @elseif ($yaCalifique)
                                             <a href="{{ route('jurado.calificaciones.corregir.form', $pres) }}"
-                                               class="w-full py-2 px-3 rounded-xl bg-[#260a15] hover:bg-[#3d0f22] text-amber-300 font-bold text-xs border border-amber-500/40 text-center transition shadow flex items-center justify-center gap-1.5">
+                                               class="w-full py-2 px-3 rounded-xl bg-[#260a15]/90 hover:bg-[#3d0f22] text-amber-300 font-bold text-xs border border-amber-500/40 text-center transition shadow flex items-center justify-center gap-1.5">
                                                 <span>✏️</span>
                                                 <span>Corregir Nota ({{ number_format($miCalificacion->nota_total, 2) }} pts)</span>
                                             </a>
                                         @else
                                             <a href="{{ route('jurado.presentaciones.actual', ['presentacion_id' => $pres->id]) }}"
                                                class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs text-center transition shadow flex items-center justify-center gap-1.5">
-                                                <span>⭐</span>
                                                 <span>Calificar Participante</span>
                                             </a>
                                         @endif
@@ -372,13 +366,11 @@
                                                 @csrf
                                                 <input type="hidden" name="estado" value="{{ \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO->value }}">
                                                 <button type="submit" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 text-xs font-black transition shadow flex items-center justify-center gap-1.5">
-                                                    <span>📢</span>
                                                     <span>Llamar al Escenario</span>
                                                 </button>
                                             </form>
                                         @else
-                                            <div class="w-full py-2 px-3 rounded-xl bg-slate-950/80 border border-slate-900 text-slate-400 text-xs font-semibold text-center flex items-center justify-center gap-1">
-                                                <span>🔒</span>
+                                            <div class="w-full py-2 px-3 rounded-xl bg-black/70 border border-slate-800 text-slate-400 text-xs font-semibold text-center flex items-center justify-center gap-1">
                                                 <span>En espera de su turno</span>
                                             </div>
                                         @endif
@@ -389,7 +381,7 @@
 
                             </div>
 
-                        </div>
+                        </article>
 
                     </div>
                 @endforeach
@@ -410,8 +402,8 @@
                     </span>
                 </div>
 
-                <!-- Grid de Tarjetas Retrato (Aspect Ratio 3/4 idéntico al Ranking Público) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 justify-items-center">
+                <!-- Grid de Tarjetas Retrato (Aspect Ratio 3/4.6 idéntico al Ranking Público) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 md:gap-6 justify-items-center">
                     @foreach ($presentacionesCategoria as $idx => $pres)
                         @php
                             $enEscenario = ($pres->estado === \App\Support\Enums\PresentacionEstadoEnum::EN_ESCENARIO);
@@ -425,106 +417,103 @@
                             $heCalificado = ($miCalificacion && $miCalificacion->esEmitida());
 
                             $departamentoNombre = $pres->inscripcion?->departamento?->nombre ?? 'Bolivia';
+                            $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
+                            $fotoCard = $pres->fotoUrl() ?: asset('images/fondo.png');
+                            $notaTextoCard = $heCalificado ? number_format((float) $miCalificacion->nota_total, 1) : 'N/C';
                         @endphp
 
-                        <!-- TARJETA RETRATO COMPACTA (ASPECT RATIO 3/4) -->
-                        <div @click="selectParticipant({{ $pres->id }})"
-                             class="relative w-full max-w-[290px] aspect-[3/4] bg-gradient-to-b from-[#14040a] via-[#090205] to-[#050103] rounded-2xl p-4 shadow-2xl flex flex-col justify-between overflow-hidden group transition-all duration-500 cursor-pointer"
-                             :class="selectedId === {{ $pres->id }} ? 'border-2 border-[#d4af37] shadow-[0_0_25px_rgba(212,175,55,0.4)] scale-[1.02]' : 'border border-[#6b0015]/40 hover:border-[#d4af37]/80 hover:shadow-2xl hover:shadow-[#800020]/25'">
+                        <!-- TARJETA RETRATO CON ESTILO IDÉNTICO A LA VISTA PÚBLICA -->
+                        <article @click="selectParticipant({{ $pres->id }})"
+                                 class="musician-card relative w-full max-w-[270px] xl:max-w-[255px] aspect-[3/4.6] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black transition-all duration-300 flex flex-col justify-between p-3 group cursor-pointer"
+                                 :class="selectedId === {{ $pres->id }} ? 'border-2 border-[#d4af37] shadow-[0_0_25px_rgba(212,175,55,0.45)] scale-[1.02]' : 'border border-amber-500/20 hover:border-[#d4af37]/80'"
+                                 style="aspect-ratio: 3 / 4.6; min-height: 380px;">
                             
-                            <!-- Esquineros Dorados Finos -->
-                            <div class="corner-bracket-tl"></div>
-                            <div class="corner-bracket-tr"></div>
-                            <div class="corner-bracket-bl"></div>
-                            <div class="corner-bracket-br"></div>
+                            <!-- Remates angulares dorados -->
+                            <div class="corner-bracket corner-tl"></div>
+                            <div class="corner-bracket corner-tr"></div>
+                            <div class="corner-bracket corner-bl"></div>
+                            <div class="corner-bracket corner-br"></div>
 
-                            <!-- Fondo / Fotografía o Logo Oficial del Participante -->
-                            <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050103]">
-                                @if ($pres->fotoSinFondoUrl())
-                                    <div class="w-full h-full flex items-center justify-center p-3 bg-[radial-gradient(ellipse_at_center,rgba(128,0,32,0.35),rgba(5,1,3,0.95)_75%)]">
-                                        <img src="{{ $pres->fotoSinFondoUrl() }}"
-                                             alt="{{ $pres->nombreMostrado() }}"
-                                             class="max-h-full max-w-full object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)] transition duration-700 group-hover:scale-105">
-                                    </div>
-                                @elseif ($pres->fotoUrl())
-                                    <img src="{{ $pres->fotoUrl() }}"
-                                         alt="{{ $pres->nombreMostrado() }}"
-                                         class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
-                                @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(128,0,32,0.4),rgba(5,1,3,0.95)_70%)] p-6">
-                                        <img src="/images/logo-oficial.png"
-                                             alt="Aquí Canta Bolivia"
-                                             class="h-24 w-24 object-contain opacity-80 group-hover:opacity-100 transition duration-500"
-                                             onerror="this.src='/images/logo-oficial.png'">
-                                        <span class="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]/80 font-cinzel font-bold mt-3">Festival 2026</span>
-                                    </div>
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-[#050103]/75 to-transparent pointer-events-none"></div>
-                            </div>
+                            <!-- Fotografía del Participante / Fondo de Gala -->
+                            <img class="card-foto absolute inset-0 w-full h-full object-cover z-0 transition duration-700 group-hover:scale-105"
+                                 src="{{ $fotoCard }}"
+                                 alt="{{ $pres->nombreMostrado() }}"
+                                 onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
+                            @if (! $pres->fotoUrl() && $pres->fotoSinFondoUrl())
+                                <img class="absolute inset-0 w-full h-full object-contain p-3 z-[1] drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)] transition duration-700 group-hover:scale-105"
+                                     src="{{ $pres->fotoSinFondoUrl() }}"
+                                     alt="{{ $pres->nombreMostrado() }}">
+                            @endif
+
+                            <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-b from-stone-900/55 via-[#15120e]/55 to-black/95 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.55), rgba(21, 18, 14, 0.55), rgba(0, 0, 0, 0.95));"></div>
+                            <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
 
                             <!-- Header Superior del Card -->
-                            <div class="relative z-10 flex items-center justify-between gap-2 border-b border-[#3b000b]/80 pb-2">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[10px] font-semibold text-slate-400 font-mono">
-                                        #{{ str_pad($idx + 1, 2, '0', STR_PAD_LEFT) }}
-                                    </span>
-
-                                    @if ($enEscenario)
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
-                                            Escenario
+                            <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                <div class="flex items-center justify-between gap-1.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="card-numero-value text-[12px] tracking-[0.15em] uppercase font-bold drop-shadow-md shrink-0" style="color: #fbbf24;">
+                                            N° {{ $idx + 1 }}
                                         </span>
-                                    @elseif ($participando)
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-600 text-white border border-emerald-400 shadow">
-                                            En Vivo
-                                        </span>
-                                    @elseif ($finalizado)
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1a050d] text-emerald-300 border border-emerald-500/40">
-                                            ✓ Fin
-                                        </span>
-                                    @else
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-black/70 text-slate-400 border border-slate-800">
-                                            Espera
-                                        </span>
-                                    @endif
-                                </div>
 
-                                <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]/90 font-cinzel truncate max-w-[130px]" title="{{ $categoriaActiva?->categoria }}">
-                                    {{ $categoriaActiva?->categoria }}
-                                </span>
-                            </div>
-
-                            <!-- Información Inferior -->
-                            <div class="relative z-10 space-y-2 text-center pt-8">
-                                
-                                <div class="w-6 h-[1.5px] bg-[#d4af37]/50 mx-auto"></div>
-
-                                <div class="space-y-0.5">
-                                    <h3 class="text-base sm:text-lg font-bold text-[#fef9c3] tracking-[0.08em] uppercase font-cinzel group-hover:text-[#d4af37] transition line-clamp-1"
-                                        title="{{ $pres->nombreMostrado() }}">
-                                        {{ $pres->nombreMostrado() }}
-                                    </h3>
-                                    
-                                    @php
-                                        $departamentoBandera = $pres->inscripcion?->departamento?->bandera_url ?? \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($departamentoNombre);
-                                    @endphp
-                                    <div class="flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
-                                        @if ($departamentoBandera)
-                                            <img src="{{ $departamentoBandera }}" alt="{{ $departamentoNombre }}" class="h-3 w-auto object-cover rounded-[2px] shadow-sm">
+                                        @if ($enEscenario)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-600 text-white border border-rose-400 animate-pulse shadow">
+                                                Escenario
+                                            </span>
+                                        @elseif ($participando)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-600 text-white border border-emerald-400 shadow">
+                                                En Vivo
+                                            </span>
+                                        @elseif ($finalizado)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1a050d]/90 text-emerald-300 border border-emerald-500/40">
+                                                ✓ Fin
+                                            </span>
                                         @else
-                                            <span>🇧🇴</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-black/70 text-slate-300 border border-slate-700">
+                                                Espera
+                                            </span>
                                         @endif
-                                        <span>{{ $departamentoNombre }}</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="text-[9px] font-bold uppercase tracking-[0.12em] text-[#d4af37]/90 font-cinzel truncate max-w-[95px]" title="{{ $categoriaActiva?->categoria }}">
+                                            {{ $categoriaActiva?->categoria }}
+                                        </span>
+                                        @if ($departamentoBandera)
+                                            <img class="w-3.5 h-3.5 object-cover shrink-0" src="{{ $departamentoBandera }}" alt="Bandera de {{ $departamentoNombre }}">
+                                        @endif
                                     </div>
                                 </div>
+                                <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                            </header>
 
-                                <div class="pt-2 border-t border-[#3b000b]/80 flex items-center justify-between gap-2">
+                            <!-- Parte baja: Calificación sobre el Nombre, Departamento y Acciones -->
+                            <div class="relative z-10 px-3 pb-3 mt-auto flex flex-col items-center text-center">
+                                <div class="flex items-baseline gap-1 mb-1">
+                                    <span class="card-score-value font-cinzel text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                        {{ $notaTextoCard }}
+                                    </span>
+                                    <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                </div>
+                                <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+
+                                <h3 class="font-cinzel text-lg sm:text-xl font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-1"
+                                    title="{{ $pres->nombreMostrado() }}">
+                                    {{ $pres->nombreMostrado() }}
+                                </h3>
+                                
+                                <span class="flex items-center justify-center gap-1.5 text-xs text-stone-300 font-sans mt-0.5">
+                                    <span>{{ $departamentoNombre }}</span>
+                                </span>
+
+                                <div class="w-full pt-2 mt-2 border-t border-amber-500/20 flex items-center justify-between gap-2">
                                     <div class="text-left font-mono">
                                         @if ($finalizado)
                                             @if ($heCalificado)
-                                                <span class="text-sm font-black gold-gradient-text tabular-nums">
+                                                <span class="text-xs font-black gold-gradient-text tabular-nums">
                                                     {{ number_format($miCalificacion->nota_total, 2) }}
                                                 </span>
-                                                <span class="text-[8px] text-slate-500">pts</span>
+                                                <span class="text-[8px] text-slate-400">pts</span>
                                             @else
                                                 <span class="text-[10px] text-rose-400 font-sans uppercase">
                                                     Sin nota
@@ -535,20 +524,20 @@
                                                 En curso
                                             </span>
                                         @else
-                                            <span class="text-[10px] text-slate-500 font-sans uppercase">
+                                            <span class="text-[10px] text-slate-400 font-sans uppercase">
                                                 Espera
                                             </span>
                                         @endif
                                     </div>
 
-                                    <span class="px-2 py-0.5 rounded bg-[#1a050d] border border-[#6b0015] group-hover:border-amber-400/60 text-amber-200/90 text-[10px] font-semibold uppercase tracking-wider transition">
-                                        {{ $esEnVivo ? '⭐ Evaluar' : ($finalizado ? '✏️ Ver Nota' : 'Enfocar') }}
+                                    <span class="px-2 py-0.5 rounded bg-[#1a050d]/90 border border-[#6b0015] group-hover:border-amber-400/60 text-amber-200/90 text-[10px] font-semibold uppercase tracking-wider transition">
+                                        {{ $esEnVivo ? 'Evaluar' : ($finalizado ? 'Ver Nota' : 'Enfocar') }}
                                     </span>
                                 </div>
 
                             </div>
 
-                        </div>
+                        </article>
                     @endforeach
                 </div>
 

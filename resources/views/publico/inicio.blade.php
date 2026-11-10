@@ -45,9 +45,6 @@
             }
         </style>
 
-        <!-- ============================================================== -->
-        <!-- MODO 1: PODIO ESTILO F1 (CUANDO LA CATEGORÍA ESTÁ REVELADA)    -->
-        <!-- ============================================================== -->
         @if ($esPodio && $ranking->isNotEmpty())
             
             <div class="flex flex-col lg:flex-row gap-6 items-start w-full">

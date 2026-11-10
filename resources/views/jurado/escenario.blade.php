@@ -331,12 +331,6 @@
                                     <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl space-y-3">
                                         
                                         <!-- Header de Calificación -->
-                                        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-2 shrink-0">
-                                            <h3 class="text-[15px] sm:text-[17px] font-bold text-white flex items-center gap-2">
-                                                <span>Calificar Participante</span>
-                                            </h3>
-                                        </div>
-
                                         <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="space-y-3">
                                             @csrf
                                             <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
