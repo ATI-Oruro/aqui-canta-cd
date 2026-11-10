@@ -558,6 +558,9 @@
                             :banderaUrl="$bandera"
                             :fotoUrl="$foto"
                             :notaFinal="$item['nota_final']"
+                            :juradosCalificados="$item['jurados_calificados_count'] ?? 0"
+                            :juradosTotal="$item['jurados_total_count'] ?? 5"
+                            :juradosLista="$item['jurados'] ?? []"
                             onclick="abrirModalDesglose({{ $item['id'] }})"
                         />
                     @endforeach
@@ -568,65 +571,57 @@
         @endif
 
         <!-- ============================================================== -->
-        <!-- MODALES DE DESGLOSE DE EVALUACIÓN (5 JURADOS)                  -->
+        <!-- MODALES DE DESGLOSE DE EVALUACIÓN (FILA DE 5 REDONDOS)         -->
         <!-- ============================================================== -->
         @foreach ($ranking as $item)
-            <div id="modalDesglose_{{ $item['id'] }}" class="fixed inset-0 z-50 flex items-center justify-center bg-[#050204]/85 backdrop-blur-md hidden p-3 sm:p-4" onclick="if(event.target === this) cerrarModalDesglose({{ $item['id'] }})">
-                <div class="bg-[#0f0308] border border-[#6b0015] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-3 text-left relative overflow-hidden" onclick="event.stopPropagation()">
+            @php
+                $juradosModal = collect($item['jurados'] ?? [])->values()->pad(5, null)->take(5);
+            @endphp
+            <div id="modalDesglose_{{ $item['id'] }}" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0307]/85 backdrop-blur-md hidden p-3 sm:p-4" onclick="if(event.target === this) cerrarModalDesglose({{ $item['id'] }})">
+                <div class="bg-[#16050c] border border-[#800020] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 text-left relative overflow-hidden" onclick="event.stopPropagation()">
                     
                     <div class="corner-bracket-tl"></div>
                     <div class="corner-bracket-tr"></div>
                     <div class="corner-bracket-bl"></div>
                     <div class="corner-bracket-br"></div>
 
-                    <div class="flex items-center justify-between border-b border-[#3b000b] pb-2.5">
+                    <div class="flex items-center justify-between border-b border-[#4a0817] pb-3">
                         <div>
                             <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37] font-cinzel">Mesa Evaluadora Oficial</span>
-                            <h4 class="text-base font-bold text-white uppercase font-cinzel">{{ $item['nombre'] }}</h4>
+                            <h4 class="text-base sm:text-lg font-bold text-white uppercase font-cinzel">{{ $item['nombre'] }}</h4>
                         </div>
-                        <button onclick="cerrarModalDesglose({{ $item['id'] }})" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+                        <button onclick="cerrarModalDesglose({{ $item['id'] }})" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
                             ✕
                         </button>
                     </div>
 
-                    <!-- Lista de Jurados y Puntajes -->
-                    <div class="space-y-1.5 pt-1">
-                        @foreach ($item['jurados'] as $j)
-                            <div class="flex items-center justify-between p-2 rounded-lg bg-[#070104] border border-[#3b000b]">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-5 h-5 rounded-full bg-[#1a050d] border border-[#6b0015] text-[10px] font-bold text-[#d4af37] flex items-center justify-center">
-                                        {{ $loop->iteration }}
+                    <!-- Fila de 5 Redondos con las Calificaciones de los Jurados -->
+                    <div class="grid grid-cols-5 gap-2.5 sm:gap-3.5 py-3 justify-items-center" data-modal-jurados-fila>
+                        @foreach ($juradosModal as $idx => $j)
+                            @php
+                                $esSecretoOculto = !empty($j['es_secreto']) && empty($j['es_revelado']);
+                                $tieneNota = !$esSecretoOculto && isset($j['nota_total']) && $j['nota_total'] !== null;
+                            @endphp
+                            <div data-modal-jurado-index="{{ $idx }}"
+                                 class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 {{ $esSecretoOculto ? 'bg-gradient-to-b from-[#2e0817] to-[#120309] border-2 border-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.35)]' : ($tieneNota ? 'bg-gradient-to-b from-[#240612] to-[#0c0206] border-2 border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.28)]' : 'bg-[#0c0206]/80 border-2 border-[#4a0817]/70') }}">
+                                @if ($esSecretoOculto)
+                                    <span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] leading-none">?</span>
+                                    <span class="sr-only">🔒 Reservado</span>
+                                @elseif ($tieneNota)
+                                    <span data-modal-jurado-valor class="text-xs sm:text-sm font-black font-mono text-amber-300 tabular-nums leading-none">
+                                        {{ is_numeric($j['nota_total']) ? number_format((float) $j['nota_total'], 1) : $j['nota_total'] }}
                                     </span>
-                                    <span class="text-xs text-slate-300 font-medium">
-                                        {{ $j['jurado_nombre'] ?? $j['nombre_jurado'] ?? 'Jurado' }}
-                                    </span>
-                                    @if (!empty($j['es_secreto']) && empty($j['es_revelado']))
-                                        <span class="text-[9px] bg-[#3b000b] text-amber-300 border border-[#800020] px-1.5 py-0.2 rounded font-mono font-bold">
-                                            🔒 Reservado
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <div class="text-right">
-                                    @if (!empty($j['es_secreto']) && empty($j['es_revelado']))
-                                        <span class="text-xs font-semibold text-purple-400 italic">Reservada</span>
-                                    @elseif (isset($j['nota_total']) && $j['nota_total'] !== null)
-                                        <span class="text-xs font-bold font-mono text-amber-300">
-                                            {{ is_numeric($j['nota_total']) ? number_format($j['nota_total'], 2) : $j['nota_total'] }}
-                                        </span>
-                                        <span class="text-[9px] text-slate-500">pts</span>
-                                    @else
-                                        <span class="text-xs text-slate-500 italic">Pendiente</span>
-                                    @endif
-                                </div>
+                                @else
+                                    <span data-modal-jurado-valor class="text-sm font-bold font-mono text-slate-500 leading-none">—</span>
+                                @endif
                             </div>
                         @endforeach
                     </div>
 
                     <!-- Promedio / Nota Final -->
-                    <div class="pt-2 border-t border-[#3b000b] flex items-center justify-between text-xs">
+                    <div class="pt-3 border-t border-[#4a0817] flex items-center justify-between text-xs">
                         <span class="font-bold text-slate-300 uppercase font-cinzel tracking-wider">Promedio Final Oficial:</span>
-                        <span class="text-sm font-black gold-gradient-text font-mono tabular-nums">
+                        <span data-modal-promedio-final class="text-sm sm:text-base font-black gold-gradient-text font-mono tabular-nums">
                             {{ $item['nota_final'] !== null ? number_format($item['nota_final'], 2) . ' pts' : 'En Evaluación' }}
                         </span>
                     </div>
@@ -749,6 +744,83 @@
             }
         }
 
+        // Actualizar los 5 puntos indicadores de votos de jurados en la card
+        function actualizarPuntosJuradosCard(card, item) {
+            if (!card || !item) return;
+            const dotsContainer = card.querySelector('.card-jurados-dots');
+            if (!dotsContainer) return;
+
+            const dots = Array.from(dotsContainer.querySelectorAll('.card-jurado-dot'));
+            const jurados = Array.isArray(item.jurados) ? item.jurados : [];
+            const calificadosCount = typeof item.jurados_calificados_count === 'number'
+                ? item.jurados_calificados_count
+                : jurados.filter(j => j && j.calificado).length;
+
+            dotsContainer.setAttribute('data-calificados-count', String(calificadosCount));
+            dotsContainer.setAttribute('title', `Votos emitidos: ${calificadosCount} / 5`);
+
+            dots.forEach((dot, idx) => {
+                const haVotado = jurados[idx] !== undefined
+                    ? Boolean(jurados[idx] && jurados[idx].calificado)
+                    : (idx < calificadosCount);
+
+                dot.setAttribute('data-votado', haVotado ? '1' : '0');
+                if (haVotado) {
+                    dot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]';
+                } else {
+                    dot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-rose-500/35 border border-rose-500/80 shadow-[0_0_5px_rgba(244,63,94,0.3)]';
+                }
+            });
+        }
+
+        // Actualizar los 5 círculos del modal de desglose en tiempo real
+        function actualizarModalDesglose(item) {
+            if (!item || !item.id) return;
+            const modal = document.getElementById('modalDesglose_' + item.id);
+            if (!modal) return;
+
+            const jurados = Array.isArray(item.jurados) ? item.jurados : [];
+            const circulos = Array.from(modal.querySelectorAll('[data-modal-jurado-index]'));
+
+            circulos.forEach((circulo, idx) => {
+                const j = jurados[idx] || null;
+                const esSecretoOculto = Boolean(j && j.es_secreto && !j.es_revelado);
+                const tieneNota = !esSecretoOculto && j && j.nota_total !== null && j.nota_total !== undefined && j.nota_total !== '';
+
+                if (esSecretoOculto) {
+                    circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-b from-[#2e0817] to-[#120309] border-2 border-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.35)]';
+                    circulo.innerHTML = '<span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] leading-none">?</span><span class="sr-only">🔒 Reservado</span>';
+                } else if (tieneNota) {
+                    const num = parseFloat(j.nota_total);
+                    const textoNota = isNaN(num) ? String(j.nota_total) : num.toFixed(1);
+                    circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-b from-[#240612] to-[#0c0206] border-2 border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.28)]';
+                    circulo.innerHTML = `<span data-modal-jurado-valor class="text-xs sm:text-sm font-black font-mono text-amber-300 tabular-nums leading-none">${textoNota}</span>`;
+                } else {
+                    circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-[#0c0206]/80 border-2 border-[#4a0817]/70';
+                    circulo.innerHTML = '<span data-modal-jurado-valor class="text-sm font-bold font-mono text-slate-500 leading-none">—</span>';
+                }
+            });
+
+            const promEl = modal.querySelector('[data-modal-promedio-final]');
+            if (promEl) {
+                const nf = item.nota_final !== null && item.nota_final !== undefined && item.nota_final !== '' ? parseFloat(item.nota_final) : NaN;
+                promEl.textContent = isNaN(nf) ? 'En Evaluación' : (nf.toFixed(2) + ' pts');
+            }
+        }
+
+        // Respuesta instantánea cuando llega evento individual de calificación registrada
+        function marcarVotoIndividualWebSocket(data) {
+            if (!data || !data.presentacion_id) return;
+            const card = document.querySelector(`.musician-card[data-card-id="${data.presentacion_id}"]`);
+            if (!card) return;
+
+            const pendienteDot = card.querySelector('.card-jurado-dot[data-votado="0"]');
+            if (pendienteDot) {
+                pendienteDot.setAttribute('data-votado', '1');
+                pendienteDot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]';
+            }
+        }
+
         // Procesar evento WebSocket directo sin peticiones de red
         function procesarRankingWebSocket(data) {
             if (!data || !Array.isArray(data.ranking)) {
@@ -804,6 +876,10 @@
                                 imgEl.src = item.foto_url;
                             }
                         }
+
+                        // Actualizar los 5 puntos de jurados en la card y los 5 círculos del modal
+                        actualizarPuntosJuradosCard(card, item);
+                        actualizarModalDesglose(item);
 
                         // Reordenar nodo DOM en el contenedor
                         gridContainer.appendChild(card);
@@ -872,6 +948,14 @@
                                         const newImg = newCard.querySelector('.card-foto');
                                         if (oldImg && newImg && oldImg.getAttribute('src') !== newImg.getAttribute('src')) {
                                             oldImg.src = newImg.getAttribute('src');
+                                        }
+
+                                        const oldDots = existingCard.querySelector('.card-jurados-dots');
+                                        const newDots = newCard.querySelector('.card-jurados-dots');
+                                        if (oldDots && newDots) {
+                                            oldDots.innerHTML = newDots.innerHTML;
+                                            oldDots.setAttribute('data-calificados-count', newDots.getAttribute('data-calificados-count') || '0');
+                                            oldDots.setAttribute('title', newDots.getAttribute('title') || '');
                                         }
 
                                         gridActual.appendChild(existingCard);
@@ -1021,6 +1105,9 @@
                     
                     ['.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.jurado_secreto.revelado', 'jurado_secreto.revelado', '.categoria.finalizada', 'categoria.finalizada', '.categoria.activa.cambiada', 'categoria.activa.cambiada', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado'].forEach(ev => {
                         canalRanking.listen(ev, (data) => {
+                            if (ev.includes('calificacion.registrada')) {
+                                marcarVotoIndividualWebSocket(data);
+                            }
                             if (data && data.ranking) {
                                 procesarRankingWebSocket(data);
                             } else {
@@ -1041,6 +1128,9 @@
 
                     ['.calificacion.registrada', 'calificacion.registrada', '.calificacion.corregida', 'calificacion.corregida', '.presentacion.estado.cambiado', 'presentacion.estado.cambiado', '.cronometro.actualizado', 'cronometro.actualizado', '.categoria.activa.cambiada', 'categoria.activa.cambiada'].forEach(ev => {
                         canalPresentaciones.listen(ev, (data) => {
+                            if (ev.includes('calificacion.registrada')) {
+                                marcarVotoIndividualWebSocket(data);
+                            }
                             if (data && data.ranking) {
                                 procesarRankingWebSocket(data);
                             } else {

@@ -6,6 +6,9 @@
     'banderaUrl' => null,
     'fotoUrl' => null,
     'notaFinal' => null,
+    'juradosCalificados' => 0,
+    'juradosTotal' => 5,
+    'juradosLista' => [],
     'onclick' => null,
 ])
 
@@ -19,6 +22,9 @@
         $val = (float) $notaFinal;
         $notaTexto = (round($val, 1) == $val) ? number_format($val, 1) : number_format($val, 1);
     }
+
+    $juradosArr = is_iterable($juradosLista) ? collect($juradosLista)->values()->all() : [];
+    $calificadosCount = (int) $juradosCalificados;
 @endphp
 
 <article {{ $attributes->merge(['class' => 'musician-card relative w-full max-w-[270px] xl:max-w-[245px] aspect-[3/4.6] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black transition-all duration-300 hover:shadow-gold-500/20 hover:-translate-y-1 flex flex-col justify-between p-3 group cursor-pointer']) }}
@@ -69,5 +75,21 @@
         <span class="flex bandera-bolivia justify-items-center text-xs text-stone-300 font-sans mt-0.5">
             {{ $departamento ?? 'Bolivia' }}
         </span>
+
+        <!-- Indicador de 5 jurados (rojo/vacío = pendiente, verde = voto emitido) -->
+        <div class="card-jurados-dots flex items-center justify-center gap-2 mt-2.5 pt-1"
+             data-calificados-count="{{ $calificadosCount }}"
+             title="Votos emitidos: {{ $calificadosCount }} / 5">
+            @for ($i = 0; $i < 5; $i++)
+                @php
+                    $haVotado = isset($juradosArr[$i])
+                        ? !empty($juradosArr[$i]['calificado'])
+                        : ($i < $calificadosCount);
+                @endphp
+                <span class="card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 {{ $haVotado ? 'bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]' : 'bg-rose-500/35 border border-rose-500/80 shadow-[0_0_5px_rgba(244,63,94,0.3)]' }}"
+                      data-dot-index="{{ $i }}"
+                      data-votado="{{ $haVotado ? '1' : '0' }}"></span>
+            @endfor
+        </div>
     </div>
 </article>

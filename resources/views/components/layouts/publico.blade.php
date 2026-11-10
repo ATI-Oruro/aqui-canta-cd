@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-[#050204]">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-[#1a0710]">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -136,15 +136,15 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('scripts')
     </head>
-    <body class="font-outfit antialiased min-h-screen bg-[#050204] text-slate-100 selection:bg-[#800020] selection:text-amber-200 flex flex-col justify-between overflow-x-hidden">
+    <body class="font-outfit antialiased min-h-screen bg-[#1a0710] text-slate-100 selection:bg-[#800020] selection:text-amber-200 flex flex-col justify-between overflow-x-hidden">
         
-        <!-- Fondo Oruro Gala: Carmesí profundo, Guindo y Negro Obsidiana -->
-        <div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_100%_80%_at_50%_-15%,rgba(128,0,32,0.45),rgba(5,2,4,0.98))]"></div>
+        <!-- Fondo Oruro Gala: Carmesí profundo y Guindo (2-3 tonos más claro para mayor contraste con las tarjetas) -->
+        <div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_110%_85%_at_50%_-10%,rgba(175,18,52,0.58)_0%,rgba(52,11,25,0.92)_55%,rgba(26,7,16,0.97)_100%)]"></div>
 
         <div class="relative z-10 flex flex-col min-h-screen justify-between">
             
             <!-- Barra Superior Principal de Gala -->
-            <header class="border-b border-[#6b0015]/40 bg-[#070205]/95 backdrop-blur-xl sticky top-0 z-40 shadow-2xl">
+            <header class="border-b border-[#800020]/50 bg-[#15050c]/95 backdrop-blur-xl sticky top-0 z-40 shadow-2xl">
                 <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-10 py-3.5 flex items-center justify-between gap-4">
                     
                     <!-- Identidad / Logo del Festival (Sin recuadro dorado) -->
@@ -187,7 +187,7 @@
             </main>
 
             <!-- Pie de Página de Gala -->
-            <footer class="mt-12 border-t border-[#3b000b] bg-[#050204]/90 backdrop-blur-md">
+            <footer class="mt-12 border-t border-[#520012] bg-[#13040a]/90 backdrop-blur-md">
                 <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
                     <div class="flex items-center gap-3">
                         <span class="font-cinzel font-bold text-[#d4af37] uppercase tracking-widest text-xs">Aquí Canta Bolivia</span>

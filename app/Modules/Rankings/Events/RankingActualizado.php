@@ -43,7 +43,18 @@ class RankingActualizado implements ShouldBroadcastNow
         $items = $this->ranking instanceof Collection ? $this->ranking : collect($this->ranking);
         $rankingSlim = $items->map(function ($item) {
             $arr = is_array($item) ? $item : (array) $item;
-            unset($arr['jurados']);
+            if (isset($arr['jurados'])) {
+                $juradosCol = $arr['jurados'] instanceof Collection ? $arr['jurados'] : collect($arr['jurados']);
+                $arr['jurados'] = $juradosCol->map(function ($j) {
+                    $jArr = is_array($j) ? $j : (array) $j;
+                    return [
+                        'calificado' => (bool) ($jArr['calificado'] ?? false),
+                        'es_secreto' => (bool) ($jArr['es_secreto'] ?? false),
+                        'es_revelado' => (bool) ($jArr['es_revelado'] ?? false),
+                        'nota_total' => $jArr['nota_total'] ?? null,
+                    ];
+                })->values()->all();
+            }
             return $arr;
         })->values()->all();
 
