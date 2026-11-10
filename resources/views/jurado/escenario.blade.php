@@ -48,6 +48,15 @@
                 width: 25px !important;
                 height: 25px !important;
             }
+            input[type=number].no-spinners::-webkit-inner-spin-button,
+            input[type=number].no-spinners::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            input[type=number].no-spinners {
+                -moz-appearance: textfield;
+                appearance: textfield;
+            }
         </style>
     </head>
     <body class="font-sans antialiased min-h-screen bg-[#030712] text-white flex flex-col justify-between select-none"
@@ -92,69 +101,79 @@
         <main class="flex-1 flex flex-col justify-start px-4 sm:px-6 pt-4 pb-3 overflow-y-auto min-h-0 custom-scrollbar">
             {{-- Presentación Activa --}}
             <div data-escenario-activo class="{{ $presentacion !== null ? 'w-full max-w-7xl mx-auto flex flex-col justify-start min-h-0' : 'hidden w-full max-w-7xl mx-auto flex flex-col justify-start min-h-0' }}">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start min-h-0">
-                    <div class="lg:col-span-6 flex flex-col justify-start pt-0 px-2 min-h-0">
-                        <div class="flex flex-col items-start w-full shrink-0">
-                            @php
-                                $nombreCompleto = $presentacion?->nombreMostrado() ?? '';
-                                $palabras = preg_split('/\s+/', trim($nombreCompleto));
-                                $primerPalabra = array_shift($palabras) ?? '';
-                                $restoPalabras = implode(' ', $palabras);
-                            @endphp
-                            <h1 data-nombre class="text-2xl sm:text-4xl xl:text-5xl font-extrabold uppercase tracking-tight font-cinzel leading-none m-0 p-0">
-                                <span class="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{{ $primerPalabra }}</span>
-                                @if ($restoPalabras !== '')
-                                    <span class="gold-gradient-text drop-shadow-[0_0_20px_rgba(229,192,91,0.5)] font-black">{{ $restoPalabras }}</span>
-                                @endif
-                            </h1>
-                        </div>
-
-                        <!-- Fotografía / Imagen Hero del Artista (Agrandada dramáticamente al liberar espacio) -->
+                
+                <!-- Barra Superior de Escenario: Información del Participante, Total de Puntaje y Control de Cronómetro -->
+                <div class="w-full flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-3 mb-2 border-b border-slate-800/60 shrink-0 px-2">
+                    <!-- Izquierda: Nombre del Participante + Categoría y Departamento -->
+                    <div class="flex flex-col items-start min-w-0">
                         @php
-                            $fotoHero = $presentacion?->fotoJuradoUrl() ?: $presentacion?->fotoUrl();
+                            $nombreCompleto = $presentacion?->nombreMostrado() ?? '';
+                            $palabras = preg_split('/\s+/', trim($nombreCompleto));
+                            $primerPalabra = array_shift($palabras) ?? '';
+                            $restoPalabras = implode(' ', $palabras);
                         @endphp
-                        <div class="relative my-1 sm:my-2 flex justify-center items-center w-full min-h-[240px] max-h-[48vh] sm:max-h-[52vh] lg:max-h-[56vh] shrink">
-                            <!-- Resplandor sutil de fondo de escenario -->
-                            <div class="absolute inset-0 max-w-md mx-auto rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
-
-                            @if ($fotoHero)
-                                <img src="{{ $fotoHero }}"
-                                     alt="{{ $presentacion?->nombreMostrado() }}"
-                                     class="relative z-10 max-h-[46vh] sm:max-h-[50vh] lg:max-h-[54vh] w-auto max-w-full object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)] transition-transform duration-300">
-                            @else
-                                <!-- Silueta o símbolo musical elegante si no hay foto cargada -->
-                                <div class="relative z-10 flex flex-col items-center justify-center p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-2xl backdrop-blur-sm">
-                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500/20 to-slate-800/50 flex items-center justify-center border border-amber-500/30 text-amber-300 shadow-inner">
-                                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="mt-2.5 text-xs font-bold text-amber-300/80 uppercase tracking-widest font-cinzel">Aquí Canta Bolivia</span>
-                                </div>
+                        <h1 data-nombre class="text-2xl sm:text-3xl xl:text-4xl font-extrabold uppercase tracking-tight font-cinzel leading-none m-0 p-0">
+                            <span class="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{{ $primerPalabra }}</span>
+                            @if ($restoPalabras !== '')
+                                <span class="gold-gradient-text drop-shadow-[0_0_20px_rgba(229,192,91,0.5)] font-black">{{ $restoPalabras }}</span>
                             @endif
+                        </h1>
+                        <p class="mt-1 text-xs sm:text-sm text-slate-400 font-medium">
+                            {{ $presentacion?->inscripcion?->categoria?->categoria ?? '' }}{{ $presentacion?->inscripcion?->departamento ? ' · ' . $presentacion->inscripcion->departamento->nombre : '' }}
+                        </p>
+                    </div>
 
-                            @if ($presentacion?->inscripcion?->participantes->first()?->pseudonimo)
-                                <div class="absolute bottom-1 right-4 z-20">
-                                    <span class="text-[11px] text-white/80 font-medium italic drop-shadow">
-                                        "{{ $presentacion->inscripcion->participantes->first()->pseudonimo }}"
+                    <!-- Derecha: Total de Puntaje (con anillo circular) + Cronómetro y Controles -->
+                    <div class="flex items-center flex-wrap gap-5 sm:gap-7 shrink-0">
+                        @if (auth()->check() && auth()->user()->esJurado() && $juradoPresentacion)
+                            @php
+                                $notaInicialTop = ($calificacion && $calificacion->esEmitida())
+                                    ? (float) $calificacion->nota_total
+                                    : (float) $categoriaParametros->sum(fn($cp) => (float) old("valores.{$cp->id_parametro}", (float) $cp->valor_minimo));
+                                $porcentajeInicialTop = max(0, min(100, round($notaInicialTop)));
+                                $circunferencia = 113.097; // 2 * PI * 18
+                                $offsetInicial = $circunferencia - ($porcentajeInicialTop / 100) * $circunferencia;
+                            @endphp
+                            <div class="flex items-center gap-3.5">
+                                <!-- Indicador Circular de Porcentaje -->
+                                <div class="relative w-12 h-12 flex items-center justify-center shrink-0">
+                                    <svg class="w-12 h-12 -rotate-90 transform" viewBox="0 0 44 44">
+                                        <circle cx="22" cy="22" r="18" fill="none" stroke="#1e293b" stroke-width="4"></circle>
+                                        <circle id="ringTotalProgress"
+                                                cx="22" cy="22" r="18" fill="none"
+                                                stroke="#f59e0b"
+                                                stroke-width="4"
+                                                stroke-linecap="round"
+                                                stroke-dasharray="{{ $circunferencia }}"
+                                                stroke-dashoffset="{{ $offsetInicial }}"
+                                                class="transition-all duration-200"></circle>
+                                    </svg>
+                                    <span id="displayPorcentajeTop" class="absolute text-[10px] font-black text-amber-400 font-mono tabular-nums">
+                                        {{ $porcentajeInicialTop }}%
                                     </span>
                                 </div>
-                            @endif
-                        </div>
 
-                        <!-- Cronómetro Digital Neón y Controles de Acción -->
-                        <div class="mt-2 flex items-center justify-start sm:justify-center gap-4 sm:gap-6 flex-wrap shrink-0">
-                            <!-- Dígitos LED Neón Verde -->
+                                <!-- Texto TOTAL: 4.00 / 100 -->
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs sm:text-sm uppercase font-extrabold text-slate-200 tracking-wider">TOTAL:</span>
+                                    <span id="displayTotalTop" class="text-3xl sm:text-4xl font-black text-amber-400 font-mono tabular-nums leading-none">
+                                        {{ number_format($notaInicialTop, 2) }}
+                                    </span>
+                                    <span class="text-xs sm:text-sm text-slate-400 font-bold">/ 100</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Caja de Cronómetro Digital Neón y Controles -->
+                        <div class="bg-[#060c17] border border-slate-800/90 rounded-2xl px-4 sm:px-5 py-2.5 flex items-center gap-4 shadow-[0_0_25px_rgba(0,0,0,0.6)]">
                             <div class="flex items-center">
                                 <span data-cronometro-display
-                                      class="font-orbitron text-3xl sm:text-4xl lg:text-5xl font-black tabular-nums tracking-widest text-[#00ff88] drop-shadow-[0_0_20px_rgba(0,255,136,0.65)] select-none">
+                                      class="font-orbitron text-3xl sm:text-4xl font-black tabular-nums tracking-widest text-[#00ff88] drop-shadow-[0_0_20px_rgba(0,255,136,0.65)] select-none leading-none">
                                     {{ gmdate('i:s', $cronometro['segundos_restantes'] ?? (($presentacion->tiempo_maximo ?? 10) * 60)) }}
                                 </span>
-                                <!-- Elemento oculto para compatibilidad con Echo -->
                                 <span class="sr-only" data-tiempo-max-display>/ {{ $presentacion->tiempo_maximo ?? 10 }}:00</span>
                             </div>
 
-                            <!-- Controles de Cronómetro para Jurado Controlador / Admin -->
                             @if (($puedeControlar ?? false) && $presentacion !== null)
                                 <div data-control-tiempo-caja
                                      data-url-iniciar="{{ route('presentaciones.cronometro.iniciar', $presentacion) }}"
@@ -180,8 +199,49 @@
                                 </div>
                             @endif
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start min-h-0">
+                    <div class="lg:col-span-6 flex flex-col justify-start pt-0 px-2 min-h-0">
+                        <!-- Fotografía / Imagen Hero del Artista -->
+                        @php
+                            $fotoHero = $presentacion?->fotoJuradoUrl() ?: $presentacion?->fotoUrl();
+                        @endphp
+                        <div class="relative my-1 sm:my-2 flex justify-center items-center w-full min-h-[260px] max-h-[56vh] sm:max-h-[60vh] lg:max-h-[64vh] shrink">
+                            <!-- Resplandor sutil de fondo de escenario -->
+                            <div class="absolute inset-0 max-w-md mx-auto rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+
+                            @if ($fotoHero)
+                                <img src="{{ $fotoHero }}"
+                                     alt="{{ $presentacion?->nombreMostrado() }}"
+                                     class="relative z-10 max-h-[54vh] sm:max-h-[58vh] lg:max-h-[62vh] w-auto max-w-full object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)] transition-transform duration-300">
+                            @else
+                                <!-- Silueta o símbolo musical elegante si no hay foto cargada -->
+                                <div class="relative z-10 flex flex-col items-center justify-center p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-2xl backdrop-blur-sm">
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500/20 to-slate-800/50 flex items-center justify-center border border-amber-500/30 text-amber-300 shadow-inner">
+                                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="mt-2.5 text-xs font-bold text-amber-300/80 uppercase tracking-widest font-cinzel">Aquí Canta Bolivia</span>
+                                </div>
+                            @endif
+
+                            @if ($presentacion?->inscripcion?->participantes->first()?->pseudonimo)
+                                <div class="absolute bottom-1 right-4 z-20">
+                                    <span class="text-[11px] text-white/80 font-medium italic drop-shadow">
+                                        "{{ $presentacion->inscripcion->participantes->first()->pseudonimo }}"
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
 
                         <!-- Elementos ocultos accesibles para WebSocket y compatibilidad -->
+                        <div data-estado class="sr-only">
+                            <span data-estado-dot></span>
+                            <span data-estado-texto>{{ $presentacion?->estado?->label() ?? 'En escenario' }}</span>
+                        </div>
                         <p class="sr-only" data-categoria-fase>
                             {{ $presentacion?->inscripcion?->categoria?->categoria ?? '' }} · {{ $presentacion?->inscripcion?->fase?->fase?->label() ?? '' }}
                         </p>
@@ -275,12 +335,6 @@
                                             <h3 class="text-[15px] sm:text-[17px] font-bold text-white flex items-center gap-2">
                                                 <span>Calificar Participante</span>
                                             </h3>
-
-                                            <div class="flex items-center gap-2 bg-slate-950 border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner">
-                                                <span class="text-[13px] uppercase font-bold text-slate-400 tracking-wider">Total:</span>
-                                                <span id="displayTotalTop" class="text-[17px] sm:text-[19px] font-black text-amber-400 font-mono tabular-nums leading-none">0.0</span>
-                                                <span class="text-[13px] text-slate-400 font-semibold">/ 100</span>
-                                            </div>
                                         </div>
 
                                         <form id="formCalificacion" method="POST" action="{{ route('jurado.calificaciones.guardar', $presentacion) }}" class="space-y-3">
@@ -298,35 +352,53 @@
                                                         $valorPrevio = old("valores.{$idParam}", $minVal);
                                                     @endphp
 
-                                                    <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2 transition hover:border-slate-700"
+                                                    <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2.5 transition hover:border-slate-700"
                                                          data-param-container="{{ $idParam }}">
                                                         
-                                                        <div class="mb-1.5">
-                                                            <span class="font-bold text-[16px] sm:text-[17px] text-slate-100 truncate mr-2">{{ $nombreParam }}</span>
-                                                            <span class="text-[14px] sm:text-[15px] text-slate-400 font-mono font-semibold">Máx: {{ number_format($maxVal, 0) }}</span>
+                                                        <div class="flex items-center justify-between gap-3 mb-2">
+                                                            <div class="min-w-0">
+                                                                <span class="font-bold text-[16px] sm:text-[17px] text-slate-100 truncate mr-2">{{ $nombreParam }}</span>
+                                                                <span class="text-[14px] sm:text-[15px] text-slate-400 font-mono font-semibold">Máx: {{ number_format($maxVal, 0) }}</span>
+                                                            </div>
+
+                                                            <div class="inline-flex items-center gap-1 bg-[#030712] border border-slate-800/90 rounded-xl p-1 shrink-0 shadow-inner">
+                                                                <button type="button"
+                                                                        onclick="ajustarValorParametro({{ $idParam }}, -0.1)"
+                                                                        class="w-8 h-8 rounded-lg bg-[#141b29] hover:bg-slate-800 active:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold text-lg leading-none transition cursor-pointer select-none shrink-0"
+                                                                        aria-label="Disminuir puntaje">
+                                                                    &minus;
+                                                                </button>
+
+                                                                <input type="number"
+                                                                       name="valores[{{ $idParam }}]"
+                                                                       id="input_{{ $idParam }}"
+                                                                       min="{{ $minVal }}"
+                                                                       max="{{ $maxVal }}"
+                                                                       step="0.1"
+                                                                       value="{{ number_format((float) $valorPrevio, 1, '.', '') }}"
+                                                                       required
+                                                                       class="no-spinners w-14 h-8 py-0 px-1 text-center text-[17px] font-extrabold text-amber-400 bg-transparent border-0 focus:ring-0 focus:outline-none tabular-nums font-mono"
+                                                                       oninput="sincronizarDesdeInput({{ $idParam }})"
+                                                                       onblur="validarLimiteBlur(this)">
+
+                                                                <button type="button"
+                                                                        onclick="ajustarValorParametro({{ $idParam }}, 0.1)"
+                                                                        class="w-8 h-8 rounded-lg bg-[#141b29] hover:bg-slate-800 active:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold text-lg leading-none transition cursor-pointer select-none shrink-0"
+                                                                        aria-label="Aumentar puntaje">
+                                                                    +
+                                                                </button>
+                                                            </div>
                                                         </div>
 
-                                                        <div class="flex items-center gap-3">
+                                                        <div class="flex items-center">
                                                             <input type="range"
                                                                    id="slider_{{ $idParam }}"
                                                                    min="{{ $minVal }}"
                                                                    max="{{ $maxVal }}"
                                                                    step="0.1"
                                                                    value="{{ $valorPrevio }}"
-                                                                   class="festival-slider flex-1"
+                                                                   class="festival-slider w-full"
                                                                    oninput="sincronizarDesdeSlider({{ $idParam }})">
-
-                                                            <input type="number"
-                                                                   name="valores[{{ $idParam }}]"
-                                                                   id="input_{{ $idParam }}"
-                                                                   min="{{ $minVal }}"
-                                                                   max="{{ $maxVal }}"
-                                                                   step="0.1"
-                                                                   value="{{ $valorPrevio }}"
-                                                                   required
-                                                                   class="w-[66px] h-9 py-1 px-1.5 text-center text-base font-black text-white bg-slate-900 border border-slate-700 rounded-lg focus:ring-1 focus:ring-amber-500 tabular-nums font-mono shrink-0"
-                                                                   oninput="sincronizarDesdeInput({{ $idParam }})"
-                                                                   onblur="validarLimiteBlur(this)">
                                                         </div>
 
                                                         @error("valores.{$idParam}")
@@ -481,6 +553,25 @@
         </div>
 
         <script>
+            function ajustarValorParametro(idParam, delta) {
+                const input = document.getElementById('input_' + idParam);
+                const slider = document.getElementById('slider_' + idParam);
+                if (!input) return;
+
+                const min = parseFloat(input.min) || 0;
+                const max = parseFloat(input.max) || 100;
+                let actual = parseFloat(input.value);
+                if (isNaN(actual)) actual = min;
+
+                let nuevo = Math.round((actual + delta) * 10) / 10;
+                if (nuevo < min) nuevo = min;
+                if (nuevo > max) nuevo = max;
+
+                input.value = nuevo.toFixed(1);
+                if (slider) slider.value = nuevo;
+                recalcularTotal();
+            }
+
             function sincronizarDesdeSlider(idParam) {
                 const slider = document.getElementById('slider_' + idParam);
                 const input = document.getElementById('input_' + idParam);
@@ -494,7 +585,7 @@
                     if (val < min) val = min;
 
                     slider.value = val;
-                    input.value = val;
+                    input.value = val.toFixed(1);
                     if (badge) badge.textContent = val.toFixed(1);
                     recalcularTotal();
                 }
@@ -513,10 +604,10 @@
                     if (!isNaN(val)) {
                         if (val > max) {
                             val = max;
-                            input.value = max;
+                            input.value = max.toFixed(1);
                         } else if (val < 0) {
                             val = min;
-                            input.value = min;
+                            input.value = min.toFixed(1);
                         }
                         slider.value = Math.max(min, Math.min(max, val));
                         if (badge) badge.textContent = val.toFixed(1);
@@ -531,17 +622,21 @@
                 let val = parseFloat(input.value);
 
                 if (isNaN(val) || val < min) {
-                    input.value = min;
+                    val = min;
                 } else if (val > max) {
-                    input.value = max;
+                    val = max;
                 }
+                input.value = val.toFixed(1);
                 const idParam = input.id.replace('input_', '');
                 sincronizarDesdeInput(idParam);
             }
 
             function recalcularTotal() {
+                const inputs = document.querySelectorAll('input[type="number"][name^="valores"]');
+                if (inputs.length === 0) return;
+
                 let total = 0;
-                document.querySelectorAll('input[type="number"][name^="valores"]').forEach(inp => {
+                inputs.forEach(inp => {
                     const min = parseFloat(inp.min) || 0;
                     const max = parseFloat(inp.max) || 100;
                     let val = parseFloat(inp.value);
@@ -554,12 +649,19 @@
                 });
 
                 total = Math.round(total * 100) / 100;
-                const formatted = total.toFixed(1);
+                const formatted = total.toFixed(2);
+                const porcentaje = Math.max(0, Math.min(100, Math.round(total)));
+                const circunferencia = 113.097;
+                const offset = circunferencia - (porcentaje / 100) * circunferencia;
                 
                 const displayTop = document.getElementById('displayTotalTop');
+                const displayPorcentaje = document.getElementById('displayPorcentajeTop');
+                const ringProgress = document.getElementById('ringTotalProgress');
                 const displayModal = document.getElementById('modalNotaTotal');
                 
                 if (displayTop) displayTop.textContent = formatted;
+                if (displayPorcentaje) displayPorcentaje.textContent = `${porcentaje}%`;
+                if (ringProgress) ringProgress.style.strokeDashoffset = offset;
                 if (displayModal) displayModal.textContent = formatted;
             }
 

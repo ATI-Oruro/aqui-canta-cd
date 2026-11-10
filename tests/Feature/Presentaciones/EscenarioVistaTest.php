@@ -98,7 +98,7 @@ class EscenarioVistaTest extends TestCase
             ->get(route('jurado.presentaciones.actual'))
             ->assertOk()
             ->assertSee('Calificar Participante')
-            ->assertSee('Registrar calificación oficial');
+            ->assertSee('Registrar calificación');
     }
 
     #[Test]

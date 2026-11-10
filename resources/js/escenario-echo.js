@@ -109,7 +109,7 @@ export function inicializarEscenario() {
     }
 
     function actualizarEstilosEstado(estado) {
-        if (!estadoEl) return;
+        if (!estadoEl || estadoEl.classList.contains('sr-only')) return;
         
         const dot = estadoEl.querySelector('[data-estado-dot]');
 
@@ -137,10 +137,8 @@ export function inicializarEscenario() {
         btnCalificar.classList.remove('bg-slate-800', 'border', 'border-slate-700', 'text-slate-400', 'cursor-not-allowed', 'opacity-60');
         btnCalificar.classList.add('bg-gradient-to-r', 'from-[#5c0618]', 'to-rose-700', 'hover:from-[#720a20]', 'hover:to-rose-600', 'text-white', 'cursor-pointer', 'shadow-lg');
         if (btnCalificarTexto) {
-            btnCalificarTexto.textContent = 'Registrar calificación oficial';
+            btnCalificarTexto.textContent = 'Registrar calificación';
         }
-        const spanIcono = btnCalificar.querySelector('span:first-child');
-        if (spanIcono) spanIcono.textContent = '✓';
     }
 
     function deshabilitarBotonCalificar() {
@@ -151,8 +149,6 @@ export function inicializarEscenario() {
         if (btnCalificarTexto) {
             btnCalificarTexto.textContent = 'Esperando inicio de presentación para calificar';
         }
-        const spanIcono = btnCalificar.querySelector('span:first-child');
-        if (spanIcono) spanIcono.textContent = '⏳';
     }
 
     function actualizarControlTiempoUI() {
@@ -170,26 +166,24 @@ export function inicializarEscenario() {
             targetElement.outerHTML = `
                 <form method="POST" action="${urlDetener}">
                     <input type="hidden" name="_token" value="${csrfToken}">
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-rose-950/40 border border-rose-400/30 transition flex items-center gap-2 cursor-pointer">
-                        <span>⏹</span>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-rose-950/40 border border-rose-400/30 transition flex items-center gap-2 cursor-pointer">
                         <span>Detener cronómetro</span>
                     </button>
                 </form>
             `;
         } else if (finalizadoAt || (estadoEl && estadoEl.textContent.toLowerCase().includes('finaliz'))) {
-            targetElement.outerHTML = '<span data-control-estado-texto class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+            targetElement.outerHTML = '<span data-control-estado-texto class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
         } else if (!iniciadoAt) {
             targetElement.outerHTML = `
                 <form method="POST" action="${urlIniciar}">
                     <input type="hidden" name="_token" value="${csrfToken}">
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition flex items-center gap-2 cursor-pointer">
-                        <span>▶</span>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition flex items-center gap-2 cursor-pointer">
                         <span>Iniciar cronómetro</span>
                     </button>
                 </form>
             `;
         } else {
-            targetElement.outerHTML = '<span data-control-estado-texto class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
+            targetElement.outerHTML = '<span data-control-estado-texto class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 font-semibold">Cronómetro finalizado</span>';
         }
     }
 
