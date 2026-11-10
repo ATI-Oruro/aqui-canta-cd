@@ -600,12 +600,13 @@
                         @foreach ($juradosModal as $idx => $j)
                             @php
                                 $esSecretoOculto = !empty($j['es_secreto']) && empty($j['es_revelado']);
+                                $secretoHaVotado = $esSecretoOculto && !empty($j['calificado']);
                                 $tieneNota = !$esSecretoOculto && isset($j['nota_total']) && $j['nota_total'] !== null;
                             @endphp
                             <div data-modal-jurado-index="{{ $idx }}"
-                                 class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 {{ $esSecretoOculto ? 'bg-gradient-to-b from-[#2e0817] to-[#120309] border-2 border-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.35)]' : ($tieneNota ? 'bg-gradient-to-b from-[#240612] to-[#0c0206] border-2 border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.28)]' : 'bg-[#0c0206]/80 border-2 border-[#4a0817]/70') }}">
+                                 class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 {{ $esSecretoOculto ? ($secretoHaVotado ? 'bg-gradient-to-b from-emerald-900/80 to-[#062016] border-2 border-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.45)]' : 'bg-[#1a050b]/85 border-2 border-rose-500/80 shadow-[0_0_10px_rgba(244,63,94,0.25)]') : ($tieneNota ? 'bg-gradient-to-b from-[#240612] to-[#0c0206] border-2 border-[#d4af37] shadow-[0_0_14px_rgba(212,175,55,0.28)]' : 'bg-[#0c0206]/80 border-2 border-[#4a0817]/70') }}">
                                 @if ($esSecretoOculto)
-                                    <span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] leading-none">?</span>
+                                    <span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black {{ $secretoHaVotado ? 'text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.7)]' : 'text-rose-300' }} leading-none">?</span>
                                     <span class="sr-only">🔒 Reservado</span>
                                 @elseif ($tieneNota)
                                     <span data-modal-jurado-valor class="text-xs sm:text-sm font-black font-mono text-amber-300 tabular-nums leading-none">
@@ -760,15 +761,22 @@
             dotsContainer.setAttribute('title', `Votos emitidos: ${calificadosCount} / 5`);
 
             dots.forEach((dot, idx) => {
-                const haVotado = jurados[idx] !== undefined
-                    ? Boolean(jurados[idx] && jurados[idx].calificado)
+                const j = jurados[idx];
+                const haVotado = j !== undefined
+                    ? Boolean(j && j.calificado)
                     : (idx < calificadosCount);
+                const esSecreto = j !== undefined
+                    ? Boolean(j && j.es_secreto && !j.es_revelado)
+                    : (dot.getAttribute('data-es-secreto') === '1');
 
                 dot.setAttribute('data-votado', haVotado ? '1' : '0');
+                dot.setAttribute('data-es-secreto', esSecreto ? '1' : '0');
+                dot.textContent = esSecreto ? '?' : '';
+
                 if (haVotado) {
-                    dot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]';
+                    dot.className = 'card-jurado-dot w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px] font-black font-mono leading-none select-none transition-all duration-300 bg-emerald-400 border border-emerald-300 text-slate-950 shadow-[0_0_8px_#10b981]';
                 } else {
-                    dot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-rose-500/35 border border-rose-500/80 shadow-[0_0_5px_rgba(244,63,94,0.3)]';
+                    dot.className = 'card-jurado-dot w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px] font-black font-mono leading-none select-none transition-all duration-300 bg-rose-500/35 border border-rose-500/80 text-rose-200 shadow-[0_0_5px_rgba(244,63,94,0.3)]';
                 }
             });
         }
@@ -785,11 +793,17 @@
             circulos.forEach((circulo, idx) => {
                 const j = jurados[idx] || null;
                 const esSecretoOculto = Boolean(j && j.es_secreto && !j.es_revelado);
+                const secretoHaVotado = Boolean(esSecretoOculto && j && j.calificado);
                 const tieneNota = !esSecretoOculto && j && j.nota_total !== null && j.nota_total !== undefined && j.nota_total !== '';
 
                 if (esSecretoOculto) {
-                    circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-b from-[#2e0817] to-[#120309] border-2 border-amber-400/80 shadow-[0_0_16px_rgba(251,191,36,0.35)]';
-                    circulo.innerHTML = '<span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] leading-none">?</span><span class="sr-only">🔒 Reservado</span>';
+                    if (secretoHaVotado) {
+                        circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-b from-emerald-900/80 to-[#062016] border-2 border-emerald-400 shadow-[0_0_16px_rgba(16,185,129,0.45)]';
+                        circulo.innerHTML = '<span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-emerald-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.7)] leading-none">?</span><span class="sr-only">🔒 Reservado</span>';
+                    } else {
+                        circulo.className = 'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-[#1a050b]/85 border-2 border-rose-500/80 shadow-[0_0_10px_rgba(244,63,94,0.25)]';
+                        circulo.innerHTML = '<span data-modal-jurado-valor class="font-cinzel text-2xl sm:text-3xl font-black text-rose-300 leading-none">?</span><span class="sr-only">🔒 Reservado</span>';
+                    }
                 } else if (tieneNota) {
                     const num = parseFloat(j.nota_total);
                     const textoNota = isNaN(num) ? String(j.nota_total) : num.toFixed(1);
@@ -814,10 +828,17 @@
             const card = document.querySelector(`.musician-card[data-card-id="${data.presentacion_id}"]`);
             if (!card) return;
 
-            const pendienteDot = card.querySelector('.card-jurado-dot[data-votado="0"]');
-            if (pendienteDot) {
-                pendienteDot.setAttribute('data-votado', '1');
-                pendienteDot.className = 'card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]';
+            const selector = data.es_secreto
+                ? '.card-jurado-dot[data-es-secreto="1"]'
+                : '.card-jurado-dot[data-votado="0"]:not([data-es-secreto="1"])';
+
+            const targetDot = card.querySelector(selector) || card.querySelector('.card-jurado-dot[data-votado="0"]');
+            if (targetDot) {
+                targetDot.setAttribute('data-votado', '1');
+                if (targetDot.getAttribute('data-es-secreto') === '1') {
+                    targetDot.textContent = '?';
+                }
+                targetDot.className = 'card-jurado-dot w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px] font-black font-mono leading-none select-none transition-all duration-300 bg-emerald-400 border border-emerald-300 text-slate-950 shadow-[0_0_8px_#10b981]';
             }
         }
 

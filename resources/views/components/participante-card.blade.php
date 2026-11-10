@@ -76,19 +76,24 @@
             {{ $departamento ?? 'Bolivia' }}
         </span>
 
-        <!-- Indicador de 5 jurados (rojo/vacío = pendiente, verde = voto emitido) -->
+        <!-- Indicador de 5 jurados (rojo/vacío = pendiente, verde = voto emitido; '?' en jurado secreto) -->
         <div class="card-jurados-dots flex items-center justify-center gap-2 mt-2.5 pt-1"
              data-calificados-count="{{ $calificadosCount }}"
              title="Votos emitidos: {{ $calificadosCount }} / 5">
             @for ($i = 0; $i < 5; $i++)
                 @php
-                    $haVotado = isset($juradosArr[$i])
-                        ? !empty($juradosArr[$i]['calificado'])
+                    $juradoItem = $juradosArr[$i] ?? null;
+                    $haVotado = $juradoItem !== null
+                        ? !empty($juradoItem['calificado'])
                         : ($i < $calificadosCount);
+                    $esSecreto = $juradoItem !== null
+                        && !empty($juradoItem['es_secreto'])
+                        && empty($juradoItem['es_revelado']);
                 @endphp
-                <span class="card-jurado-dot w-2.5 h-2.5 rounded-full transition-all duration-300 {{ $haVotado ? 'bg-emerald-400 border border-emerald-300 shadow-[0_0_8px_#10b981]' : 'bg-rose-500/35 border border-rose-500/80 shadow-[0_0_5px_rgba(244,63,94,0.3)]' }}"
+                <span class="card-jurado-dot w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px] font-black font-mono leading-none select-none transition-all duration-300 {{ $haVotado ? 'bg-emerald-400 border border-emerald-300 text-slate-950 shadow-[0_0_8px_#10b981]' : 'bg-rose-500/35 border border-rose-500/80 text-rose-200 shadow-[0_0_5px_rgba(244,63,94,0.3)]' }}"
                       data-dot-index="{{ $i }}"
-                      data-votado="{{ $haVotado ? '1' : '0' }}"></span>
+                      data-votado="{{ $haVotado ? '1' : '0' }}"
+                      data-es-secreto="{{ $esSecreto ? '1' : '0' }}">{{ $esSecreto ? '?' : '' }}</span>
             @endfor
         </div>
     </div>
