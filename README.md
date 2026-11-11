@@ -11,7 +11,7 @@ Sistema web en tiempo real desarrollado en **Laravel 12** para la gestión integ
 3. [Reglas Oficiales de Evaluación y Categorías](#3-reglas-oficiales-de-evaluación-y-categorías)
 4. [Especificaciones Tecnológicas y Arquitectura](#4-especificaciones-tecnológicas-y-arquitectura)
 5. [Estrategia de Despliegue 1: Local con XAMPP](#5-estrategia-de-despliegue-1-local-con-xampp)
-6. [Estrategia de Despliegue 2: Con Docker Compose / Podman](#6-estrategia-de-despliegue-2-con-docker-compose--podman)
+6. [Estrategia de Despliegue 2: Despliegue Completo con Docker Compose en Servidor Debian](#6-estrategia-de-despliegue-2-despliegue-completo-con-docker-compose-en-servidor-debian)
 7. [Ejecución en Red Local (LAN del Evento / Escenario)](#7-ejecución-en-red-local-lan-del-evento--escenario)
 8. [Credenciales Iniciales y Comandos Útiles](#8-credenciales-iniciales-y-comandos-útiles)
 9. [Pruebas Automatizadas](#9-pruebas-automatizadas)
@@ -228,84 +228,261 @@ Acceder en el navegador a: `http://127.0.0.1:8000`
 
 ---
 
-## 6. Estrategia de Despliegue 2: Con Docker Compose / Podman
+## 6. Estrategia de Despliegue 2: Despliegue Completo con Docker Compose en Servidor Debian
 
-El repositorio incluye un archivo [`docker-compose.yml`](docker-compose.yml) preconfigurado que levanta **MySQL 8.0** (con persistencia en `./docker/mysql/data` e inicialización automática UTF-8) y **phpMyAdmin**, manteniendo la ejecución de PHP/Artisan y Reverb de forma nativa o en contenedores.
+El proyecto incluye una arquitectura completa en contenedores definida en [`docker-compose.yml`](docker-compose.yml), [`Dockerfile`](Dockerfile) y [`docker/app/entrypoint.sh`](docker/app/entrypoint.sh), diseñada para desplegarse en un **servidor Debian (Debian 11 Bullseye / Debian 12 Bookworm)** donde ya puedan existir otros servicios en ejecución (Apache, Nginx, MySQL/MariaDB local, aplicaciones en puertos `80`, `443`, `3306`, `8000` u `8080`).
 
-### 6.1. Servicios Definidos en `docker-compose.yml`
+### 6.1. Arquitectura de Red Aislada y Enrutamiento de Puertos (Sin Colisiones)
 
-| Servicio | Contenedor | Imagen | Puerto Host → Contenedor | Credenciales |
-|---|---|---|---|---|
-| `mysql` | `acb_mysql` | `mysql:8.0` | `3307:3306` | DB: `festival_acb` / User: `acb_app` / Pass: `acb_local_2026` (Root: `root_acb_2026`) |
-| `phpmyadmin` | `acb_phpmyadmin` | `phpmyadmin:latest` | `8080:80` | User: `root` / Pass: `root_acb_2026` |
+Para evitar cualquier conflicto con servicios preexistentes en el servidor Debian:
 
-### 6.2. Paso a Paso con Docker Compose (o Podman Compose)
+1. **Subred Interna Aislada (`acb_festival_network` — `172.28.10.0/24`)**: Todos los contenedores se comunican internamente mediante IPs fijas y nombres DNS de Docker (`mysql:3306`, `reverb:6080`, `app:8000`) sin pasar por los puertos del sistema anfitrión.
+2. **Puertos Externos No Estándar y Configurables**: Los puertos publicados en el host Debian utilizan rangos altos libres de colisión y las bases de datos se enlazan únicamente al loopback local (`127.0.0.1`).
 
-1. **Levantar los contenedores de base de datos y phpMyAdmin**:
-   ```powershell
-   docker compose up -d
-   # O si utilizas Podman:
-   # podman compose up -d
-   ```
-   Verificar que el contenedor `acb_mysql` esté en estado `healthy`:
-   ```powershell
-   docker compose ps
-   ```
+| Servicio | Contenedor | IP Interna (`acb_net`) | Puerto Interno | Enlace en Host Debian (Por defecto) | Propósito y Prevención de Conflicto |
+|---|---|---|---:|---|---|
+| `mysql` | `acb_mysql` | `172.28.10.10` | `3306` | `127.0.0.1:3307` | Evita chocar con un MySQL/MariaDB nativo del servidor (`3306`) y bloquea el acceso directo desde internet. |
+| `app` | `acb_app` | `172.28.10.20` | `8000` | `0.0.0.0:8085` | Evita chocar con Apache/Nginx (`80`/`443`), otras apps PHP/Python (`8000`) o Tomcat/Proxies (`8080`). |
+| `reverb` | `acb_reverb` | `172.28.10.30` | `6080` | `0.0.0.0:6085` | Servidor WebSocket en tiempo real; evita colisiones en `6080`/`8080`. |
+| `phpmyadmin` | `acb_phpmyadmin` | `172.28.10.40` | `80` | `127.0.0.1:8086` | Gestión de BD enlazada solo a localhost en el puerto `8086` (acceso seguro vía túnel SSH o proxy). |
 
-2. **Configurar el archivo `.env`**:
-   Copiar `.env.example` a `.env` y configurar los datos que coinciden con `docker-compose.yml` (puerto `3307`):
-   ```dotenv
-   APP_NAME="Aquí Canta Bolivia"
-   APP_ENV=local
-   APP_DEBUG=true
-   APP_URL=http://127.0.0.1:8000
+---
 
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3307
-   DB_DATABASE=festival_acb
-   DB_USERNAME=acb_app
-   DB_PASSWORD=acb_local_2026
+### 6.2. Preparación del Servidor Debian e Instalación de Docker
 
-   BROADCAST_CONNECTION=reverb
-   FILESYSTEM_DISK=local
-   QUEUE_CONNECTION=database
-   CACHE_STORE=database
-   SESSION_DRIVER=database
+Ejecutar los siguientes comandos en el servidor Debian:
 
-   REVERB_APP_ID=935767
-   REVERB_APP_KEY=rlml9nwlxkswhus5t6ca
-   REVERB_APP_SECRET=xzx65mxlpwktbspb0bpp
-   REVERB_HOST="127.0.0.1"
-   REVERB_PORT=6080
-   REVERB_SCHEME=http
-   REVERB_SERVER_HOST=0.0.0.0
-   REVERB_SERVER_PORT=6080
-   ```
+```bash
+# 1. Actualizar índices de paquetes e instalar utilidades requeridas
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg git ufw
 
-3. **Instalar dependencias, preparar almacenamiento y migrar con seeders**:
-   ```powershell
-   composer install
-   npm install
-   php artisan key:generate
-   php artisan storage:link
-   php artisan migrate --seed
-   npm run build
-   ```
+# 2. Agregar clave GPG oficial de Docker y repositorio para Debian
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-4. **Iniciar la aplicación y el servidor de WebSockets**:
-   ```powershell
-   # Terminal 1: Servidor HTTP
-   php artisan serve --host=0.0.0.0 --port=8000
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-   # Terminal 2: Servidor WebSocket Reverb
-   php artisan reverb:start --host=0.0.0.0 --port=6080
-   ```
+# 3. Instalar Docker Engine y Docker Compose Plugin
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-5. **Accesos disponibles**:
-   - **Aplicación Web (Ranking Público)**: `http://127.0.0.1:8000`
-   - **Panel de Login (Admin / Jurados)**: `http://127.0.0.1:8000/login`
-   - **phpMyAdmin**: `http://127.0.0.1:8080`
+# 4. Habilitar servicio Docker y permitir uso al usuario actual
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+#### Verificación previa de puertos en uso en el servidor Debian
+Antes de levantar el stack, puedes comprobar qué puertos están ocupados en el servidor Debian con:
+
+```bash
+sudo ss -tulnp | grep -E ':(3307|8085|6085|8086)\b'
+```
+Si la salida está vacía, los cuatro puertos por defecto están completamente libres. Si alguno estuviera ocupado, basta con cambiar su variable en el archivo `.env` (`APP_EXTERNAL_PORT`, `REVERB_EXTERNAL_PORT`, `DB_EXTERNAL_PORT`, `PMA_EXTERNAL_PORT`).
+
+---
+
+### 6.3. Clonación y Configuración de Variables de Entorno (`.env`)
+
+```bash
+# 1. Clonar el repositorio en /opt o /var/www
+sudo mkdir -p /var/www/aqui_canta_bolivia
+sudo chown -R $USER:$USER /var/www/aqui_canta_bolivia
+git clone <URL_DEL_REPOSITORIO> /var/www/aqui_canta_bolivia
+cd /var/www/aqui_canta_bolivia
+
+# 2. Crear el archivo .env a partir de la plantilla
+cp .env.example .env
+```
+
+Editar el archivo `.env` (`nano .env`) configurando la IP o dominio del servidor Debian y los puertos enrutados:
+
+```dotenv
+APP_NAME="Aquí Canta Bolivia"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+# Reemplazar 192.168.1.100 por la IP o dominio real del servidor Debian:
+APP_URL=http://192.168.1.100:8085
+
+# --- Enrutamiento de Puertos en el Host Debian (Sin colisión) ---
+APP_BIND_IP=0.0.0.0
+APP_EXTERNAL_PORT=8085
+
+REVERB_BIND_IP=0.0.0.0
+REVERB_EXTERNAL_PORT=6085
+REVERB_EXTERNAL_SCHEME=http
+
+DB_BIND_IP=127.0.0.1
+DB_EXTERNAL_PORT=3307
+
+PMA_BIND_IP=127.0.0.1
+PMA_EXTERNAL_PORT=8086
+
+# --- Base de Datos (Comunicación interna Docker hacia el servicio 'mysql') ---
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=festival_acb
+DB_USERNAME=acb_app
+DB_PASSWORD=acb_local_2026
+MYSQL_ROOT_PASSWORD=root_acb_2026
+
+# --- Sesiones, Caché y Colas ---
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+FILESYSTEM_DISK=local
+
+# --- WebSockets (Laravel Reverb) ---
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=935767
+REVERB_APP_KEY=rlml9nwlxkswhus5t6ca
+REVERB_APP_SECRET=xzx65mxlpwktbspb0bpp
+REVERB_HOST=reverb
+REVERB_PORT=6080
+REVERB_SCHEME=http
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=6080
+
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_PORT="${REVERB_EXTERNAL_PORT}"
+VITE_REVERB_SCHEME="${REVERB_EXTERNAL_SCHEME}"
+```
+
+---
+
+### 6.4. Construcción y Despliegue Automatizado con Docker Compose
+
+Al ejecutar `docker compose up -d --build`, el contenedor `acb_app` ejecuta automáticamente el script [`docker/app/entrypoint.sh`](docker/app/entrypoint.sh) que realiza todo el aprovisionamiento en orden:
+
+```bash
+# Construir la imagen Debian/PHP 8.2/Node 20 y levantar todos los servicios en segundo plano
+docker compose up -d --build
+```
+
+#### ¿Qué comandos ejecuta automáticamente el contenedor al iniciar?
+El script de entrada (`docker/app/entrypoint.sh`) y la inicialización de MySQL (`docker/mysql/init/001_database.sql`) ejecutan automáticamente la siguiente secuencia de comandos dentro del contenedor:
+
+```bash
+# 1. Instalar dependencias de PHP con Composer
+composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# 2. Instalar dependencias de Node.js y compilar los assets de Vite (Tailwind CSS + JS + Echo)
+npm install --no-audit --no-fund
+npm run build
+
+# 3. Generar la clave criptográfica de Laravel (si no existe en .env) y enlazar storage
+php artisan key:generate --force --ansi
+php artisan storage:link --force --ansi
+
+# 4. Crear la base de datos 'festival_acb' con codificación utf8mb4 y otorgar privilegios al usuario
+mysql -h mysql -P 3306 -u root -p"$MYSQL_ROOT_PASSWORD" \
+  -e "CREATE DATABASE IF NOT EXISTS \`festival_acb\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; \
+      GRANT ALL PRIVILEGES ON \`festival_acb\`.* TO 'acb_app'@'%'; FLUSH PRIVILEGES;"
+
+# 5. Ejecutar todas las migraciones de la base de datos
+php artisan migrate --force --ansi
+
+# 6. Ejecutar los seeders oficiales de la Convocatoria 2026 (9 departamentos, fases, 13 categorías, parámetros y usuario admin)
+php artisan db:seed --force --ansi
+
+# 7. Limpiar cachés y levantar el servidor web (en acb_app) y el servidor WebSocket (en acb_reverb)
+php artisan config:clear --ansi
+php artisan serve --host=0.0.0.0 --port=8000
+# Y en el contenedor acb_reverb:
+php artisan reverb:start --host=0.0.0.0 --port=6080
+```
+
+---
+
+### 6.5. Comandos de Verificación y Ejecución Manual en Debian
+
+Si necesitas verificar el despliegue o volver a ejecutar cualquiera de los pasos manualmente desde la terminal del servidor Debian:
+
+```bash
+# Ver el estado de salud (healthy/running) y puertos asignados de los 4 contenedores
+docker compose ps
+
+# Seguir en vivo los logs de instalación, migraciones y seeders del contenedor principal
+docker compose logs -f app
+
+# Seguir los logs del servidor WebSocket Reverb
+docker compose logs -f reverb
+
+# Ejecutar manualmente la instalación de dependencias PHP y Node dentro del contenedor
+docker compose exec app composer install --no-interaction --prefer-dist --optimize-autoloader
+docker compose exec app npm install
+docker compose exec app npm run build
+
+# Crear/verificar manualmente la base de datos desde el contenedor MySQL
+docker compose exec mysql mysql -u root -proot_acb_2026 \
+  -e "CREATE DATABASE IF NOT EXISTS festival_acb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Ejecutar manualmente las migraciones y los seeders oficiales
+docker compose exec app php artisan migrate --seed --force
+
+# Reiniciar las presentaciones a estado POR_PARTICIPAR después de un simulacro
+docker compose exec app php artisan festival:reset-presentaciones
+```
+
+---
+
+### 6.6. (Opcional) Enrutamiento con Nginx Reverse Proxy en el Servidor Debian
+
+Si el servidor Debian ya cuenta con **Nginx** corriendo en los puertos `80`/`443` para otros sistemas y deseas publicar **Aquí Canta Bolivia** bajo un dominio o subdominio propio (unificando HTTP y WebSockets sin exponer puertos adicionales en el firewall), cambia en `.env`:
+
+```dotenv
+APP_BIND_IP=127.0.0.1
+REVERB_BIND_IP=127.0.0.1
+VITE_REVERB_PORT=80
+```
+
+Y crea el bloque de virtual host en `/etc/nginx/sites-available/aqui_canta_bolivia.conf`:
+
+```nginx
+server {
+    listen 80;
+    server_name festival.tudominio.gob.bo;
+
+    client_max_body_size 64M;
+
+    # 1. Enrutar tráfico Web hacia el contenedor acb_app (127.0.0.1:8085)
+    location / {
+        proxy_pass http://127.0.0.1:8085;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 2. Enrutar WebSockets de Laravel Reverb (/app y /apps) hacia acb_reverb (127.0.0.1:6085)
+    location ~ ^/(app|apps) {
+        proxy_pass http://127.0.0.1:6085;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+}
+```
+
+Habilitar el sitio y recargar Nginx sin afectar los demás servicios del servidor Debian:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/aqui_canta_bolivia.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
 
 ---
 
