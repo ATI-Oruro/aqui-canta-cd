@@ -25,6 +25,12 @@ abstract class LectorBase
     protected function normalizarTexto(string $valor): string
     {
         $valor = mb_strtolower(trim($valor));
+        $valor = strtr($valor, [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u',
+            'ä' => 'a', 'ë' => 'e', 'ï' => 'i', 'ö' => 'o', 'ü' => 'u',
+            'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u',
+            'ñ' => 'n',
+        ]);
         $convertido = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $valor);
 
         return $convertido === false ? $valor : $convertido;

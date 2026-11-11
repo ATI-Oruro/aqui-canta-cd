@@ -1,0 +1,190 @@
+name: CI/CD - Aquí Canta Bolivia
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  # =========================================================================
+  # 1. INTEGRACIÓN CONTINUA (CI): Linter, Assets Vite, Migraciones y PHPUnit
+  # =========================================================================
+  ci-tests:
+    name: CI - Tests, Pint & Vite Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, pdo_mysql, dom, filter, gd, json, zip, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Obtener directorio de caché de Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Caché de dependencias de Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Instalar dependencias de PHP (Composer)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Preparar entorno de pruebas (.env)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Instalar dependencias Frontend (NPM)
+        run: npm ci
+
+      - name: Compilar assets de producción (Vite)
+        run: npm run build
+
+      - name: Verificar estilo de código con Laravel Pint (Advertencia)
+        continue-on-error: true
+        run: ./vendor/bin/pint --test
+
+      - name: Verificar migraciones y seeders oficiales en SQLite
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          touch database/database.sqlite
+          php artisan migrate:fresh --seed --force
+
+      - name: Ejecutar suite de pruebas (PHPUnit)
+        run: php artisan test --colors=always
+
+  # =========================================================================
+  # 2. EMPAQUETADO (BUILD): Artefacto listo para producción
+  # =========================================================================
+  build-artifact:
+    name: CD - Empaquetar Release de Producción
+    needs: ci-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, pdo_mysql, dom, filter, gd, json, zip, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias de Composer (Solo Producción)
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Instalar y compilar Frontend (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Subir artefacto de producción
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqui-canta-bolivia-release-${{ github.sha }}
+          retention-days: 14
+          path: |
+            app/
+            bootstrap/
+            config/
+            database/
+            public/
+            resources/
+            routes/
+            storage/
+            vendor/
+            .env.example
+            artisan
+            composer.json
+            composer.lock
+
+  # =========================================================================
+  # 3. DESPLIEGUE CONTINUO (CD): Despliegue por SSH al servidor
+  # =========================================================================
+  cd-deploy:
+    name: CD - Despliegue por SSH
+    needs: build-artifact
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Verificar configuración de Secrets SSH
+        id: check-secrets
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_USER" ] && [ -n "$SSH_KEY" ] && [ -n "$DEPLOY_PATH" ]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "### ℹ️ Despliegue SSH omitido" >> $GITHUB_STEP_SUMMARY
+            echo "Para activar el despliegue automático por SSH, configura los siguientes Secrets en GitHub (**Settings > Secrets and variables > Actions**):" >> $GITHUB_STEP_SUMMARY
+            echo "- \`DEPLOY_SSH_HOST\`: IP o dominio del servidor" >> $GITHUB_STEP_SUMMARY
+            echo "- \`DEPLOY_SSH_PORT\`: Puerto SSH (opcional, por defecto \`22\`)" >> $GITHUB_STEP_SUMMARY
+            echo "- \`DEPLOY_SSH_USER\`: Usuario SSH del servidor" >> $GITHUB_STEP_SUMMARY
+            echo "- \`DEPLOY_SSH_KEY\`: Clave privada SSH" >> $GITHUB_STEP_SUMMARY
+            echo "- \`DEPLOY_PATH\`: Ruta absoluta del proyecto en el servidor (ej. \`/var/www/aqui_canta_bolivia\`)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Desplegar en servidor vía SSH
+        if: steps.check-secrets.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            php artisan down --retry=60 || true
+            git fetch origin main
+            git reset --hard origin/main
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+            npm ci
+            npm run build
+            php artisan migrate --force
+            php artisan optimize
+            php artisan queue:restart
+            php artisan reverb:restart || true
+            php artisan up
+

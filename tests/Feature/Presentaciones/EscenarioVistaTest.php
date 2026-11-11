@@ -97,7 +97,7 @@ class EscenarioVistaTest extends TestCase
         $this->actingAs($jurado)
             ->get(route('jurado.presentaciones.actual'))
             ->assertOk()
-            ->assertSee('Calificar Participante')
+            ->assertSee('Interpretación')
             ->assertSee('Registrar calificación');
     }
 
@@ -124,7 +124,7 @@ class EscenarioVistaTest extends TestCase
             ->assertOk()
             ->assertSee('Calificación Registrada')
             ->assertSee('92.50')
-            ->assertSee('Corregir calificación');
+            ->assertSee('Emitida');
     }
 
     #[Test]
