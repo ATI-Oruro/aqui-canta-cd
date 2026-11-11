@@ -100,27 +100,28 @@
                     </div>
                 </div>
 
-                <!-- Tarjeta 2: Sábana de Calificación por Parámetros -->
+                <!-- Tarjeta 2: Planillas de Calificación por Jurado -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold tracking-widest uppercase text-slate-400">Matriz Técnica</span>
-                            <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-[#5c0618] font-bold text-[10px]">Parámetros</span>
+                            <span class="text-[10px] font-bold tracking-widest uppercase text-slate-400">Planillas Individuales</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-[#5c0618] font-bold text-[10px]">PDF Imprimible</span>
                         </div>
-                        <h3 class="text-lg font-black text-slate-900 leading-snug">Sábana Completa de Evaluación</h3>
+                        <h3 class="text-lg font-black text-slate-900 leading-snug">Planillas de Calificación por Jurado</h3>
                         <p class="text-xs text-slate-500">
-                            Matriz cruzada con la puntuación otorgada por cada jurado a cada uno de los parámetros de la categoría.
+                            Planillas oficiales individuales de cada jurado por participante y parámetros evaluados en la categoría, con firma para impresión en PDF.
                         </p>
                     </div>
                     <div class="pt-2 flex flex-col sm:flex-row gap-2">
                         <a href="{{ route('admin.reportes.sabana', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
-                           class="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center inline-flex items-center justify-center gap-1.5 transition">
-                            <span>Ver Sábana</span>
+                           target="_blank"
+                           class="flex-1 py-3 px-4 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs text-center inline-flex items-center justify-center gap-1.5 shadow-sm transition">
+                            <span>Imprimir Planillas (PDF)</span>
                         </a>
                         <a href="{{ route('admin.reportes.exportar.sabana', ['fase_id' => $faseSeleccionada->id, 'categoria_id' => $categoriaSeleccionada->id, 'departamento_id' => $departamentoId]) }}"
-                           class="py-3 px-4 rounded-xl bg-[#5c0618] hover:bg-[#7a0920] text-white font-bold text-xs inline-flex items-center justify-center gap-1 transition shadow-sm"
-                           title="Descargar CSV Sábana">
-                            <span>Exportar CSV</span>
+                           class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs inline-flex items-center justify-center gap-1 transition"
+                           title="Descargar CSV de Planillas">
+                            <span>CSV</span>
                         </a>
                     </div>
                 </div>

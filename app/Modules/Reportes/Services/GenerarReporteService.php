@@ -159,6 +159,8 @@ class GenerarReporteService
         $presentaciones = $query->get()->sortByDesc(fn ($p) => $p->nota_final ?? -1)->values();
 
         $filas = [];
+        $juradosCatalogo = [];
+
         foreach ($presentaciones as $pres) {
             $juradosDetalle = [];
             foreach ($pres->juradosPresentacion as $jp) {
@@ -169,21 +171,72 @@ class GenerarReporteService
                     }
                 }
 
+                $nombreJurado = $jp->usuario ? $jp->usuario->nombreCompleto() : "Jurado #{$jp->id_usuario}";
+
                 $juradosDetalle[] = [
                     'jurado_id' => $jp->id_usuario,
-                    'jurado_nombre' => $jp->usuario ? $jp->usuario->nombreCompleto() : "Jurado #{$jp->id_usuario}",
+                    'jurado_nombre' => $nombreJurado,
                     'es_secreto' => (bool) $jp->es_secreto,
                     'nota_total' => $jp->calificacion ? (float) $jp->calificacion->nota_total : null,
                     'parametros_valores' => $detallesMap,
                 ];
+
+                if (! isset($juradosCatalogo[$jp->id_usuario])) {
+                    $juradosCatalogo[$jp->id_usuario] = [
+                        'jurado_id' => $jp->id_usuario,
+                        'jurado_nombre' => $nombreJurado,
+                        'ci' => $jp->usuario?->ci,
+                        'es_secreto' => (bool) $jp->es_secreto,
+                    ];
+                } elseif ($jp->es_secreto) {
+                    $juradosCatalogo[$jp->id_usuario]['es_secreto'] = true;
+                }
             }
 
             $filas[] = [
                 'presentacion' => $pres,
                 'nombre' => $pres->nombreMostrado(),
+                'integrantes' => $pres->inscripcion?->participantes->pluck('nombre_completo')->all() ?? [],
                 'departamento' => $pres->inscripcion?->departamento?->nombre ?? 'Nacional',
                 'nota_final' => $pres->nota_final !== null ? (float) $pres->nota_final : null,
                 'jurados' => $juradosDetalle,
+            ];
+        }
+
+        // Construir planillas individuales por cada jurado con todos los participantes de la categoría
+        $planillasJurados = [];
+        $numeroJurado = 1;
+        foreach ($juradosCatalogo as $idUsuario => $infoJurado) {
+            $participantesJurado = [];
+            $evaluadosCount = 0;
+
+            foreach ($filas as $idx => $fila) {
+                $registroJurado = collect($fila['jurados'])->firstWhere('jurado_id', $idUsuario);
+                $notaTotal = $registroJurado ? $registroJurado['nota_total'] : null;
+                if ($notaTotal !== null) {
+                    $evaluadosCount++;
+                }
+
+                $participantesJurado[] = [
+                    'nro' => $idx + 1,
+                    'id_presentacion' => $fila['presentacion']->id,
+                    'nombre' => $fila['nombre'],
+                    'integrantes' => $fila['integrantes'],
+                    'departamento' => $fila['departamento'],
+                    'parametros_valores' => $registroJurado['parametros_valores'] ?? [],
+                    'nota_total' => $notaTotal,
+                ];
+            }
+
+            $planillasJurados[] = [
+                'numero' => $numeroJurado++,
+                'jurado_id' => $infoJurado['jurado_id'],
+                'jurado_nombre' => $infoJurado['jurado_nombre'],
+                'ci' => $infoJurado['ci'],
+                'es_secreto' => $infoJurado['es_secreto'],
+                'evaluados_count' => $evaluadosCount,
+                'total_participantes' => count($participantesJurado),
+                'participantes' => $participantesJurado,
             ];
         }
 
@@ -195,6 +248,7 @@ class GenerarReporteService
             'departamento' => $depto,
             'parametros' => $parametros,
             'filas' => $filas,
+            'planillas_jurados' => $planillasJurados,
         ];
     }
 

@@ -109,13 +109,26 @@ class AdminReportesTest extends TestCase
         $categoria = $presentacion->inscripcion->categoria;
         $fase = $presentacion->inscripcion->fase;
 
+        $jurado = Usuario::factory()->create([
+            'rol' => RolEnum::JURADO,
+            'nombre' => 'Carlos',
+            'paterno' => 'Mendoza',
+        ]);
+        JuradoPresentacion::create([
+            'id_presentacion' => $presentacion->id,
+            'id_usuario' => $jurado->id,
+        ]);
+
         $response = $this->actingAs($admin)->get(route('admin.reportes.sabana', [
             'fase_id' => $fase->id,
             'categoria_id' => $categoria->id,
         ]));
 
         $response->assertOk();
-        $response->assertSee('Sábana de Calificación por Parámetros');
+        $response->assertSee('PLANILLA INDIVIDUAL DE CALIFICACIÓN POR PARÁMETROS');
+        $response->assertSee('PLANILLA OFICIAL');
+        $response->assertSee($jurado->nombreCompleto());
+        $response->assertSee('Notaria de Gobierno');
         $response->assertSee($categoria->categoria);
     }
 
