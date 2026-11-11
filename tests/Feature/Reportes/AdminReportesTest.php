@@ -95,8 +95,10 @@ class AdminReportesTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('ACTA DE ESCRUTINIO Y CALIFICACIÓN FINAL');
-        $response->assertSee('Notario de Fe Pública');
-        $response->assertSee('Presidente del Jurado');
+        $response->assertSee('ACTA OFICIAL');
+        $response->assertSee('Notaria de Gobierno');
+        $response->assertDontSee('Presidente del Jurado');
+        $response->assertDontSee('Comité Organizador / GADOR');
         $response->assertSee($presentacion->nombreMostrado());
     }
 
