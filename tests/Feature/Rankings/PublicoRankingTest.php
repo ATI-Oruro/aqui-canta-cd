@@ -245,11 +245,10 @@ class PublicoRankingTest extends TestCase
         $response->assertSee('Primer Lugar');
         $response->assertSee('Segundo Lugar');
         $response->assertSee('Tercer Lugar');
-        $response->assertSee('Clasificación General');
+        $response->assertDontSee('Clasificación General');
         $response->assertSee('Mateo Flores');
         $response->assertSee('Valeria Quiroga');
         $response->assertSee('Carlos Mendoza');
-        $response->assertSee('David Vargas');
         $response->assertSee('96.50');
     }
 
@@ -340,8 +339,7 @@ class PublicoRankingTest extends TestCase
         $response->assertSee('Lucía Méndez');
         $response->assertDontSee('Segundo Lugar');
         $response->assertDontSee('Tercer Lugar');
-        $response->assertSee('Clasificación General');
-        $response->assertSee('Camila Torres');
+        $response->assertDontSee('Clasificación General');
     }
 
     public function test_vista_publica_enlaza_y_sirve_imagenes_cargadas_sin_error_403(): void

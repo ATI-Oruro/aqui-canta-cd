@@ -4,15 +4,24 @@
         $catId = $categoriaSeleccionada?->id;
     @endphp
 
-    <div id="rankingLiveWrapper" class="space-y-6">
+    <div id="rankingLiveWrapper" class="space-y-2 sm:space-y-3">
 
         <!-- ============================================================== -->
-        <!-- TEXTO DE CATEGORÍA A LA DERECHA Y HR DIVIDER DORADO            -->
+        <!-- TEXTO DE GANADORES / CATEGORÍA Y HR DIVIDER DORADO             -->
         <!-- ============================================================== -->
-        <div class="w-full pt-1 pb-4 select-none">
-            <!-- Texto de la Categoría alineado al lado derecho -->
-            <div class="flex justify-end items-center px-1 mb-2">
-                <h2 class="text-base sm:text-lg md:text-xl lg:text-2xl font-black uppercase tracking-[0.25em] font-cinzel gold-gradient-text" style="color: #d4af37; text-shadow: 0 0 15px rgba(212,175,55,0.6);">
+        <div class="w-full pt-0.5 pb-1.5 select-none">
+            <div class="flex flex-col sm:flex-row sm:items-center {{ ($esPodio && $ranking->isNotEmpty()) ? 'justify-between' : 'justify-end' }} gap-2 px-1 mb-1.5">
+                @if ($esPodio && $ranking->isNotEmpty())
+                    <h2 class="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.15em] font-cinzel gold-gradient-text whitespace-nowrap" style="color: #d4af37; text-shadow: 0 0 15px rgba(212,175,55,0.6);">
+                        @if ($categoriaSeleccionada?->tieneUnSoloGanador())
+                            {{ $categoriaSeleccionada->esNusta() ? 'Elección y Proclamación de la Ñusta' : 'Ganador Oficial de la Categoría' }}
+                        @else
+                            Ganadores de la Categoría
+                        @endif
+                    </h2>
+                @endif
+
+                <h2 class="text-xs sm:text-sm md:text-base font-black uppercase tracking-[0.15em] font-cinzel gold-gradient-text sm:text-right" style="color: #d4af37; text-shadow: 0 0 15px rgba(212,175,55,0.6);">
                     {{ $categoriaSeleccionada ? $categoriaSeleccionada->categoria : 'Etapa Final Oruro 2026' }}
                 </h2>
             </div>
@@ -23,14 +32,14 @@
 
         <style>
             .podio-card-flip-container {
-                perspective: 1200px;
+                perspective: 1400px;
             }
             .podio-card-inner {
                 position: relative;
                 width: 100%;
                 transform-style: preserve-3d;
                 -webkit-transform-style: preserve-3d;
-                transition: transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+                transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
             }
             .podio-card-inner.is-flipped {
                 transform: rotateY(180deg);
@@ -43,488 +52,440 @@
             .podio-card-front {
                 transform: rotateY(180deg);
             }
+            /* Sombra profunda estática para dar efecto de elevación sin animación */
+            .podio-card-shadow {
+                box-shadow: 0 28px 60px -10px rgba(0, 0, 0, 0.95), 0 14px 30px -8px rgba(0, 0, 0, 0.9), 0 0 28px rgba(212, 175, 55, 0.18);
+            }
+            .podio-card-shadow-1 {
+                box-shadow: 0 32px 68px -10px rgba(0, 0, 0, 0.98), 0 16px 34px -8px rgba(0, 0, 0, 0.92), 0 0 36px rgba(212, 175, 55, 0.28);
+            }
         </style>
 
         @if ($esPodio && $ranking->isNotEmpty())
             
-            <div class="flex flex-col lg:flex-row gap-6 items-start w-full">
-                
-                <!-- Columna Izquierda/Centro: Podio de 3 Escalones (Estilo F1) -->
-                <div id="contenedorPodioEscalones" class="w-full flex-1 transition-all duration-700 bg-gradient-to-b from-[#14040a] via-[#090205] to-[#050103] rounded-3xl border border-[#6b0015]/60 p-5 sm:p-8 shadow-2xl relative overflow-hidden">
-                    
-                    <div class="corner-bracket-tl"></div>
-                    <div class="corner-bracket-tr"></div>
-                    <div class="corner-bracket-bl"></div>
-                    <div class="corner-bracket-br"></div>
+            <!-- Escenario de Podio (Sin recuadro contenedor ni clasificación general) -->
+            <div id="contenedorPodioEscalones" class="w-full max-w-6xl mx-auto px-2 sm:px-6 py-2 relative">
 
-                    <!-- Título de Ganadores Oficial -->
-                    <div class="text-center mb-6 border-b border-[#3b000b] pb-4">
-                        <h2 class="text-xl sm:text-2xl font-black gold-gradient-text font-cinzel tracking-wider uppercase">
-                            @if ($categoriaSeleccionada?->tieneUnSoloGanador())
-                                {{ $categoriaSeleccionada->esNusta() ? 'Elección y Proclamación de la Ñusta' : 'Ganador Oficial de la Categoría' }}
-                            @else
-                                Ganadores de la Categoría
-                            @endif
-                        </h2>
-                    </div>
-
-                    @if ($categoriaSeleccionada?->tieneUnSoloGanador())
-                        <!-- ================================================= -->
-                        <!-- MODO GANADOR ÚNICO (ÑUSTA / ESPECIAL: 1 GANADOR) -->
-                        <!-- ================================================= -->
-                        <div class="flex flex-col items-center justify-center pt-4 pb-2 max-w-lg mx-auto w-full">
-                            @if ($primerLugar)
-                                <div class="podio-card-flip-container w-full max-w-[340px]">
-                                    <div id="podioCard_1" class="podio-card-inner {{ $lugar1Revelado ? 'is-flipped' : '' }}">
-                                        
-                                        <!-- CARA TRASERA: MISTERIO CON SIGNO '?' -->
-                                        <div class="podio-card-back w-full bg-gradient-to-b from-[#2a0618] via-[#14030c] to-[#070104] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_35px_rgba(212,175,55,0.3)] overflow-hidden flex flex-col items-center justify-between p-5 min-h-[430px] select-none">
-                                            <div class="w-full bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-4 flex items-center justify-between text-slate-950 rounded-xl">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-2xl">👑</span>
-                                                    <span class="text-xl font-black font-cinzel tracking-wider">★</span>
-                                                </div>
-                                                <span class="text-xs font-black uppercase tracking-[0.2em] font-cinzel">
-                                                    {{ $categoriaSeleccionada->etiquetaGanador() }}
-                                                </span>
-                                            </div>
-
-                                            <div class="my-auto flex flex-col items-center justify-center py-6">
-                                                <div class="relative flex items-center justify-center mb-4">
-                                                    <div class="absolute inset-0 rounded-full bg-amber-400/25 blur-2xl animate-pulse"></div>
-                                                    <svg class="w-28 h-28 text-amber-400 drop-shadow-[0_0_25px_rgba(212,175,55,0.7)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10" class="stroke-amber-600/80 fill-slate-950/90"></circle>
-                                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                                        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"></line>
-                                                    </svg>
-                                                </div>
-                                                <span class="text-sm font-black uppercase tracking-[0.3em] gold-gradient-text font-cinzel animate-pulse text-center">
-                                                    ★ Ganador Único ★
-                                                </span>
-                                                <span class="text-[10px] text-amber-300/70 font-cinzel mt-1 uppercase tracking-widest">
-                                                    En Espera de Revelación
-                                                </span>
-                                            </div>
-
-                                            <div class="w-full text-center py-2 border-t border-[#800020]/80">
-                                                <span class="text-[9px] uppercase tracking-widest text-amber-400/70 font-mono">XXXIII Festival Aquí Canta Bolivia</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- CARA DELANTERA: GANADOR REVELADO -->
-                                        <div class="podio-card-front absolute inset-0 w-full bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_35px_rgba(212,175,55,0.3)] overflow-hidden cursor-pointer flex flex-col justify-between"
-                                             data-card-id="{{ $primerLugar['id'] }}"
-                                             onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
-                                            
-                                            <!-- Corona / Insignia -->
-                                            <div class="bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-4 flex items-center justify-between text-slate-950">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-2xl">👑</span>
-                                                    <span class="text-lg font-black font-cinzel tracking-wider">1°</span>
-                                                </div>
-                                                <span class="text-xs font-black uppercase tracking-[0.2em] font-cinzel">
-                                                    {{ $categoriaSeleccionada->etiquetaGanador() }}
-                                                </span>
-                                            </div>
-
-                                            <!-- Imagen del Participante -->
-                                            <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
-                                                @if ($primerLugar['foto_url'])
-                                                    <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top card-foto">
-                                                @else
-                                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.4),rgba(5,1,3,0.95)_70%)] p-4">
-                                                        <img src="/images/logo-oficial.png" alt="ACB" class="h-28 w-28 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">
-                                                    </div>
-                                                @endif
-                                                <div class="absolute inset-0 bg-gradient-to-t from-[#090105] via-transparent to-transparent pointer-events-none"></div>
-                                            </div>
-
-                                            <!-- Nombre y Puntaje Final -->
-                                            <div class="p-4 text-center space-y-2 bg-[#090105]">
-                                                <h3 class="text-lg sm:text-xl font-black text-[#fef9c3] font-cinzel uppercase tracking-wide line-clamp-2 min-h-[3rem] flex items-center justify-center card-nombre" title="{{ $primerLugar['nombre'] }}">
-                                                    {{ $primerLugar['nombre'] }}
-                                                </h3>
-
-                                                @if (!empty($primerLugar['departamento']))
-                                                    @php
-                                                        $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento']);
-                                                    @endphp
-                                                    <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                                                        @if ($bandera1)
-                                                            <img src="{{ $bandera1 }}" alt="{{ $primerLugar['departamento'] }}" class="h-4 w-auto object-cover rounded-[2px] shadow-sm">
-                                                        @endif
-                                                        <span>{{ $primerLugar['departamento'] }}</span>
-                                                    </p>
-                                                @endif
-
-                                                <div class="pt-2 border-t border-[#800020]/80 flex items-center justify-center">
-                                                    <span class="text-xl sm:text-2xl font-black gold-gradient-text font-mono tabular-nums bg-[#1f0511] border border-[#d4af37] px-5 py-1.5 rounded-xl shadow-lg card-score">
-                                                        {{ number_format($primerLugar['nota_final'], 2) }} <span class="text-xs text-amber-300">pts</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @else
-                        <!-- Estructura de Podio: 2° Lugar (Izquierda), 1° Lugar (Centro), 3° Lugar (Derecha) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 items-end justify-center pt-4 max-w-4xl mx-auto w-full">
-                        
-                        <!-- ========================= -->
-                        <!-- 2° LUGAR (ESCALÓN PLATA)  -->
-                        <!-- ========================= -->
-                        @if ($segundoLugar)
-                            <div class="order-2 sm:order-1 flex flex-col items-center w-full">
-                                <div class="podio-card-flip-container w-full max-w-[270px]">
-                                    <div id="podioCard_2" class="podio-card-inner {{ $lugar2Revelado ? 'is-flipped' : '' }}">
-                                        
-                                        <!-- CARA TRASERA: MISTERIO CON SIGNO '?' -->
-                                        <div class="podio-card-back w-full bg-gradient-to-b from-[#180510] via-[#0d0208] to-[#050103] rounded-2xl border-2 border-slate-500/50 shadow-2xl overflow-hidden flex flex-col items-center justify-between p-4 min-h-[380px] select-none">
-                                            <div class="w-full bg-gradient-to-r from-slate-700 to-slate-900 border-b border-slate-500/40 py-2 px-3 flex items-center justify-between rounded-xl">
-                                                <span class="text-2xl font-black font-cinzel text-slate-200 tracking-wider">2</span>
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 font-cinzel">Segundo Lugar</span>
-                                            </div>
-
-                                            <div class="my-auto flex flex-col items-center justify-center py-6">
-                                                <div class="relative flex items-center justify-center mb-3">
-                                                    <div class="absolute inset-0 rounded-full bg-slate-400/10 blur-xl animate-pulse"></div>
-                                                    <svg class="w-20 h-20 text-slate-400 drop-shadow-[0_0_15px_rgba(148,163,184,0.3)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10" class="stroke-slate-600 fill-slate-950/80"></circle>
-                                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                                        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"></line>
-                                                    </svg>
-                                                </div>
-                                                <span class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 font-cinzel animate-pulse">
-                                                    En Espera
-                                                </span>
-                                            </div>
-
-                                            <div class="w-full text-center py-1.5 border-t border-slate-800/80">
-                                                <span class="text-[8px] uppercase tracking-widest text-slate-500 font-mono">XXXIII Aquí Canta Bolivia</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- CARA DELANTERA: GANADOR REVELADO -->
-                                        <div class="podio-card-front absolute inset-0 w-full bg-gradient-to-b from-[#1e0813] via-[#10030a] to-[#070104] rounded-2xl border-2 border-slate-400/50 shadow-2xl overflow-hidden cursor-pointer flex flex-col justify-between"
-                                             data-card-id="{{ $segundoLugar['id'] }}"
-                                             onclick="abrirModalDesglose({{ $segundoLugar['id'] }})">
-                                            
-                                            <!-- Insignia Número 2 -->
-                                            <div class="bg-gradient-to-r from-slate-700 to-slate-900 border-b border-slate-500/40 py-2 px-3 flex items-center justify-between">
-                                                <span class="text-2xl font-black font-cinzel text-slate-200 tracking-wider">2</span>
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 font-cinzel">Segundo Lugar</span>
-                                            </div>
-
-                                            <!-- Imagen del Participante -->
-                                            <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
-                                                @if ($segundoLugar['foto_url'])
-                                                    <img src="{{ $segundoLugar['foto_url'] }}" alt="{{ $segundoLugar['nombre'] }}" class="w-full h-full object-cover object-top card-foto">
-                                                @else
-                                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(100,116,139,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                        <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80">
-                                                    </div>
-                                                @endif
-                                                <div class="absolute inset-0 bg-gradient-to-t from-[#070104] via-transparent to-transparent pointer-events-none"></div>
-                                            </div>
-
-                                            <!-- Nombre y Puntaje Final -->
-                                            <div class="p-4 text-center space-y-2 bg-[#070104]">
-                                                <h3 class="text-sm sm:text-base font-bold text-white font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.5rem] flex items-center justify-center card-nombre" title="{{ $segundoLugar['nombre'] }}">
-                                                    {{ $segundoLugar['nombre'] }}
-                                                </h3>
-
-                                                @if (!empty($segundoLugar['departamento']))
-                                                    @php
-                                                        $bandera2 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($segundoLugar['departamento']);
-                                                    @endphp
-                                                    <p class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                                                        @if ($bandera2)
-                                                            <img src="{{ $bandera2 }}" alt="{{ $segundoLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
-                                                        @endif
-                                                        <span>{{ $segundoLugar['departamento'] }}</span>
-                                                    </p>
-                                                @endif
-
-                                                <div class="pt-2 border-t border-slate-800/80 flex items-center justify-center">
-                                                    <span class="text-base sm:text-lg font-black text-slate-200 font-mono tabular-nums bg-slate-900/90 border border-slate-700 px-3 py-1 rounded-xl shadow-inner card-score">
-                                                        {{ number_format($segundoLugar['nota_final'], 2) }} <span class="text-[10px] text-slate-400">pts</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="order-2 sm:order-1 hidden sm:block"></div>
-                        @endif
-
-                        <!-- ========================= -->
-                        <!-- 1° LUGAR (ESCALÓN ORO)    -->
-                        <!-- ========================= -->
+                @if ($categoriaSeleccionada?->tieneUnSoloGanador())
+                    <!-- ================================================= -->
+                    <!-- MODO GANADOR ÚNICO (ÑUSTA / ESPECIAL: 1 GANADOR) -->
+                    <!-- ================================================= -->
+                    <div class="flex flex-col items-center justify-center pt-1 pb-2 w-full">
                         @if ($primerLugar)
-                            <div class="order-1 sm:order-2 flex flex-col items-center sm:-translate-y-4 w-full">
-                                <div class="podio-card-flip-container w-full max-w-[290px]">
-                                    <div id="podioCard_1" class="podio-card-inner {{ $lugar1Revelado ? 'is-flipped' : '' }}">
+                            @php
+                                $foto1 = $primerLugar['foto_url'] ?: asset('images/fondo.png');
+                                $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento'] ?? null);
+                            @endphp
+                            <div class="w-full flex justify-center">
+                                <div class="podio-card-flip-container w-full" style="max-width: 285px;">
+                                    <div id="podioCard_1" class="podio-card-inner {{ $lugar1Revelado ? 'is-flipped' : '' }}" style="height: 415px;">
                                         
-                                        <!-- CARA TRASERA: MISTERIO CON SIGNO '?' -->
-                                        <div class="podio-card-back w-full bg-gradient-to-b from-[#2a0618] via-[#14030c] to-[#070104] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)] overflow-hidden flex flex-col items-center justify-between p-4 min-h-[410px] select-none">
-                                            <div class="w-full bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-3 flex items-center justify-between text-slate-950 rounded-xl">
-                                                <div class="flex items-center gap-1.5">
-                                                    <span class="text-xl">👑</span>
-                                                    <span class="text-2xl font-black font-cinzel tracking-wider">1</span>
-                                                </div>
-                                                <span class="text-[11px] font-black uppercase tracking-[0.2em] font-cinzel">Primer Lugar</span>
-                                            </div>
+                                        <!-- CARA TRASERA: PREPARACIÓN DEL PODIO (MISMO ESTILO QUE CARD DE RANKING PÚBLICO) -->
+                                        <div class="podio-card-back podio-card-shadow-1 relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 select-none"
+                                             style="height: 415px;">
+                                            <img class="absolute inset-0 w-full h-full object-cover z-0 opacity-35"
+                                                 src="{{ asset('images/fondo.png') }}"
+                                                 alt="Fondo de Gala">
+                                            <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.65), rgba(21, 18, 14, 0.72), rgba(0, 0, 0, 0.96));"></div>
+                                            <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
 
-                                            <div class="my-auto flex flex-col items-center justify-center py-6">
-                                                <div class="relative flex items-center justify-center mb-3">
-                                                    <div class="absolute inset-0 rounded-full bg-amber-400/20 blur-xl animate-pulse"></div>
-                                                    <svg class="w-24 h-24 text-amber-400 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10" class="stroke-amber-600/80 fill-slate-950/90"></circle>
-                                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                                        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"></line>
-                                                    </svg>
+                                            <!-- Header estilo Ranking Público: Puesto a la izquierda -->
+                                            <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                        N° 1 · {{ $categoriaSeleccionada->etiquetaGanador() }}
+                                                    </span>
                                                 </div>
-                                                <span class="text-xs font-black uppercase tracking-[0.3em] gold-gradient-text font-cinzel animate-pulse">
-                                                    ★ Gran Ganador ★
+                                                <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                            </header>
+
+                                            <!-- Centro: Signo '?' estático sin animación -->
+                                            <div class="relative z-10 my-auto flex flex-col items-center justify-center px-3">
+                                                <span class="font-serif text-6xl font-extrabold gold-gradient-text drop-shadow-[0_2px_14px_rgba(212,175,55,0.45)] leading-none select-none">
+                                                    ?
                                                 </span>
                                             </div>
 
-                                            <div class="w-full text-center py-1.5 border-t border-[#800020]/80">
-                                                <span class="text-[8px] uppercase tracking-widest text-amber-400/70 font-mono">XXXIII Aquí Canta Bolivia</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- CARA DELANTERA: GANADOR REVELADO -->
-                                        <div class="podio-card-front absolute inset-0 w-full bg-gradient-to-b from-[#2e091a] via-[#17040e] to-[#090105] rounded-2xl border-2 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)] overflow-hidden cursor-pointer flex flex-col justify-between"
-                                             data-card-id="{{ $primerLugar['id'] }}"
-                                             onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
-                                            
-                                            <!-- Corona / Insignia Número 1 -->
-                                            <div class="bg-gradient-to-r from-[#b45309] via-[#d4af37] to-[#b45309] py-2.5 px-3 flex items-center justify-between text-slate-950">
-                                                <div class="flex items-center gap-1.5">
-                                                    <span class="text-xl">👑</span>
-                                                    <span class="text-2xl font-black font-cinzel tracking-wider">1</span>
-                                                </div>
-                                                <span class="text-[11px] font-black uppercase tracking-[0.2em] font-cinzel">Primer Lugar</span>
-                                            </div>
-
-                                            <!-- Imagen del Participante -->
-                                            <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
-                                                @if ($primerLugar['foto_url'])
-                                                    <img src="{{ $primerLugar['foto_url'] }}" alt="{{ $primerLugar['nombre'] }}" class="w-full h-full object-cover object-top card-foto">
-                                                @else
-                                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.4),rgba(5,1,3,0.95)_70%)] p-4">
-                                                        <img src="/images/logo-oficial.png" alt="ACB" class="h-24 w-24 object-contain opacity-90 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
-                                                    </div>
-                                                @endif
-                                                <div class="absolute inset-0 bg-gradient-to-t from-[#090105] via-transparent to-transparent pointer-events-none"></div>
-                                            </div>
-
-                                            <!-- Nombre y Puntaje Final -->
-                                            <div class="p-4 text-center space-y-2 bg-[#090105]">
-                                                <h3 class="text-base sm:text-lg font-black text-[#fef9c3] font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.75rem] flex items-center justify-center card-nombre" title="{{ $primerLugar['nombre'] }}">
-                                                    {{ $primerLugar['nombre'] }}
-                                                </h3>
-
-                                                @if (!empty($primerLugar['departamento']))
-                                                    @php
-                                                        $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento']);
-                                                    @endphp
-                                                    <p class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                                                        @if ($bandera1)
-                                                            <img src="{{ $bandera1 }}" alt="{{ $primerLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
-                                                        @endif
-                                                        <span>{{ $primerLugar['departamento'] }}</span>
-                                                    </p>
-                                                @endif
-
-                                                <div class="pt-2 border-t border-[#800020]/80 flex items-center justify-center">
-                                                    <span class="text-lg sm:text-xl font-black gold-gradient-text font-mono tabular-nums bg-[#1f0511] border border-[#d4af37] px-4 py-1 rounded-xl shadow-lg card-score">
-                                                        {{ number_format($primerLugar['nota_final'], 2) }} <span class="text-xs text-amber-300">pts</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- ========================= -->
-                        <!-- 3° LUGAR (ESCALÓN BRONCE) -->
-                        <!-- ========================= -->
-                        @if ($tercerLugar)
-                            <div class="order-3 flex flex-col items-center w-full">
-                                <div class="podio-card-flip-container w-full max-w-[270px]">
-                                    <div id="podioCard_3" class="podio-card-inner {{ $lugar3Revelado ? 'is-flipped' : '' }}">
-                                        
-                                        <!-- CARA TRASERA: MISTERIO CON SIGNO '?' -->
-                                        <div class="podio-card-back w-full bg-gradient-to-b from-[#18050e] via-[#0d0207] to-[#050103] rounded-2xl border-2 border-amber-700/60 shadow-2xl overflow-hidden flex flex-col items-center justify-between p-4 min-h-[380px] select-none">
-                                            <div class="bg-gradient-to-r from-[#78350f] to-[#451a03] border-b border-amber-800/40 py-2 px-3 flex items-center justify-between w-full rounded-xl">
-                                                <span class="text-2xl font-black font-cinzel text-amber-400 tracking-wider">3</span>
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300 font-cinzel">Tercer Lugar</span>
-                                            </div>
-
-                                            <div class="my-auto flex flex-col items-center justify-center py-6">
-                                                <div class="relative flex items-center justify-center mb-3">
-                                                    <div class="absolute inset-0 rounded-full bg-amber-600/10 blur-xl animate-pulse"></div>
-                                                    <svg class="w-20 h-20 text-amber-500 drop-shadow-[0_0_15px_rgba(217,119,6,0.3)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10" class="stroke-amber-800 fill-slate-950/80"></circle>
-                                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                                        <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2.5"></line>
-                                                    </svg>
-                                                </div>
-                                                <span class="text-[11px] font-black uppercase tracking-[0.25em] text-amber-400/90 font-cinzel animate-pulse">
+                                            <!-- Parte baja estilo Ranking Público -->
+                                            <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                                <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                                <span class="font-serif text-base font-bold tracking-widest text-amber-50 uppercase drop-shadow-md">
                                                     En Espera
                                                 </span>
-                                            </div>
-
-                                            <div class="w-full text-center py-1.5 border-t border-[#3b000b]">
-                                                <span class="text-[8px] uppercase tracking-widest text-amber-600/60 font-mono">XXXIII Aquí Canta Bolivia</span>
+                                                <span class="text-xs text-stone-400 font-sans mt-0.5">
+                                                    {{ $categoriaSeleccionada->etiquetaGanador() }}
+                                                </span>
                                             </div>
                                         </div>
 
-                                        <!-- CARA DELANTERA: GANADOR REVELADO -->
-                                        <div class="podio-card-front absolute inset-0 w-full bg-gradient-to-b from-[#1a080f] via-[#0e0308] to-[#050103] rounded-2xl border-2 border-amber-700/60 shadow-2xl overflow-hidden cursor-pointer flex flex-col justify-between"
-                                             data-card-id="{{ $tercerLugar['id'] }}"
-                                             onclick="abrirModalDesglose({{ $tercerLugar['id'] }})">
+                                        <!-- CARA DELANTERA: GANADOR REVELADO (MISMO ESTILO QUE CARD DE RANKING PÚBLICO SIN ESQUINAS DORADAS) -->
+                                        <article class="podio-card-front podio-card-shadow-1 absolute inset-0 w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 cursor-pointer"
+                                                 style="height: 415px;"
+                                                 data-card-id="{{ $primerLugar['id'] }}"
+                                                 onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
                                             
-                                            <!-- Insignia Número 3 -->
-                                            <div class="bg-gradient-to-r from-[#78350f] to-[#451a03] border-b border-amber-800/40 py-2 px-3 flex items-center justify-between">
-                                                <span class="text-2xl font-black font-cinzel text-amber-400 tracking-wider">3</span>
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300 font-cinzel">Tercer Lugar</span>
-                                            </div>
+                                            <!-- Fotografía del Participante / Fondo de Gala -->
+                                            <img class="card-foto absolute inset-0 w-full h-full object-cover object-top z-0"
+                                                 src="{{ $foto1 }}"
+                                                 alt="{{ $primerLugar['nombre'] }}"
+                                                 onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
 
-                                            <!-- Imagen del Participante -->
-                                            <div class="relative w-full aspect-[4/4] bg-[#050103] overflow-hidden">
-                                                @if ($tercerLugar['foto_url'])
-                                                    <img src="{{ $tercerLugar['foto_url'] }}" alt="{{ $tercerLugar['nombre'] }}" class="w-full h-full object-cover object-top card-foto">
-                                                @else
-                                                    <div class="w-full h-full flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(180,83,9,0.3),rgba(5,1,3,0.95)_70%)] p-4">
-                                                        <img src="/images/logo-oficial.png" alt="ACB" class="h-20 w-20 object-contain opacity-80">
-                                                    </div>
-                                                @endif
-                                                <div class="absolute inset-0 bg-gradient-to-t from-[#050103] via-transparent to-transparent pointer-events-none"></div>
-                                            </div>
+                                            <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.45) 0%, rgba(21, 18, 14, 0.45) 48%, rgba(0, 0, 0, 0.95) 100%);"></div>
+                                            <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
 
-                                            <!-- Nombre y Puntaje Final -->
-                                            <div class="p-4 text-center space-y-2 bg-[#050103]">
-                                                <h3 class="text-sm sm:text-base font-bold text-white font-cinzel uppercase tracking-wide line-clamp-2 min-h-[2.5rem] flex items-center justify-center card-nombre" title="{{ $tercerLugar['nombre'] }}">
-                                                    {{ $tercerLugar['nombre'] }}
-                                                </h3>
-
-                                                @if (!empty($tercerLugar['departamento']))
-                                                    @php
-                                                        $bandera3 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($tercerLugar['departamento']);
-                                                    @endphp
-                                                    <p class="text-[11px] font-semibold text-amber-400/90 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                                                        @if ($bandera3)
-                                                            <img src="{{ $bandera3 }}" alt="{{ $tercerLugar['departamento'] }}" class="h-3.5 w-auto object-cover rounded-[2px] shadow-sm">
-                                                        @endif
-                                                        <span>{{ $tercerLugar['departamento'] }}</span>
-                                                    </p>
-                                                @endif
-
-                                                <div class="pt-2 border-t border-[#3b000b] flex items-center justify-center">
-                                                    <span class="text-base sm:text-lg font-black text-amber-400 font-mono tabular-nums bg-[#15040a] border border-amber-800/60 px-3 py-1 rounded-xl shadow-inner card-score">
-                                                        {{ number_format($tercerLugar['nota_final'], 2) }} <span class="text-[10px] text-amber-500">pts</span>
+                                            <!-- Header con Puesto 1° y Bandera -->
+                                            <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                        N° 1 · {{ $categoriaSeleccionada->etiquetaGanador() }}
                                                     </span>
+                                                    @if ($bandera1)
+                                                        <img class="w-4 h-3.5 object-cover rounded-[1px]" src="{{ $bandera1 }}" alt="Bandera de {{ $primerLugar['departamento'] ?? 'Bolivia' }}">
+                                                    @endif
                                                 </div>
+                                                <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                            </header>
+
+                                            <!-- Parte baja: Calificación sobre el Nombre y Departamento -->
+                                            <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                                <div class="flex items-baseline gap-1 mb-1">
+                                                    <span class="card-score font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                                        {{ number_format((float) $primerLugar['nota_final'], 2) }}
+                                                    </span>
+                                                    <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                                </div>
+                                                <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                                <h3 class="card-nombre font-serif text-lg sm:text-xl font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-2" title="{{ $primerLugar['nombre'] }}">
+                                                    {{ $primerLugar['nombre'] }}
+                                                </h3>
+                                                <span class="text-xs text-stone-300 font-sans mt-0.5">
+                                                    {{ $primerLugar['departamento'] ?? 'Bolivia' }}
+                                                </span>
                                             </div>
 
-                                        </div>
+                                        </article>
 
                                     </div>
                                 </div>
                             </div>
-                        @else
-                            <div class="order-3 hidden sm:block"></div>
                         @endif
-
                     </div>
-                    @endif
-
-                </div>
-
-                <!-- Columna Derecha: Listado General de Participantes (4°, 5°, 6°, etc.) -->
-                <div id="columnaListadoGeneral" class="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-gradient-to-b from-[#14040a] via-[#090205] to-[#070104] rounded-3xl border border-[#6b0015]/60 p-5 shadow-2xl space-y-4 transition-all duration-700 {{ $mostrarGeneral ? 'opacity-100 translate-y-0' : 'hidden opacity-0 translate-y-4' }}">
+                @else
+                    <!-- Estructura de Podio: 2° Lugar (Izquierda), 1° Lugar (Centro), 3° Lugar (Derecha) ocupando el espacio disponible -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-10 items-end justify-items-center pt-2 max-w-5xl mx-auto w-full">
                     
-                    <div class="border-b border-[#3b000b] pb-3 flex items-center justify-between">
-                        <div>
-                            <span class="text-[9px] font-black uppercase tracking-[0.25em] text-[#d4af37] font-cinzel block">
-                                Posiciones Oficiales
-                            </span>
-                            <h3 class="text-sm font-bold text-white font-cinzel uppercase tracking-wider">
-                                Clasificación General
-                            </h3>
-                        </div>
-                        <span class="text-xs font-mono text-slate-400 bg-[#070104] px-2 py-0.5 rounded border border-[#3b000b]">
-                            {{ $ranking->count() }} participantes
-                        </span>
-                    </div>
-
-                    @if ($restoParticipantes->isEmpty())
-                        <p class="text-xs text-slate-400 text-center py-8">
-                            No hay más participantes en esta categoría.
-                        </p>
-                    @else
-                        <div class="space-y-2">
-                            @foreach ($restoParticipantes as $p)
-                                <div class="p-2.5 rounded-xl bg-[#070104]/80 border border-[#3b000b]/80 hover:border-[#6b0015] flex items-center justify-between gap-3 transition cursor-pointer group"
-                                     data-card-id="{{ $p['id'] }}"
-                                     onclick="abrirModalDesglose({{ $p['id'] }})">
+                    <!-- ========================= -->
+                    <!-- 2° LUGAR                  -->
+                    <!-- ========================= -->
+                    @if ($segundoLugar)
+                        @php
+                            $foto2 = $segundoLugar['foto_url'] ?: asset('images/fondo.png');
+                            $bandera2 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($segundoLugar['departamento'] ?? null);
+                        @endphp
+                        <div class="order-2 sm:order-1 flex flex-col items-center w-full">
+                            <div class="podio-card-flip-container w-full" style="max-width: 265px;">
+                                <div id="podioCard_2" class="podio-card-inner {{ $lugar2Revelado ? 'is-flipped' : '' }}" style="height: 390px;">
                                     
-                                    <div class="flex items-center gap-2.5 min-w-0">
-                                        <!-- Posición -->
-                                        <span class="w-6 h-6 rounded-lg bg-[#1a050d] border border-[#6b0015] text-[11px] font-bold font-mono text-slate-300 flex items-center justify-center shrink-0">
-                                            {{ $p['posicion'] }}°
-                                        </span>
+                                    <!-- CARA TRASERA: PREPARACIÓN DEL PODIO (MISMO ESTILO QUE CARD DE RANKING PÚBLICO) -->
+                                    <div class="podio-card-back podio-card-shadow relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 select-none"
+                                         style="height: 390px;">
+                                        <img class="absolute inset-0 w-full h-full object-cover z-0 opacity-35"
+                                             src="{{ asset('images/fondo.png') }}"
+                                             alt="Fondo de Gala">
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.65), rgba(21, 18, 14, 0.72), rgba(0, 0, 0, 0.96));"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
 
-                                        <!-- Foto / Avatar miniatura -->
-                                        @if ($p['foto_url'])
-                                            <img src="{{ $p['foto_url'] }}" alt="{{ $p['nombre'] }}" class="w-8 h-8 rounded-lg object-cover border border-[#6b0015] shrink-0">
-                                        @endif
+                                        <!-- Header con Puesto 2 -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 2 · Segundo Lugar
+                                                </span>
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
 
-                                        <div class="truncate">
-                                            <h4 class="text-xs font-bold text-slate-200 font-cinzel truncate group-hover:text-amber-200 transition" title="{{ $p['nombre'] }}">
-                                                {{ $p['nombre'] }}
-                                            </h4>
-                                            @php
-                                                $banderaP = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($p['departamento']);
-                                            @endphp
-                                            <span class="text-[9px] text-slate-400 uppercase tracking-wider flex items-center gap-1 mt-0.5">
-                                                @if ($banderaP)
-                                                    <img src="{{ $banderaP }}" alt="{{ $p['departamento'] }}" class="h-5 w-auto object-cover rounded-[1px] inline-block">
-                                                @endif
-                                                <span>{{ $p['departamento'] ?? 'Bolivia' }}</span>
+                                        <!-- Centro: Signo '?' estático -->
+                                        <div class="relative z-10 my-auto flex flex-col items-center justify-center px-3">
+                                            <span class="font-serif text-6xl font-extrabold gold-gradient-text drop-shadow-[0_2px_14px_rgba(212,175,55,0.45)] leading-none select-none">
+                                                ?
+                                            </span>
+                                        </div>
+
+                                        <!-- Parte baja -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <span class="font-serif text-base font-bold tracking-widest text-amber-50 uppercase drop-shadow-md">
+                                                En Espera
+                                            </span>
+                                            <span class="text-xs text-stone-400 font-sans mt-0.5">
+                                                Segundo Lugar
                                             </span>
                                         </div>
                                     </div>
 
-                                    <!-- Puntaje Final -->
-                                    <div class="text-right shrink-0">
-                                        <span class="text-xs font-bold text-amber-300 font-mono tabular-nums">
-                                            {{ $p['nota_final'] !== null ? number_format($p['nota_final'], 2) : '—' }}
-                                        </span>
-                                        <span class="text-[8px] text-slate-500 block">pts</span>
-                                    </div>
+                                    <!-- CARA DELANTERA: GANADOR REVELADO -->
+                                    <article class="podio-card-front podio-card-shadow absolute inset-0 w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 cursor-pointer"
+                                             style="height: 390px;"
+                                             data-card-id="{{ $segundoLugar['id'] }}"
+                                             onclick="abrirModalDesglose({{ $segundoLugar['id'] }})">
+                                        
+                                        <!-- Fotografía del Participante / Fondo de Gala -->
+                                        <img class="card-foto absolute inset-0 w-full h-full object-cover object-top z-0"
+                                             src="{{ $foto2 }}"
+                                             alt="{{ $segundoLugar['nombre'] }}"
+                                             onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
+
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.45) 0%, rgba(21, 18, 14, 0.45) 48%, rgba(0, 0, 0, 0.95) 100%);"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
+
+                                        <!-- Header con Puesto 2 y Bandera -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 2 · Segundo Lugar
+                                                </span>
+                                                @if ($bandera2)
+                                                    <img class="w-4 h-3.5 object-cover rounded-[1px]" src="{{ $bandera2 }}" alt="Bandera de {{ $segundoLugar['departamento'] ?? 'Bolivia' }}">
+                                                @endif
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
+
+                                        <!-- Parte baja: Calificación sobre el Nombre y Departamento -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div class="flex items-baseline gap-1 mb-1">
+                                                <span class="card-score font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                                    {{ number_format((float) $segundoLugar['nota_final'], 2) }}
+                                                </span>
+                                                <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                            </div>
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <h3 class="card-nombre font-serif text-lg font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-2" title="{{ $segundoLugar['nombre'] }}">
+                                                {{ $segundoLugar['nombre'] }}
+                                            </h3>
+                                            <span class="text-xs text-stone-300 font-sans mt-0.5">
+                                                {{ $segundoLugar['departamento'] ?? 'Bolivia' }}
+                                            </span>
+                                        </div>
+
+                                    </article>
 
                                 </div>
-                            @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="order-2 sm:order-1 hidden sm:block"></div>
+                    @endif
+
+                    <!-- ========================= -->
+                    <!-- 1° LUGAR                  -->
+                    <!-- ========================= -->
+                    @if ($primerLugar)
+                        @php
+                            $foto1 = $primerLugar['foto_url'] ?: asset('images/fondo.png');
+                            $bandera1 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($primerLugar['departamento'] ?? null);
+                        @endphp
+                        <div class="order-1 sm:order-2 flex flex-col items-center sm:-translate-y-2 w-full">
+                            <div class="podio-card-flip-container w-full" style="max-width: 280px;">
+                                <div id="podioCard_1" class="podio-card-inner {{ $lugar1Revelado ? 'is-flipped' : '' }}" style="height: 410px;">
+                                    
+                                    <!-- CARA TRASERA: PREPARACIÓN DEL PODIO (MISMO ESTILO QUE CARD DE RANKING PÚBLICO) -->
+                                    <div class="podio-card-back podio-card-shadow-1 relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 select-none"
+                                         style="height: 410px;">
+                                        <img class="absolute inset-0 w-full h-full object-cover z-0 opacity-35"
+                                             src="{{ asset('images/fondo.png') }}"
+                                             alt="Fondo de Gala">
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.65), rgba(21, 18, 14, 0.72), rgba(0, 0, 0, 0.96));"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
+
+                                        <!-- Header con Puesto 1 -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 1 · Primer Lugar
+                                                </span>
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
+
+                                        <!-- Centro: Signo '?' estático -->
+                                        <div class="relative z-10 my-auto flex flex-col items-center justify-center px-3">
+                                            <span class="font-serif text-6xl font-extrabold gold-gradient-text drop-shadow-[0_2px_14px_rgba(212,175,55,0.45)] leading-none select-none">
+                                                ?
+                                            </span>
+                                        </div>
+
+                                        <!-- Parte baja -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <span class="font-serif text-base font-bold tracking-widest text-amber-50 uppercase drop-shadow-md">
+                                                En Espera
+                                            </span>
+                                            <span class="text-xs text-stone-400 font-sans mt-0.5">
+                                                Primer Lugar
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CARA DELANTERA: GANADOR REVELADO -->
+                                    <article class="podio-card-front podio-card-shadow-1 absolute inset-0 w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 cursor-pointer"
+                                             style="height: 410px;"
+                                             data-card-id="{{ $primerLugar['id'] }}"
+                                             onclick="abrirModalDesglose({{ $primerLugar['id'] }})">
+                                        
+                                        <!-- Fotografía del Participante / Fondo de Gala -->
+                                        <img class="card-foto absolute inset-0 w-full h-full object-cover object-top z-0"
+                                             src="{{ $foto1 }}"
+                                             alt="{{ $primerLugar['nombre'] }}"
+                                             onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
+
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.45) 0%, rgba(21, 18, 14, 0.45) 48%, rgba(0, 0, 0, 0.95) 100%);"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
+
+                                        <!-- Header con Puesto 1 y Bandera -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 1 · Primer Lugar
+                                                </span>
+                                                @if ($bandera1)
+                                                    <img class="w-4 h-3.5 object-cover rounded-[1px]" src="{{ $bandera1 }}" alt="Bandera de {{ $primerLugar['departamento'] ?? 'Bolivia' }}">
+                                                @endif
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
+
+                                        <!-- Parte baja: Calificación sobre el Nombre y Departamento -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div class="flex items-baseline gap-1 mb-1">
+                                                <span class="card-score font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                                    {{ number_format((float) $primerLugar['nota_final'], 2) }}
+                                                </span>
+                                                <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                            </div>
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <h3 class="card-nombre font-serif text-lg sm:text-xl font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-2" title="{{ $primerLugar['nombre'] }}">
+                                                {{ $primerLugar['nombre'] }}
+                                            </h3>
+                                            <span class="text-xs text-stone-300 font-sans mt-0.5">
+                                                {{ $primerLugar['departamento'] ?? 'Bolivia' }}
+                                            </span>
+                                        </div>
+
+                                    </article>
+
+                                </div>
+                            </div>
                         </div>
                     @endif
 
+                    <!-- ========================= -->
+                    <!-- 3° LUGAR                  -->
+                    <!-- ========================= -->
+                    @if ($tercerLugar)
+                        @php
+                            $foto3 = $tercerLugar['foto_url'] ?: asset('images/fondo.png');
+                            $bandera3 = \App\Modules\Departamentos\Models\Departamento::urlBanderaPorNombre($tercerLugar['departamento'] ?? null);
+                        @endphp
+                        <div class="order-3 flex flex-col items-center w-full">
+                            <div class="podio-card-flip-container w-full" style="max-width: 265px;">
+                                <div id="podioCard_3" class="podio-card-inner {{ $lugar3Revelado ? 'is-flipped' : '' }}" style="height: 390px;">
+                                    
+                                    <!-- CARA TRASERA: PREPARACIÓN DEL PODIO (MISMO ESTILO QUE CARD DE RANKING PÚBLICO) -->
+                                    <div class="podio-card-back podio-card-shadow relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 select-none"
+                                         style="height: 390px;">
+                                        <img class="absolute inset-0 w-full h-full object-cover z-0 opacity-35"
+                                             src="{{ asset('images/fondo.png') }}"
+                                             alt="Fondo de Gala">
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.65), rgba(21, 18, 14, 0.72), rgba(0, 0, 0, 0.96));"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
+
+                                        <!-- Header con Puesto 3 -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 3 · Tercer Lugar
+                                                </span>
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
+
+                                        <!-- Centro: Signo '?' estático -->
+                                        <div class="relative z-10 my-auto flex flex-col items-center justify-center px-3">
+                                            <span class="font-serif text-6xl font-extrabold gold-gradient-text drop-shadow-[0_2px_14px_rgba(212,175,55,0.45)] leading-none select-none">
+                                                ?
+                                            </span>
+                                        </div>
+
+                                        <!-- Parte baja -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <span class="font-serif text-base font-bold tracking-widest text-amber-50 uppercase drop-shadow-md">
+                                                En Espera
+                                            </span>
+                                            <span class="text-xs text-stone-400 font-sans mt-0.5">
+                                                Tercer Lugar
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CARA DELANTERA: GANADOR REVELADO -->
+                                    <article class="podio-card-front podio-card-shadow absolute inset-0 w-full h-full rounded-2xl overflow-hidden bg-gradient-to-b from-stone-900/90 via-[#120f0c] to-black flex flex-col justify-between p-3 cursor-pointer"
+                                             style="height: 390px;"
+                                             data-card-id="{{ $tercerLugar['id'] }}"
+                                             onclick="abrirModalDesglose({{ $tercerLugar['id'] }})">
+                                        
+                                        <!-- Fotografía del Participante / Fondo de Gala -->
+                                        <img class="card-foto absolute inset-0 w-full h-full object-cover object-top z-0"
+                                             src="{{ $foto3 }}"
+                                             alt="{{ $tercerLugar['nombre'] }}"
+                                             onerror="this.onerror=null; this.src='{{ asset('images/fondo.png') }}';">
+
+                                        <div aria-hidden="true" class="absolute inset-0 z-[1] pointer-events-none" style="background: linear-gradient(to bottom, rgba(28, 25, 23, 0.45) 0%, rgba(21, 18, 14, 0.45) 48%, rgba(0, 0, 0, 0.95) 100%);"></div>
+                                        <div aria-hidden="true" class="absolute inset-0 opacity-15 card-dot-pattern z-[2] pointer-events-none"></div>
+
+                                        <!-- Header con Puesto 3 y Bandera -->
+                                        <header class="relative z-10 px-4 pt-4 flex flex-col gap-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[12px] tracking-[0.2em] uppercase font-bold drop-shadow-md" style="color: #fbbf24;">
+                                                    N° 3 · Tercer Lugar
+                                                </span>
+                                                @if ($bandera3)
+                                                    <img class="w-4 h-3.5 object-cover rounded-[1px]" src="{{ $bandera3 }}" alt="Bandera de {{ $tercerLugar['departamento'] ?? 'Bolivia' }}">
+                                                @endif
+                                            </div>
+                                            <div class="w-full h-px" style="background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.4), transparent);"></div>
+                                        </header>
+
+                                        <!-- Parte baja: Calificación sobre el Nombre y Departamento -->
+                                        <div class="relative z-10 px-3 pb-4 mt-auto flex flex-col items-center text-center">
+                                            <div class="flex items-baseline gap-1 mb-1">
+                                                <span class="card-score font-serif text-4xl sm:text-5xl font-extrabold tracking-tight gold-gradient-text drop-shadow-[0_2px_12px_rgba(212,175,55,0.45)]">
+                                                    {{ number_format((float) $tercerLugar['nota_final'], 2) }}
+                                                </span>
+                                                <span class="text-[11px] font-semibold text-yellow-200/50 uppercase tracking-wider font-sans">/100</span>
+                                            </div>
+                                            <div aria-hidden="true" class="w-8 h-0.5 rounded-full mb-2" style="background-color: rgba(212, 175, 55, 0.5);"></div>
+                                            <h3 class="card-nombre font-serif text-lg font-bold tracking-widest text-amber-50 uppercase drop-shadow-md line-clamp-2" title="{{ $tercerLugar['nombre'] }}">
+                                                {{ $tercerLugar['nombre'] }}
+                                            </h3>
+                                            <span class="text-xs text-stone-300 font-sans mt-0.5">
+                                                {{ $tercerLugar['departamento'] ?? 'Bolivia' }}
+                                            </span>
+                                        </div>
+
+                                    </article>
+
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="order-3 hidden sm:block"></div>
+                    @endif
+
                 </div>
+                @endif
 
             </div>
 
@@ -1030,17 +991,12 @@
             const card1 = document.getElementById('podioCard_1');
             const card2 = document.getElementById('podioCard_2');
             const card3 = document.getElementById('podioCard_3');
-            const colGeneral = document.getElementById('columnaListadoGeneral');
 
             if (paso === 0) {
-                // Voltear todas las cartas a misterio y ocultar listado general
+                // Voltear todas las cartas a misterio
                 if (card1) card1.classList.remove('is-flipped');
                 if (card2) card2.classList.remove('is-flipped');
                 if (card3) card3.classList.remove('is-flipped');
-                if (colGeneral) {
-                    colGeneral.classList.add('hidden', 'opacity-0', 'translate-y-4');
-                    colGeneral.classList.remove('opacity-100', 'translate-y-0');
-                }
                 return;
             }
 
@@ -1060,7 +1016,7 @@
                         const scoreEl = front.querySelector('.card-score');
                         if (scoreEl) {
                             const nf = parseFloat(data.ganador.nota_final);
-                            scoreEl.innerHTML = (isNaN(nf) ? '0.00' : nf.toFixed(2)) + ' <span class="text-[10px] text-amber-300">pts</span>';
+                            scoreEl.textContent = isNaN(nf) ? '0.00' : nf.toFixed(2);
                         }
                         if (data.ganador.foto_url) {
                             const fotoEl = front.querySelector('.card-foto');
@@ -1076,31 +1032,14 @@
                 if (card3) card3.classList.add('is-flipped');
                 if (card2) card2.classList.remove('is-flipped');
                 if (card1) card1.classList.remove('is-flipped');
-                if (colGeneral) {
-                    colGeneral.classList.add('hidden', 'opacity-0', 'translate-y-4');
-                    colGeneral.classList.remove('opacity-100', 'translate-y-0');
-                }
             } else if (paso === 2) {
                 if (card3) card3.classList.add('is-flipped');
                 if (card2) card2.classList.add('is-flipped');
                 if (card1) card1.classList.remove('is-flipped');
-                if (colGeneral) {
-                    colGeneral.classList.add('hidden', 'opacity-0', 'translate-y-4');
-                    colGeneral.classList.remove('opacity-100', 'translate-y-0');
-                }
             } else if (paso === 1) {
                 if (card3) card3.classList.add('is-flipped');
                 if (card2) card2.classList.add('is-flipped');
                 if (card1) card1.classList.add('is-flipped');
-
-                // Revelar listado general con animación fluida
-                if (colGeneral && colGeneral.classList.contains('hidden')) {
-                    colGeneral.classList.remove('hidden');
-                    setTimeout(() => {
-                        colGeneral.classList.remove('opacity-0', 'translate-y-4');
-                        colGeneral.classList.add('opacity-100', 'translate-y-0');
-                    }, 50);
-                }
             }
         }
 
